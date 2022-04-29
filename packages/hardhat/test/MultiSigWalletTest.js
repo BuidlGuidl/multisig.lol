@@ -41,8 +41,22 @@ describe("MultiSigWallet Test", () => {
       return await MultiSigWallet.getTransactionHash(nonce, to, value, callData);
     }
 
+    getRemoveSignerHash = async (oldSignerAddress, newSignaturesRequired) => {
+      let nonce = await MultiSigWallet.nonce();
+      let to = MultiSigWallet.address;
+      let value = "0x0";
+
+      let callData = getRemoveSignerCallData(oldSignerAddress, newSignaturesRequired);
+      
+      return await MultiSigWallet.getTransactionHash(nonce, to, value, callData);
+    }
+
     getAddSignerCallData = (newSignerAddress, newSignaturesRequired) => {
       return MultiSigWallet.interface.encodeFunctionData("addSigner",[newSignerAddress, newSignaturesRequired]);
+    }
+
+    getRemoveSignerCallData = (oldSignerAddress, newSignaturesRequired) => {
+      return MultiSigWallet.interface.encodeFunctionData("removeSigner",[oldSignerAddress, newSignaturesRequired]);
     }
 
     getSortedOwnerAddressesArray = async () => {
@@ -88,6 +102,33 @@ describe("MultiSigWallet Test", () => {
   });
 
   describe("Testing MultiSigWallet functionality", () => {
+    // This works because removeSigner works correctly when removing the last signer from the array.
+    it("Adding a new signer, then removing it", async () => {
+      let newSignerAddress = addr1.address;
+      let newSignaturesRequired = 2;
+
+      let addSignerHash = await getAddSignerHash(newSignerAddress, newSignaturesRequired);
+
+      await MultiSigWallet.executeTransaction(
+        MultiSigWallet.address, "0x0",
+        getAddSignerCallData(newSignerAddress, newSignaturesRequired), 
+        await getSignaturesArray(addSignerHash));
+
+      expect(await MultiSigWallet.isOwner(newSignerAddress)).to.equal(true);
+
+      let removeSignerAddress = newSignerAddress;
+
+      let removeSignerHash = await getRemoveSignerHash(removeSignerAddress, newSignaturesRequired - 1);
+
+      await MultiSigWallet.executeTransaction(
+        MultiSigWallet.address, "0x0",
+        getRemoveSignerCallData(removeSignerAddress, newSignaturesRequired - 1), 
+        await getSignaturesArray(removeSignerHash));
+
+      expect(await MultiSigWallet.isOwner(removeSignerAddress)).to.equal(false);
+      expect(await MultiSigWallet.owners(0)).to.equal(owner.address);
+    });
+
     it("Adding a new signer - execute with owner", async () => {
       let newSignerAddress = addr1.address;
       let newSignaturesRequired = 2;
