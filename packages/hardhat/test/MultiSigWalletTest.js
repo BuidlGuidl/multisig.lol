@@ -2,22 +2,12 @@ const { ethers } = require("hardhat");
 const { expect } = require("chai");
 
 describe("MultiSigWallet Test", () => {
-  let MultiSigFactory;
-  let MultiSigWallet;
-  let owner;
-  let addr1;
-  let addr2;
-
-  let provider;
-
   const CHAIN_ID = 1; // I guess this number doesn't really matter
   let signatureRequired = 1; // Starting with something straithforward
 
   let TestERC20Token;
   const TEST_ERC20_TOKEN_TOTAL_SUPPLY = "100";
 
-  // Running this before each test
-  // Deploys MultiSigWallet and sets up some addresses for easier testing
   beforeEach(async function () {
     [owner, addr1, addr2] = await ethers.getSigners();
 
@@ -39,11 +29,54 @@ describe("MultiSigWallet Test", () => {
 
     // Create TestERC20Token token, minting 100 for the multiSigWallet
     let TestERC20TokenContractFactory = await ethers.getContractFactory("TestERC20Token");
-    TestERC20Token = await TestERC20TokenContractFactory.deploy(MultiSigWallet.address, ethers.utils.parseEther(TEST_ERC20_TOKEN_TOTAL_SUPPLY)); 
+    TestERC20Token = await TestERC20TokenContractFactory.deploy(MultiSigWallet.address, ethers.utils.parseEther(TEST_ERC20_TOKEN_TOTAL_SUPPLY));
+
+    getAddSignerHash = async (newSignerAddress, newSignaturesRequired) => {
+      let nonce = await MultiSigWallet.nonce();
+      let to = MultiSigWallet.address;
+      let value = "0x0";
+
+      let callData = getAddSignerCallData(newSignerAddress, newSignaturesRequired);
+      
+      return await MultiSigWallet.getTransactionHash(nonce, to, value, callData);
+    }
+
+    getAddSignerCallData = (newSignerAddress, newSignaturesRequired) => {
+      return MultiSigWallet.interface.encodeFunctionData("addSigner",[newSignerAddress, newSignaturesRequired]);
+    }
+
+    getSortedOwnerAddressesArray = async () => {
+      let ownerAddressesArray = [];
+
+      for (let i = 0; ; i++) {
+        try {
+          ownerAddressesArray.push(await MultiSigWallet.owners(i));  
+        }
+        catch {
+          break;
+        }
+      }
+
+      return ownerAddressesArray.sort();
+    }
+
+    getSignaturesArray = async (hash) => {
+      let signaturesArray = [];
+
+      let sortedOwnerAddressesArray = await getSortedOwnerAddressesArray();
+
+      for (ownerAddress of sortedOwnerAddressesArray) {
+        let ownerProvider = (await ethers.getSigner(owner.address)).provider;
+
+        signaturesArray.push(await ownerProvider.send("personal_sign", [hash, ownerAddress]));
+      }
+
+      return signaturesArray;
+    }
   });
 
   describe("Deployment", () => {
-    it("isOwner should return true for the deployer owner address", async () => {     
+    it("isOwner should return true for the deployer owner address", async () => {
       expect(await MultiSigWallet.isOwner(owner.address)).to.equal(true);
     });
 
@@ -56,23 +89,17 @@ describe("MultiSigWallet Test", () => {
 
   describe("Testing MultiSigWallet functionality", () => {
     it("Adding a new signer", async () => {
-      let newSigner = addr1.address;
+      let newSignerAddress = addr1.address;
+      let newSignaturesRequired = 2;
 
-      let nonce = await MultiSigWallet.nonce();
-      let to = MultiSigWallet.address;
-      let value = 0;
+      let hash = await getAddSignerHash(newSignerAddress, newSignaturesRequired);
 
-      let callData = MultiSigWallet.interface.encodeFunctionData("addSigner",[newSigner, 1]);
-      
-      let hash = await MultiSigWallet.getTransactionHash(nonce, to, value, callData);
-      const signature = await owner.provider.send("personal_sign", [hash, owner.address]);
+      await MultiSigWallet.executeTransaction(
+        MultiSigWallet.address, "0x0",
+        getAddSignerCallData(newSignerAddress, newSignaturesRequired), 
+        await getSignaturesArray(hash));
 
-      // Double checking if owner address is recovered properly, executeTransaction would fail anyways
-      expect(await MultiSigWallet.recover(hash, signature)).to.equal(owner.address);
-
-      await MultiSigWallet.executeTransaction(to, value, callData, [signature]);
-
-      expect(await MultiSigWallet.isOwner(newSigner)).to.equal(true);
+      expect(await MultiSigWallet.isOwner(newSignerAddress)).to.equal(true);
     });
 
     it("Transaction reverted: Invalid MultiSigWallet, more signatures required than signers", async () => {
