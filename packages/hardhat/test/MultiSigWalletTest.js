@@ -88,13 +88,29 @@ describe("MultiSigWallet Test", () => {
   });
 
   describe("Testing MultiSigWallet functionality", () => {
-    it("Adding a new signer", async () => {
+    it("Adding a new signer - execute with owner", async () => {
       let newSignerAddress = addr1.address;
       let newSignaturesRequired = 2;
 
       let hash = await getAddSignerHash(newSignerAddress, newSignaturesRequired);
 
       await MultiSigWallet.executeTransaction(
+        MultiSigWallet.address, "0x0",
+        getAddSignerCallData(newSignerAddress, newSignaturesRequired), 
+        await getSignaturesArray(hash));
+
+      expect(await MultiSigWallet.isOwner(newSignerAddress)).to.equal(true);
+    });
+
+    it("Adding a new signer - execute with external account", async () => {
+      let newSignerAddress = addr1.address;
+      let newSignaturesRequired = 2;
+
+      let hash = await getAddSignerHash(newSignerAddress, newSignaturesRequired);
+
+      let addr2ConnectedMultiSigWallet = await MultiSigWallet.connect(addr2)
+
+      await addr2ConnectedMultiSigWallet.executeTransaction(
         MultiSigWallet.address, "0x0",
         getAddSignerCallData(newSignerAddress, newSignaturesRequired), 
         await getSignaturesArray(hash));
