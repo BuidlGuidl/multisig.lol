@@ -186,6 +186,20 @@ describe("MultiSigWallet Test", () => {
       expect(await MultiSigWallet.isOwner(newSignerAddress)).to.equal(true);
     });
 
+    it("Transaction reverted: Remove the only signer", async () => {
+      let removeSignerAddress = owner.address;
+      let newSignaturesRequired = 1;
+
+      let removeSignerHash = await getRemoveSignerHash(removeSignerAddress, newSignaturesRequired);
+
+      await expect(
+        MultiSigWallet.executeTransaction(
+          MultiSigWallet.address, "0x0",
+          getRemoveSignerCallData(removeSignerAddress, newSignaturesRequired), 
+          await getSignaturesArray(removeSignerHash)))
+        .to.be.revertedWith("executeTransaction: tx failed");
+    });
+
     it("Transaction reverted: Invalid MultiSigWallet, more signatures required than signers", async () => {
       await expect(
           MultiSigFactory.create(CHAIN_ID, [owner.address], 2)
