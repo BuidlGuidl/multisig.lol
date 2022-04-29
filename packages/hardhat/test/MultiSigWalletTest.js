@@ -75,8 +75,13 @@ describe("MultiSigWallet Test", () => {
       expect(await MultiSigWallet.isOwner(newSigner)).to.equal(true);
     });
 
-    // I think this is a bug in MultiSigWallet which should be fixed, same for addSigner/removeSigner where newSignaturesRequired is used
-    it("Update Signatures Required to 2 - locking all the funds in the wallet, becasuse there is only 1 signer", async () => {
+    it("Transaction reverted: Invalid MultiSigWallet, more signatures required than signers", async () => {
+      await expect(
+          MultiSigFactory.create(CHAIN_ID, [owner.address], 2)
+        ).to.be.revertedWith("Must be at least the same amount of signers than signatures required");
+    });
+
+    it("Transaction reverted: Update Signatures Required to 2 - trying to lock all the funds in the wallet, becasuse there is only 1 signer", async () => {
       let nonce = await MultiSigWallet.nonce();
       let to = MultiSigWallet.address;
       let value = 0;
@@ -89,9 +94,9 @@ describe("MultiSigWallet Test", () => {
       // Double checking if owner address is recovered properly, executeTransaction would fail anyways
       expect(await MultiSigWallet.recover(hash, signature)).to.equal(owner.address);
 
-      await MultiSigWallet.executeTransaction(to, value, callData, [signature]);
-
-      expect(await MultiSigWallet.signaturesRequired()).to.equal(2);
+      await expect(
+          MultiSigWallet.executeTransaction(to, value, callData, [signature])
+        ).to.be.revertedWith("executeTransaction: tx failed");
     });
 
     it("Transferring 0.1 eth to addr1", async () => {
