@@ -129,6 +129,33 @@ describe("MultiSigWallet Test", () => {
       expect(await MultiSigWallet.owners(0)).to.equal(owner.address);
     });
 
+    // This doesn't work because removeSigner cannot correctly remove a signer which is not the last in the array.
+    it("Adding a new signer, then removing the old one", async () => {
+      let newSignerAddress = addr1.address;
+      let newSignaturesRequired = 2;
+
+      let addSignerHash = await getAddSignerHash(newSignerAddress, newSignaturesRequired);
+
+      await MultiSigWallet.executeTransaction(
+        MultiSigWallet.address, "0x0",
+        getAddSignerCallData(newSignerAddress, newSignaturesRequired), 
+        await getSignaturesArray(addSignerHash));
+
+      expect(await MultiSigWallet.isOwner(newSignerAddress)).to.equal(true);
+
+      let removeSignerAddress = owner.address;
+
+      let removeSignerHash = await getRemoveSignerHash(removeSignerAddress, newSignaturesRequired - 1);
+
+      await MultiSigWallet.executeTransaction(
+        MultiSigWallet.address, "0x0",
+        getRemoveSignerCallData(removeSignerAddress, newSignaturesRequired - 1), 
+        await getSignaturesArray(removeSignerHash));
+
+      expect(await MultiSigWallet.isOwner(removeSignerAddress)).to.equal(false);
+      expect(await MultiSigWallet.owners(0)).to.equal(newSignerAddress);
+    });
+
     it("Adding a new signer - execute with owner", async () => {
       let newSignerAddress = addr1.address;
       let newSignaturesRequired = 2;
