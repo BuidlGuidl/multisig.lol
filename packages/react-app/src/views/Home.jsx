@@ -21,7 +21,7 @@ function Home({
     <>
       <div
         //  style={{ padding: 32, maxWidth: 850, margin: "auto" }}
-        className=" flex flex-col justify-center items-center w-full m-2"
+        className=" flex flex-col justify-center items-center  m-2 "
       >
         {/* main contract info */}
         <div className="flex  justify-around  flex-wrap  w-full border-2 p-4 md:w-auto md:rounded-3xl md:shadow-md ">
@@ -90,23 +90,27 @@ function Home({
             Propose Transaction
           </Button>
         </div>
-        <div className="w-full">
-          <List
-            bordered
-            dataSource={executeTransactionEvents}
-            renderItem={item => {
-              return (
-                <TransactionListItem
-                  item={Object.create(item)}
-                  mainnetProvider={mainnetProvider}
-                  blockExplorer={blockExplorer}
-                  price={price}
-                  readContracts={readContracts}
-                  contractName={contractName}
-                />
-              );
-            }}
-          />
+        <div className="flex justify-center items-center w-screen  ">
+          <div className=" w-full md:w-1/2 ">
+            <List
+              bordered
+              dataSource={executeTransactionEvents}
+              renderItem={item => {
+                return (
+                  <div>
+                    <TransactionListItem
+                      item={Object.create(item)}
+                      mainnetProvider={mainnetProvider}
+                      blockExplorer={blockExplorer}
+                      price={price}
+                      readContracts={readContracts}
+                      contractName={contractName}
+                    />
+                  </div>
+                );
+              }}
+            />
+          </div>
         </div>
       </div>
     </>
