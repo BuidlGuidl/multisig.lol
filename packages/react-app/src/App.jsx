@@ -1,4 +1,6 @@
 import { Button, Col, Menu, Row, Alert, Select } from "antd";
+import Routes from "./Routes";
+
 import "antd/dist/antd.css";
 import {
   useBalance,
@@ -229,7 +231,6 @@ function App(props) {
     process.env.REACT_APP_PROVIDER ? process.env.REACT_APP_PROVIDER : targetNetwork.rpcUrl,
   ]);
   const mainnetProvider = useStaticJsonRPC(providers);
-  console.log("mainnetProvider: ", mainnetProvider);
 
   if (DEBUG) console.log(`Using ${selectedNetwork} network`);
 
@@ -387,8 +388,6 @@ function App(props) {
     1,
   );
   if (DEBUG) console.log("📟 ownerEvents:", allOwnerEvents);
-
-  console.log("n-allOwnerEvents: ", allOwnerEvents);
 
   const [ownerEvents, setOwnerEvents] = useState();
   const [executeTransactionEvents, setExecuteTransactionEvents] = useState();
@@ -613,133 +612,6 @@ function App(props) {
     );
   };
 
-  const Routes = () => {
-    return (
-      <>
-        <Switch>
-          <Route exact path="/">
-            {!userHasMultiSigs ? (
-              <Row style={{ marginTop: 40 }}>
-                <Col span={12} offset={6}>
-                  <Alert
-                    message={
-                      <>
-                        ✨{" "}
-                        <Button onClick={() => setIsCreateModalVisible(true)} type="link" style={{ padding: 0 }}>
-                          Create
-                        </Button>{" "}
-                        or select your Multi-Sig ✨
-                      </>
-                    }
-                    type="info"
-                  />
-                </Col>
-              </Row>
-            ) : (
-              <Home
-                key={currentMultiSigAddress}
-                contractAddress={currentMultiSigAddress}
-                localProvider={localProvider}
-                price={price}
-                mainnetProvider={mainnetProvider}
-                blockExplorer={blockExplorer}
-                executeTransactionEvents={executeTransactionEvents}
-                contractName={contractName}
-                readContracts={readContracts}
-                ownerEvents={ownerEvents}
-                signaturesRequired={signaturesRequired}
-              />
-            )}
-          </Route>
-          <Route path="/create">
-            <CreateTransaction
-              poolServerUrl={BACKEND_URL}
-              contractName={contractName}
-              contractAddress={contractAddress}
-              mainnetProvider={mainnetProvider}
-              localProvider={localProvider}
-              price={price}
-              tx={tx}
-              readContracts={readContracts}
-              userSigner={userSigner}
-              DEBUG={DEBUG}
-              nonce={nonce}
-              blockExplorer={blockExplorer}
-              signaturesRequired={signaturesRequired}
-            />
-          </Route>
-          <Route path="/pool">
-            <Transactions
-              poolServerUrl={BACKEND_URL}
-              contractName={contractName}
-              address={address}
-              userSigner={userSigner}
-              mainnetProvider={mainnetProvider}
-              localProvider={localProvider}
-              yourLocalBalance={yourLocalBalance}
-              price={price}
-              tx={tx}
-              writeContracts={writeContracts}
-              readContracts={readContracts}
-              blockExplorer={blockExplorer}
-              nonce={nonce}
-              signaturesRequired={signaturesRequired}
-            />
-          </Route>
-          <Route exact path="/debug">
-            <Contract
-              name={"MultiSigFactory"}
-              price={price}
-              signer={userSigner}
-              provider={localProvider}
-              address={address}
-              blockExplorer={blockExplorer}
-              contractConfig={contractConfig}
-            />
-          </Route>
-          <Route path="/hints">
-            <Hints
-              address={address}
-              yourLocalBalance={yourLocalBalance}
-              mainnetProvider={mainnetProvider}
-              price={price}
-            />
-          </Route>
-          <Route path="/mainnetdai">
-            <Contract
-              name="DAI"
-              customContract={mainnetContracts && mainnetContracts.contracts && mainnetContracts.contracts.DAI}
-              signer={userSigner}
-              provider={mainnetProvider}
-              address={address}
-              blockExplorer="https://etherscan.io/"
-              contractConfig={contractConfig}
-              chainId={1}
-            />
-            {/*
-            <Contract
-              name="UNI"
-              customContract={mainnetContracts && mainnetContracts.contracts && mainnetContracts.contracts.UNI}
-              signer={userSigner}
-              provider={mainnetProvider}
-              address={address}
-              blockExplorer="https://etherscan.io/"
-            />
-            */}
-          </Route>
-          <Route path="/subgraph">
-            <Subgraph
-              subgraphUri={props.subgraphUri}
-              tx={tx}
-              writeContracts={writeContracts}
-              mainnetProvider={mainnetProvider}
-            />
-          </Route>
-        </Switch>
-      </>
-    );
-  };
-
   const BurnerWallet = () => {
     return (
       <>
@@ -791,7 +663,38 @@ function App(props) {
       <HeaderBar />
       <WalletActions />
       <MainMenu />
-      <Routes />
+      <Routes
+        BACKEND_URL={BACKEND_URL}
+        DEBUG={DEBUG}
+        account={address}
+        address={address}
+        blockExplorer={blockExplorer}
+        contractAddress={contractAddress}
+        contractConfig={contractConfig}
+        contractName={contractName}
+        currentMultiSigAddress={currentMultiSigAddress}
+        customContract={mainnetContracts && mainnetContracts.contracts && mainnetContracts.contracts.DAI}
+        executeTransactionEvents={executeTransactionEvents}
+        gasPrice={gasPrice}
+        localProvider={localProvider}
+        mainnetContracts={mainnetContracts}
+        mainnetProvider={mainnetProvider}
+        nonce={nonce}
+        ownerEvents={ownerEvents}
+        poolServerUrl={BACKEND_URL}
+        price={price}
+        readContracts={readContracts}
+        setIsCreateModalVisible={setIsCreateModalVisible}
+        signaturesRequired={signaturesRequired}
+        subgraphUri={props.subgraphUri}
+        tx={tx}
+        userHasMultiSigs={userHasMultiSigs}
+        userSigner={userSigner}
+        writeContracts={writeContracts}
+        yourLocalBalance={yourLocalBalance}
+        key={currentMultiSigAddress}
+      />
+
       <ThemeSwitch />
       <BurnerWallet />
     </div>

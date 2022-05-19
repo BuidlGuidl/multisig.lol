@@ -15,8 +15,6 @@ function Home({
   ownerEvents,
   signaturesRequired,
 }) {
-  console.log("HOME COMPONENT");
-
   return (
     <>
       <div
@@ -117,4 +115,4 @@ function Home({
   );
 }
 
-export default React.memo(Home);
+export default Home;
