@@ -1,4 +1,6 @@
 import { Button, Col, Menu, Row, Alert, Select } from "antd";
+import Routes from "./Routes";
+
 import "antd/dist/antd.css";
 import {
   useBalance,
@@ -219,7 +221,7 @@ function App(props) {
     BACKEND_URL = "https://backend.multisig.lol:49899/";
   }
 
-  if(!targetNetwork) targetNetwork = NETWORKS["localhost"];
+  if (!targetNetwork) targetNetwork = NETWORKS["localhost"];
 
   // 🔭 block explorer URL
   const blockExplorer = targetNetwork.blockExplorer;
@@ -278,7 +280,7 @@ function App(props) {
   const yourLocalBalance = useBalance(localProvider, address);
 
   // Just plug in different 🛰 providers to get your balance on different chains:
-  const yourMainnetBalance = useBalance(mainnetProvider, address);
+  // const yourMainnetBalance = useBalance(mainnetProvider, address);
 
   // const contractConfig = useContractConfig();
 
@@ -395,8 +397,10 @@ function App(props) {
   }, [allOwnerEvents, currentMultiSigAddress]);
 
   useEffect(() => {
-    const filteredEvents = allExecuteTransactionEvents.filter(contractEvent => contractEvent.address === currentMultiSigAddress);
-    const nonceNum = typeof(nonce) === "number" ? nonce : nonce?.toNumber();
+    const filteredEvents = allExecuteTransactionEvents.filter(
+      contractEvent => contractEvent.address === currentMultiSigAddress,
+    );
+    const nonceNum = typeof nonce === "number" ? nonce : nonce?.toNumber();
     if (nonceNum === filteredEvents.length) {
       setExecuteTransactionEvents(filteredEvents.reverse());
     }
@@ -488,49 +492,58 @@ function App(props) {
     </Select>
   );
 
-  return (
-    <div className="App">
-      <Header>
-        {/* 👨‍💼 Your account is in the top right with a wallet at connect options */}
-        <div style={{ position: "relative" }}>
-          <div style={{ display: "flex", flex: 1, alignItems: "center", padding: "0.5rem 0" }}>
-            {USE_NETWORK_SELECTOR && (
-              <div style={{ marginRight: 20 }}>
-                <NetworkSwitch
-                  networkOptions={networkOptions}
-                  selectedNetwork={selectedNetwork}
-                  setSelectedNetwork={setSelectedNetwork}
-                />
-              </div>
+  // top header bar
+  const HeaderBar = () => {
+    return (
+      <>
+        <Header>
+          <div className="relative ">
+            <div className="flex flex-1 items-center p-1">
+              {USE_NETWORK_SELECTOR && (
+                // <div style={{ marginRight: 20 }}>
+                <div className="mr-20">
+                  <NetworkSwitch
+                    networkOptions={networkOptions}
+                    selectedNetwork={selectedNetwork}
+                    setSelectedNetwork={setSelectedNetwork}
+                  />
+                </div>
+              )}
+              <Account
+                useBurner={USE_BURNER_WALLET}
+                address={address}
+                localProvider={localProvider}
+                userSigner={userSigner}
+                mainnetProvider={mainnetProvider}
+                price={price}
+                web3Modal={web3Modal}
+                loadWeb3Modal={loadWeb3Modal}
+                logoutOfWeb3Modal={logoutOfWeb3Modal}
+                blockExplorer={blockExplorer}
+              />
+            </div>
+            {yourLocalBalance.lte(ethers.BigNumber.from("0")) && (
+              <FaucetHint localProvider={localProvider} targetNetwork={targetNetwork} address={address} />
             )}
-            <Account
-              useBurner={USE_BURNER_WALLET}
-              address={address}
-              localProvider={localProvider}
-              userSigner={userSigner}
-              mainnetProvider={mainnetProvider}
-              price={price}
-              web3Modal={web3Modal}
-              loadWeb3Modal={loadWeb3Modal}
-              logoutOfWeb3Modal={logoutOfWeb3Modal}
-              blockExplorer={blockExplorer}
-            />
           </div>
-          {yourLocalBalance.lte(ethers.BigNumber.from("0")) && (
-            <FaucetHint localProvider={localProvider} targetNetwork={targetNetwork} address={address} />
-          )}
-        </div>
-      </Header>
-      <NetworkDisplay
-        NETWORKCHECK={NETWORKCHECK}
-        localChainId={localChainId}
-        selectedChainId={selectedChainId}
-        targetNetwork={targetNetwork}
-        logoutOfWeb3Modal={logoutOfWeb3Modal}
-        USE_NETWORK_SELECTOR={USE_NETWORK_SELECTOR}
-      />
-      <div style={{ position: "relative" }}>
-        <div style={{ position: "absolute", left: 20, display: "flex", flexDirection: "column", alignItems: "start" }}>
+        </Header>
+
+        <NetworkDisplay
+          NETWORKCHECK={NETWORKCHECK}
+          localChainId={localChainId}
+          selectedChainId={selectedChainId}
+          targetNetwork={targetNetwork}
+          logoutOfWeb3Modal={logoutOfWeb3Modal}
+          USE_NETWORK_SELECTOR={USE_NETWORK_SELECTOR}
+        />
+      </>
+    );
+  };
+
+  const WalletActions = () => {
+    return (
+      <>
+        <div className="flex justify-start items-center p-2 mt-2  ">
           <div>
             <CreateMultiSigModal
               price={price}
@@ -543,7 +556,26 @@ function App(props) {
               isCreateModalVisible={isCreateModalVisible}
               setIsCreateModalVisible={setIsCreateModalVisible}
             />
-            <Select value={[currentMultiSigAddress]} style={{ width: 120, marginRight: 5, }} onChange={handleMultiSigChange}>
+          </div>
+
+          <div>
+            <ImportMultiSigModal
+              mainnetProvider={mainnetProvider}
+              targetNetwork={targetNetwork}
+              networkOptions={selectNetworkOptions}
+              multiSigs={multiSigs}
+              setMultiSigs={setMultiSigs}
+              setCurrentMultiSigAddress={setCurrentMultiSigAddress}
+              multiSigWalletABI={multiSigWalletABI}
+              localProvider={localProvider}
+            />
+          </div>
+          <div>
+            <Select
+              value={[currentMultiSigAddress]}
+              style={{ width: 120, marginRight: 5 }}
+              onChange={handleMultiSigChange}
+            >
               {multiSigs.map((address, index) => (
                 <Option key={index} value={address}>
                   {address}
@@ -552,196 +584,119 @@ function App(props) {
             </Select>
             {networkSelect}
           </div>
-          <ImportMultiSigModal
-            mainnetProvider={mainnetProvider}
-            targetNetwork={targetNetwork}
-            networkOptions={selectNetworkOptions}
-            multiSigs={multiSigs}
-            setMultiSigs={setMultiSigs}
-            setCurrentMultiSigAddress={setCurrentMultiSigAddress}
-            multiSigWalletABI={multiSigWalletABI}
-            localProvider={localProvider}
-          />
         </div>
-      </div>
-      <Menu
-        disabled={!userHasMultiSigs}
-        style={{ textAlign: "center", marginTop: 40 }}
-        selectedKeys={[location.pathname]}
-        mode="horizontal"
-      >
-        <Menu.Item key="/">
-          <Link to="/">MultiSig</Link>
-        </Menu.Item>
-        <Menu.Item key="/create">
-          <Link to="/create">Propose Transaction</Link>
-        </Menu.Item>
-        <Menu.Item key="/pool">
-          <Link to="/pool">Pool</Link>
-        </Menu.Item>
-      </Menu>
+      </>
+    );
+  };
 
-      <Switch>
-        <Route exact path="/">
-          {!userHasMultiSigs ? (
-            <Row style={{ marginTop: 40 }}>
-              <Col span={12} offset={6}>
-                <Alert
-                  message={
-                    <>
-                      ✨{" "}
-                      <Button onClick={() => setIsCreateModalVisible(true)} type="link" style={{ padding: 0 }}>
-                        Create
-                      </Button>{" "}
-                      or select your Multi-Sig ✨
-                    </>
-                  }
-                  type="info"
-                />
-              </Col>
-            </Row>
-          ) : (
-            <Home
-              contractAddress={currentMultiSigAddress}
-              localProvider={localProvider}
-              price={price}
-              mainnetProvider={mainnetProvider}
-              blockExplorer={blockExplorer}
-              executeTransactionEvents={executeTransactionEvents}
-              contractName={contractName}
-              readContracts={readContracts}
-              ownerEvents={ownerEvents}
-              signaturesRequired={signaturesRequired}
-            />
-          )}
-        </Route>
-        <Route path="/create">
-          <CreateTransaction
-            poolServerUrl={BACKEND_URL}
-            contractName={contractName}
-            contractAddress={contractAddress}
-            mainnetProvider={mainnetProvider}
-            localProvider={localProvider}
-            price={price}
-            tx={tx}
-            readContracts={readContracts}
-            userSigner={userSigner}
-            DEBUG={DEBUG}
-            nonce={nonce}
-            blockExplorer={blockExplorer}
-            signaturesRequired={signaturesRequired}
-          />
-        </Route>
-        <Route path="/pool">
-          <Transactions
-            poolServerUrl={BACKEND_URL}
-            contractName={contractName}
-            address={address}
-            userSigner={userSigner}
-            mainnetProvider={mainnetProvider}
-            localProvider={localProvider}
-            yourLocalBalance={yourLocalBalance}
-            price={price}
-            tx={tx}
-            writeContracts={writeContracts}
-            readContracts={readContracts}
-            blockExplorer={blockExplorer}
-            nonce={nonce}
-            signaturesRequired={signaturesRequired}
-          />
-        </Route>
-        <Route exact path="/debug">
-          <Contract
-            name={"MultiSigFactory"}
-            price={price}
-            signer={userSigner}
-            provider={localProvider}
-            address={address}
-            blockExplorer={blockExplorer}
-            contractConfig={contractConfig}
-          />
-        </Route>
-        <Route path="/hints">
-          <Hints
-            address={address}
-            yourLocalBalance={yourLocalBalance}
-            mainnetProvider={mainnetProvider}
-            price={price}
-          />
-        </Route>
-        <Route path="/mainnetdai">
-          <Contract
-            name="DAI"
-            customContract={mainnetContracts && mainnetContracts.contracts && mainnetContracts.contracts.DAI}
-            signer={userSigner}
-            provider={mainnetProvider}
-            address={address}
-            blockExplorer="https://etherscan.io/"
-            contractConfig={contractConfig}
-            chainId={1}
-          />
-          {/*
-            <Contract
-              name="UNI"
-              customContract={mainnetContracts && mainnetContracts.contracts && mainnetContracts.contracts.UNI}
-              signer={userSigner}
-              provider={mainnetProvider}
-              address={address}
-              blockExplorer="https://etherscan.io/"
-            />
-            */}
-        </Route>
-        <Route path="/subgraph">
-          <Subgraph
-            subgraphUri={props.subgraphUri}
-            tx={tx}
-            writeContracts={writeContracts}
-            mainnetProvider={mainnetProvider}
-          />
-        </Route>
-      </Switch>
+  const MainMenu = () => {
+    return (
+      <>
+        <Menu
+          disabled={!userHasMultiSigs}
+          style={{ textAlign: "center", marginTop: 40 }}
+          selectedKeys={[location.pathname]}
+          mode="horizontal"
+        >
+          <Menu.Item key="/">
+            <Link to="/">MultiSig</Link>
+          </Menu.Item>
+          <Menu.Item key="/create">
+            <Link to="/create">Propose Transaction</Link>
+          </Menu.Item>
+          <Menu.Item key="/pool">
+            <Link to="/pool">Pool</Link>
+          </Menu.Item>
+        </Menu>
+      </>
+    );
+  };
+
+  const BurnerWallet = () => {
+    return (
+      <>
+        {/* 🗺 Extra UI like gas price, eth price, faucet, and support: */}
+        <div style={{ position: "fixed", textAlign: "left", left: 0, bottom: 20, padding: 10 }}>
+          <Row align="middle" gutter={[4, 4]}>
+            <Col span={8}>
+              <Ramp price={price} address={address} networks={NETWORKS} />
+            </Col>
+
+            <Col span={8} style={{ textAlign: "center", opacity: 0.8 }}>
+              <GasGauge gasPrice={gasPrice} />
+            </Col>
+            <Col span={8} style={{ textAlign: "center", opacity: 1 }}>
+              <Button
+                onClick={() => {
+                  window.open("https://t.me/joinchat/KByvmRe5wkR-8F_zz6AjpA");
+                }}
+                size="large"
+                shape="round"
+              >
+                <span style={{ marginRight: 8 }} role="img" aria-label="support">
+                  💬
+                </span>
+                Support
+              </Button>
+            </Col>
+          </Row>
+
+          <Row align="middle" gutter={[4, 4]}>
+            <Col span={24}>
+              {
+                /*  if the local provider has a signer, let's show the faucet:  */
+                faucetAvailable ? (
+                  <Faucet localProvider={localProvider} price={price} ensProvider={mainnetProvider} />
+                ) : (
+                  ""
+                )
+              }
+            </Col>
+          </Row>
+        </div>
+      </>
+    );
+  };
+
+  return (
+    <div className="App">
+      <HeaderBar />
+      <WalletActions />
+      <MainMenu />
+      <Routes
+        BACKEND_URL={BACKEND_URL}
+        DEBUG={DEBUG}
+        account={address}
+        address={address}
+        blockExplorer={blockExplorer}
+        contractAddress={contractAddress}
+        contractConfig={contractConfig}
+        contractName={contractName}
+        currentMultiSigAddress={currentMultiSigAddress}
+        customContract={mainnetContracts && mainnetContracts.contracts && mainnetContracts.contracts.DAI}
+        executeTransactionEvents={executeTransactionEvents}
+        gasPrice={gasPrice}
+        localProvider={localProvider}
+        mainnetContracts={mainnetContracts}
+        mainnetProvider={mainnetProvider}
+        nonce={nonce}
+        ownerEvents={ownerEvents}
+        poolServerUrl={BACKEND_URL}
+        price={price}
+        readContracts={readContracts}
+        setIsCreateModalVisible={setIsCreateModalVisible}
+        signaturesRequired={signaturesRequired}
+        subgraphUri={props.subgraphUri}
+        tx={tx}
+        userHasMultiSigs={userHasMultiSigs}
+        userSigner={userSigner}
+        writeContracts={writeContracts}
+        yourLocalBalance={yourLocalBalance}
+        key={currentMultiSigAddress}
+      />
 
       <ThemeSwitch />
-
-      {/* 🗺 Extra UI like gas price, eth price, faucet, and support: */}
-      <div style={{ position: "fixed", textAlign: "left", left: 0, bottom: 20, padding: 10 }}>
-        <Row align="middle" gutter={[4, 4]}>
-          <Col span={8}>
-            <Ramp price={price} address={address} networks={NETWORKS} />
-          </Col>
-
-          <Col span={8} style={{ textAlign: "center", opacity: 0.8 }}>
-            <GasGauge gasPrice={gasPrice} />
-          </Col>
-          <Col span={8} style={{ textAlign: "center", opacity: 1 }}>
-            <Button
-              onClick={() => {
-                window.open("https://t.me/joinchat/KByvmRe5wkR-8F_zz6AjpA");
-              }}
-              size="large"
-              shape="round"
-            >
-              <span style={{ marginRight: 8 }} role="img" aria-label="support">
-                💬
-              </span>
-              Support
-            </Button>
-          </Col>
-        </Row>
-
-        <Row align="middle" gutter={[4, 4]}>
-          <Col span={24}>
-            {
-              /*  if the local provider has a signer, let's show the faucet:  */
-              faucetAvailable ? (
-                <Faucet localProvider={localProvider} price={price} ensProvider={mainnetProvider} />
-              ) : (
-                ""
-              )
-            }
-          </Col>
-        </Row>
-      </div>
+      <BurnerWallet />
     </div>
   );
 }

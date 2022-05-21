@@ -53,7 +53,7 @@ export default function ImportMultiSigModal({
 
       resetState();
       setIsModalVisible(false);
-    } catch(e) {
+    } catch (e) {
       console.log("Import error:", e);
       setError(true);
       setPendingImport(false);
@@ -62,7 +62,9 @@ export default function ImportMultiSigModal({
 
   return (
     <>
-      <Button type="link" onClick={ () => setIsModalVisible(true) }>Import</Button>
+      <Button type="link" onClick={() => setIsModalVisible(true)}>
+        Import
+      </Button>
       <Modal
         title="Import Multisig"
         visible={isModalVisible}
@@ -91,13 +93,10 @@ export default function ImportMultiSigModal({
             value={address}
             onChange={setAddress}
           />
-          <Select
-            defaultValue={targetNetwork.name}
-            onChange={ value => setNetwork(value) }
-          >
+          <Select defaultValue={targetNetwork.name} onChange={value => setNetwork(value)}>
             {networkOptions}
           </Select>
-          { error && <Alert message="Unable to import: this doesn't seem like a multisig." type="error" showIcon /> }
+          {error && <Alert message="Unable to import: this doesn't seem like a multisig." type="error" showIcon />}
         </div>
       </Modal>
     </>
