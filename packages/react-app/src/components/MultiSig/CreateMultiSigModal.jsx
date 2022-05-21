@@ -3,6 +3,8 @@ import { Button, Modal, InputNumber } from "antd";
 import { PlusOutlined, DeleteOutlined } from "@ant-design/icons";
 import { ethers } from "ethers";
 import { Input } from "antd";
+import { hexZeroPad, hexlify } from "@ethersproject/bytes";
+import axios from "axios";
 
 import { AddressInput, EtherInput } from "..";
 import CreateModalSentOverlay from "./CreateModalSentOverlay";
@@ -17,6 +19,9 @@ export default function CreateMultiSigModal({
   contractName,
   isCreateModalVisible,
   setIsCreateModalVisible,
+  poolServerUrl,
+  reDeployWallet,
+  getUserWallets,
 }) {
   const [pendingCreate, setPendingCreate] = useState(false);
   const [txSent, setTxSent] = useState(false);
@@ -26,6 +31,7 @@ export default function CreateMultiSigModal({
   const [signaturesRequired, setSignaturesRequired] = useState(false);
   const [amount, setAmount] = useState("0");
   const [owners, setOwners] = useState([""]);
+  const [walletName, setWalletName] = useState("");
 
   useEffect(() => {
     if (address) {
@@ -38,7 +44,9 @@ export default function CreateMultiSigModal({
   };
 
   const handleCancel = () => {
+    setWalletName("");
     setIsCreateModalVisible(false);
+    getUserWallets();
   };
 
   const addOwnerField = () => {
@@ -124,12 +132,24 @@ export default function CreateMultiSigModal({
         setPendingCreate(false);
         throw "Field validation failed.";
       }
+      let currentWalletName = reDeployWallet === undefined ? walletName : reDeployWallet["walletName"];
+      console.log("currentWalletName: ", currentWalletName);
+      const id = ethers.utils.id(String(address) + currentWalletName);
+      const hash = ethers.utils.keccak256(id);
+      const salt = hexZeroPad(hexlify(hash), 32);
 
       tx(
-        writeContracts[contractName].create(selectedChainId, owners, signaturesRequired, {
+        // old create
+        // writeContracts[contractName].create(selectedChainId, owners, signaturesRequired, {
+        //   value: ethers.utils.parseEther("" + parseFloat(amount).toFixed(12)),
+        // }
+        // create 2
+        writeContracts[contractName].create(selectedChainId, owners, signaturesRequired, salt, currentWalletName, {
           value: ethers.utils.parseEther("" + parseFloat(amount).toFixed(12)),
         }),
-        update => {
+        async update => {
+          let rcpt = await update.wait();
+          console.log("rcpt: ", rcpt);
           if (update && (update.error || update.reason)) {
             console.log("tx update error!");
             setPendingCreate(false);
@@ -150,6 +170,27 @@ export default function CreateMultiSigModal({
               resetState();
             }, 2500);
           }
+
+          let computed_wallet_address = await writeContracts[contractName].computedAddress(salt, currentWalletName);
+          console.log("computed_wallet_address: ", computed_wallet_address);
+
+          let walletAddress = reDeployWallet === undefined ? computed_wallet_address : reDeployWallet["walletAddress"];
+
+          if (reDeployWallet === undefined) {
+            const res = await axios.get(
+              poolServerUrl + `createWallet/${address}/${walletName}/${walletAddress}/${selectedChainId}`,
+            );
+            let data = res.data;
+            console.log("create wallet res data: ", data);
+          }
+
+          if (reDeployWallet !== undefined) {
+            // const res = await axios.get(poolServerUrl + `updateChainId/${address}/${walletAddress}/${selectedChainId}`);
+            const res = await axios.get(poolServerUrl + `updateChainId/${address}/${walletAddress}/${selectedChainId}`);
+            let data = res.data;
+            console.log("update chain res data: ", data);
+          }
+          getUserWallets();
         },
       ).catch(err => {
         setPendingCreate(false);
@@ -164,9 +205,17 @@ export default function CreateMultiSigModal({
 
   return (
     <>
-      <Button type="primary" style={{ marginRight: 10 }} onClick={showCreateModal}>
-        Create
-      </Button>
+      {reDeployWallet === undefined && (
+        <Button type="primary" onClick={showCreateModal}>
+          Create
+        </Button>
+      )}
+
+      {reDeployWallet !== undefined && (
+        <Button type="primary" onClick={showCreateModal} danger>
+          Re-Deploy
+        </Button>
+      )}
       <Modal
         title="Create Multi-Sig Wallet"
         visible={isCreateModalVisible}
@@ -175,8 +224,14 @@ export default function CreateMultiSigModal({
           <Button key="back" onClick={handleCancel}>
             Cancel
           </Button>,
-          <Button key="submit" type="primary" loading={pendingCreate} onClick={handleSubmit}>
-            Create
+          <Button
+            key="submit"
+            type="primary"
+            loading={pendingCreate}
+            onClick={handleSubmit}
+            danger={reDeployWallet !== undefined}
+          >
+            {reDeployWallet === undefined ? "Create" : "Deploy"}
           </Button>,
         ]}
       >
@@ -190,11 +245,12 @@ export default function CreateMultiSigModal({
           />
         )}
         <div style={{ display: "flex", flexDirection: "column", gap: "1rem" }}>
-          {/* <Input
-            placeholder="Paste multiple addresses with comma"
-            onChange={addMultipleAddress}
-            value={multipleAddress}
-          /> */}
+          <Input
+            placeholder="Enter wallet name"
+            onChange={event => setWalletName(event.target.value)}
+            value={reDeployWallet !== undefined ? reDeployWallet["walletName"] : walletName}
+            disabled={reDeployWallet !== undefined}
+          />
 
           {owners.map((owner, index) => (
             <div key={index} style={{ display: "flex", gap: "1rem" }}>
@@ -236,6 +292,18 @@ export default function CreateMultiSigModal({
               onChange={setAmount}
             />
           </div>
+          {/* <Button
+            type="primary"
+            onClick={async () => {
+              const id = ethers.utils.id(String(address) + "N");
+              const hash = ethers.utils.keccak256(id);
+              const salt = hexZeroPad(hexlify(hash), 32);
+              let caddress = await writeContracts[contractName].computedAddress(salt, "N2");
+              console.log("caddress: ", caddress);
+            }}
+          >
+            computed address
+          </Button> */}
         </div>
       </Modal>
     </>

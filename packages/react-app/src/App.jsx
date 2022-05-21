@@ -37,6 +37,7 @@ import deployedContracts from "./contracts/hardhat_contracts.json";
 import { Transactor, Web3ModalSetup } from "./helpers";
 import { Home, Hints, Subgraph, CreateTransaction, Transactions } from "./views";
 import { useStaticJsonRPC, useLocalStorage } from "./hooks";
+import axios from "axios";
 
 const { Option } = Select;
 const { ethers } = require("ethers");
@@ -55,10 +56,11 @@ const web3Modal = Web3ModalSetup();
 const multiSigWalletABI = [
   {
     inputs: [
-      { internalType: "uint256", name: "_chainId", type: "uint256" },
-      { internalType: "address[]", name: "_owners", type: "address[]" },
-      { internalType: "uint256", name: "_signaturesRequired", type: "uint256" },
-      { internalType: "address", name: "_factory", type: "address" },
+      {
+        internalType: "string",
+        name: "_name",
+        type: "string",
+      },
     ],
     stateMutability: "payable",
     type: "constructor",
@@ -66,9 +68,24 @@ const multiSigWalletABI = [
   {
     anonymous: false,
     inputs: [
-      { indexed: true, internalType: "address", name: "sender", type: "address" },
-      { indexed: false, internalType: "uint256", name: "amount", type: "uint256" },
-      { indexed: false, internalType: "uint256", name: "balance", type: "uint256" },
+      {
+        indexed: true,
+        internalType: "address",
+        name: "sender",
+        type: "address",
+      },
+      {
+        indexed: false,
+        internalType: "uint256",
+        name: "amount",
+        type: "uint256",
+      },
+      {
+        indexed: false,
+        internalType: "uint256",
+        name: "balance",
+        type: "uint256",
+      },
     ],
     name: "Deposit",
     type: "event",
@@ -76,13 +93,48 @@ const multiSigWalletABI = [
   {
     anonymous: false,
     inputs: [
-      { indexed: true, internalType: "address", name: "owner", type: "address" },
-      { indexed: false, internalType: "address payable", name: "to", type: "address" },
-      { indexed: false, internalType: "uint256", name: "value", type: "uint256" },
-      { indexed: false, internalType: "bytes", name: "data", type: "bytes" },
-      { indexed: false, internalType: "uint256", name: "nonce", type: "uint256" },
-      { indexed: false, internalType: "bytes32", name: "hash", type: "bytes32" },
-      { indexed: false, internalType: "bytes", name: "result", type: "bytes" },
+      {
+        indexed: true,
+        internalType: "address",
+        name: "owner",
+        type: "address",
+      },
+      {
+        indexed: false,
+        internalType: "address payable",
+        name: "to",
+        type: "address",
+      },
+      {
+        indexed: false,
+        internalType: "uint256",
+        name: "value",
+        type: "uint256",
+      },
+      {
+        indexed: false,
+        internalType: "bytes",
+        name: "data",
+        type: "bytes",
+      },
+      {
+        indexed: false,
+        internalType: "uint256",
+        name: "nonce",
+        type: "uint256",
+      },
+      {
+        indexed: false,
+        internalType: "bytes32",
+        name: "hash",
+        type: "bytes32",
+      },
+      {
+        indexed: false,
+        internalType: "bytes",
+        name: "result",
+        type: "bytes",
+      },
     ],
     name: "ExecuteTransaction",
     type: "event",
@@ -90,16 +142,34 @@ const multiSigWalletABI = [
   {
     anonymous: false,
     inputs: [
-      { indexed: true, internalType: "address", name: "owner", type: "address" },
-      { indexed: false, internalType: "bool", name: "added", type: "bool" },
+      {
+        indexed: true,
+        internalType: "address",
+        name: "owner",
+        type: "address",
+      },
+      {
+        indexed: false,
+        internalType: "bool",
+        name: "added",
+        type: "bool",
+      },
     ],
     name: "Owner",
     type: "event",
   },
   {
     inputs: [
-      { internalType: "address", name: "newSigner", type: "address" },
-      { internalType: "uint256", name: "newSignaturesRequired", type: "uint256" },
+      {
+        internalType: "address",
+        name: "newSigner",
+        type: "address",
+      },
+      {
+        internalType: "uint256",
+        name: "newSignaturesRequired",
+        type: "uint256",
+      },
     ],
     name: "addSigner",
     outputs: [],
@@ -109,69 +179,212 @@ const multiSigWalletABI = [
   {
     inputs: [],
     name: "chainId",
-    outputs: [{ internalType: "uint256", name: "", type: "uint256" }],
+    outputs: [
+      {
+        internalType: "uint256",
+        name: "",
+        type: "uint256",
+      },
+    ],
     stateMutability: "view",
     type: "function",
   },
   {
     inputs: [
-      { internalType: "address payable", name: "to", type: "address" },
-      { internalType: "uint256", name: "value", type: "uint256" },
-      { internalType: "bytes", name: "data", type: "bytes" },
-      { internalType: "bytes[]", name: "signatures", type: "bytes[]" },
+      {
+        internalType: "address payable",
+        name: "to",
+        type: "address",
+      },
+      {
+        internalType: "uint256",
+        name: "value",
+        type: "uint256",
+      },
+      {
+        internalType: "bytes",
+        name: "data",
+        type: "bytes",
+      },
+      {
+        internalType: "bytes[]",
+        name: "signatures",
+        type: "bytes[]",
+      },
     ],
     name: "executeTransaction",
-    outputs: [{ internalType: "bytes", name: "", type: "bytes" }],
+    outputs: [
+      {
+        internalType: "bytes",
+        name: "",
+        type: "bytes",
+      },
+    ],
     stateMutability: "nonpayable",
     type: "function",
   },
   {
     inputs: [
-      { internalType: "uint256", name: "_nonce", type: "uint256" },
-      { internalType: "address", name: "to", type: "address" },
-      { internalType: "uint256", name: "value", type: "uint256" },
-      { internalType: "bytes", name: "data", type: "bytes" },
+      {
+        internalType: "uint256",
+        name: "_nonce",
+        type: "uint256",
+      },
+      {
+        internalType: "address",
+        name: "to",
+        type: "address",
+      },
+      {
+        internalType: "uint256",
+        name: "value",
+        type: "uint256",
+      },
+      {
+        internalType: "bytes",
+        name: "data",
+        type: "bytes",
+      },
     ],
     name: "getTransactionHash",
-    outputs: [{ internalType: "bytes32", name: "", type: "bytes32" }],
+    outputs: [
+      {
+        internalType: "bytes32",
+        name: "",
+        type: "bytes32",
+      },
+    ],
     stateMutability: "view",
     type: "function",
   },
   {
-    inputs: [{ internalType: "address", name: "", type: "address" }],
+    inputs: [
+      {
+        internalType: "uint256",
+        name: "_chainId",
+        type: "uint256",
+      },
+      {
+        internalType: "address[]",
+        name: "_owners",
+        type: "address[]",
+      },
+      {
+        internalType: "uint256",
+        name: "_signaturesRequired",
+        type: "uint256",
+      },
+      {
+        internalType: "address",
+        name: "_factory",
+        type: "address",
+      },
+    ],
+    name: "init",
+    outputs: [],
+    stateMutability: "payable",
+    type: "function",
+  },
+  {
+    inputs: [
+      {
+        internalType: "address",
+        name: "",
+        type: "address",
+      },
+    ],
     name: "isOwner",
-    outputs: [{ internalType: "bool", name: "", type: "bool" }],
+    outputs: [
+      {
+        internalType: "bool",
+        name: "",
+        type: "bool",
+      },
+    ],
+    stateMutability: "view",
+    type: "function",
+  },
+  {
+    inputs: [],
+    name: "name",
+    outputs: [
+      {
+        internalType: "string",
+        name: "",
+        type: "string",
+      },
+    ],
     stateMutability: "view",
     type: "function",
   },
   {
     inputs: [],
     name: "nonce",
-    outputs: [{ internalType: "uint256", name: "", type: "uint256" }],
-    stateMutability: "view",
-    type: "function",
-  },
-  {
-    inputs: [{ internalType: "uint256", name: "", type: "uint256" }],
-    name: "owners",
-    outputs: [{ internalType: "address", name: "", type: "address" }],
+    outputs: [
+      {
+        internalType: "uint256",
+        name: "",
+        type: "uint256",
+      },
+    ],
     stateMutability: "view",
     type: "function",
   },
   {
     inputs: [
-      { internalType: "bytes32", name: "_hash", type: "bytes32" },
-      { internalType: "bytes", name: "_signature", type: "bytes" },
+      {
+        internalType: "uint256",
+        name: "",
+        type: "uint256",
+      },
+    ],
+    name: "owners",
+    outputs: [
+      {
+        internalType: "address",
+        name: "",
+        type: "address",
+      },
+    ],
+    stateMutability: "view",
+    type: "function",
+  },
+  {
+    inputs: [
+      {
+        internalType: "bytes32",
+        name: "_hash",
+        type: "bytes32",
+      },
+      {
+        internalType: "bytes",
+        name: "_signature",
+        type: "bytes",
+      },
     ],
     name: "recover",
-    outputs: [{ internalType: "address", name: "", type: "address" }],
+    outputs: [
+      {
+        internalType: "address",
+        name: "",
+        type: "address",
+      },
+    ],
     stateMutability: "pure",
     type: "function",
   },
   {
     inputs: [
-      { internalType: "address", name: "oldSigner", type: "address" },
-      { internalType: "uint256", name: "newSignaturesRequired", type: "uint256" },
+      {
+        internalType: "address",
+        name: "oldSigner",
+        type: "address",
+      },
+      {
+        internalType: "uint256",
+        name: "newSignaturesRequired",
+        type: "uint256",
+      },
     ],
     name: "removeSigner",
     outputs: [],
@@ -181,18 +394,33 @@ const multiSigWalletABI = [
   {
     inputs: [],
     name: "signaturesRequired",
-    outputs: [{ internalType: "uint256", name: "", type: "uint256" }],
+    outputs: [
+      {
+        internalType: "uint256",
+        name: "",
+        type: "uint256",
+      },
+    ],
     stateMutability: "view",
     type: "function",
   },
   {
-    inputs: [{ internalType: "uint256", name: "newSignaturesRequired", type: "uint256" }],
+    inputs: [
+      {
+        internalType: "uint256",
+        name: "newSignaturesRequired",
+        type: "uint256",
+      },
+    ],
     name: "updateSignaturesRequired",
     outputs: [],
     stateMutability: "nonpayable",
     type: "function",
   },
-  { stateMutability: "payable", type: "receive" },
+  {
+    stateMutability: "payable",
+    type: "receive",
+  },
 ];
 
 // 🛰 providers
@@ -210,6 +438,8 @@ function App(props) {
   const [injectedProvider, setInjectedProvider] = useState();
   const [address, setAddress] = useState();
   const [selectedNetwork, setSelectedNetwork] = useState(networkOptions[0]);
+  const [userWallets, setUserWallets] = useState([]);
+  const [reDeployWallet, setReDeployWallet] = useState(undefined);
   const location = useLocation();
 
   const cachedNetwork = window.localStorage.getItem("network");
@@ -317,28 +547,44 @@ function App(props) {
   },[userSigner])
   */
 
+  // useEffect(() => {
+  //   if (address) {
+  //     let multiSigsForUser = ownersMultiSigEvents.reduce((filtered, createEvent) => {
+  //       if (createEvent.args.owners.includes(address) && !filtered.includes(createEvent.args.contractAddress)) {
+  //         filtered.push(createEvent.args.contractAddress);
+  //       }
+
+  //       return filtered;
+  //     }, []);
+
+  //     if (importedMultiSigs && importedMultiSigs[targetNetwork.name]) {
+  //       multiSigsForUser = [...new Set([...importedMultiSigs[targetNetwork.name], ...multiSigsForUser])];
+  //     }
+
+  //     if (multiSigsForUser.length > 0 && multiSigsForUser.length !== multiSigs.length) {
+  //       const recentMultiSigAddress = multiSigsForUser[multiSigsForUser.length - 1];
+  //       if (recentMultiSigAddress !== currentMultiSigAddress) setContractNameForEvent(null);
+  //       setCurrentMultiSigAddress(recentMultiSigAddress);
+  //       setMultiSigs(multiSigsForUser);
+  //     }
+  //   }
+  // }, [ownersMultiSigEvents, address]);
+
+  /**----------------------
+   * load user sig wallets data from api
+   * ---------------------*/
   useEffect(() => {
     if (address) {
-      let multiSigsForUser = ownersMultiSigEvents.reduce((filtered, createEvent) => {
-        if (createEvent.args.owners.includes(address) && !filtered.includes(createEvent.args.contractAddress)) {
-          filtered.push(createEvent.args.contractAddress);
-        }
-
-        return filtered;
-      }, []);
+      let multiSigsForUser = [...userWallets.map(data => data.walletAddress)];
 
       if (importedMultiSigs && importedMultiSigs[targetNetwork.name]) {
         multiSigsForUser = [...new Set([...importedMultiSigs[targetNetwork.name], ...multiSigsForUser])];
       }
-
-      if (multiSigsForUser.length > 0 && multiSigsForUser.length !== multiSigs.length) {
-        const recentMultiSigAddress = multiSigsForUser[multiSigsForUser.length - 1];
-        if (recentMultiSigAddress !== currentMultiSigAddress) setContractNameForEvent(null);
-        setCurrentMultiSigAddress(recentMultiSigAddress);
-        setMultiSigs(multiSigsForUser);
-      }
+      const recentMultiSigAddress = multiSigsForUser[multiSigsForUser.length - 1];
+      setCurrentMultiSigAddress(recentMultiSigAddress);
+      setMultiSigs(multiSigsForUser);
     }
-  }, [ownersMultiSigEvents, address]);
+  }, [userWallets.length, address]);
 
   const [signaturesRequired, setSignaturesRequired] = useState();
   const [nonce, setNonce] = useState(0);
@@ -361,14 +607,19 @@ function App(props) {
       setNonce(nonce);
     }
 
-    if (currentMultiSigAddress) {
+    let currentMultiSig = userWallets.find(data => data.walletAddress === currentMultiSigAddress);
+    let currentMultiSigChainIds = currentMultiSig?.chainIds;
+
+    // on load contracts if current sig on  same chain id
+    if (currentMultiSigAddress && currentMultiSigChainIds?.includes(selectedChainId)) {
       readContracts.MultiSigWallet = new ethers.Contract(currentMultiSigAddress, multiSigWalletABI, localProvider);
       writeContracts.MultiSigWallet = new ethers.Contract(currentMultiSigAddress, multiSigWalletABI, userSigner);
-
       setContractNameForEvent("MultiSigWallet");
       getContractValues();
+    } else {
+      setReDeployWallet(currentMultiSig);
     }
-  }, [currentMultiSigAddress, readContracts, writeContracts]);
+  }, [currentMultiSigAddress, readContracts, writeContracts, selectedChainId]);
 
   // MultiSigWallet Events:
   const allExecuteTransactionEvents = useEventListener(
@@ -452,6 +703,19 @@ function App(props) {
       loadWeb3Modal();
     }
   }, [loadWeb3Modal]);
+
+  /**----------------------
+   * LOAD THE USER WALLETS DATA
+   * ---------------------*/
+
+  const getUserWallets = async () => {
+    let res = await axios.get(BACKEND_URL + `getWallets/${address}`);
+    let data = res.data;
+    setUserWallets(data["userWallets"]);
+  };
+  useEffect(() => {
+    getUserWallets();
+  }, [address]);
 
   const faucetAvailable = localProvider && localProvider.connection && targetNetwork.name.indexOf("local") !== -1;
 
@@ -546,6 +810,8 @@ function App(props) {
         <div className="flex justify-start items-center p-2 mt-2  ">
           <div>
             <CreateMultiSigModal
+              reDeployWallet={reDeployWallet}
+              poolServerUrl={BACKEND_URL}
               price={price}
               selectedChainId={selectedChainId}
               mainnetProvider={mainnetProvider}
@@ -555,6 +821,7 @@ function App(props) {
               contractName={"MultiSigFactory"}
               isCreateModalVisible={isCreateModalVisible}
               setIsCreateModalVisible={setIsCreateModalVisible}
+              getUserWallets={getUserWallets}
             />
           </div>
 
@@ -576,11 +843,22 @@ function App(props) {
               style={{ width: 120, marginRight: 5 }}
               onChange={handleMultiSigChange}
             >
-              {multiSigs.map((address, index) => (
-                <Option key={index} value={address}>
-                  {address}
-                </Option>
-              ))}
+              {/* {multiSigs.map((address, index) => {
+                return (
+                  <Option key={index} value={address}>
+                    {address}
+                  </Option>
+                );
+              })} */}
+
+              {userWallets.length > 0 &&
+                userWallets.map((data, index) => {
+                  return (
+                    <Option key={index} value={data.walletAddress}>
+                      {data.walletName}
+                    </Option>
+                  );
+                })}
             </Select>
             {networkSelect}
           </div>
@@ -693,6 +971,7 @@ function App(props) {
         writeContracts={writeContracts}
         yourLocalBalance={yourLocalBalance}
         key={currentMultiSigAddress}
+        reDeployWallet={reDeployWallet}
       />
 
       <ThemeSwitch />

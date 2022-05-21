@@ -34,6 +34,7 @@ const Routes = ({
   BACKEND_URL,
   mainnetContracts,
   subgraphUri,
+  reDeployWallet,
 }) => {
   return (
     <>
@@ -69,6 +70,8 @@ const Routes = ({
               readContracts={readContracts}
               ownerEvents={ownerEvents}
               signaturesRequired={signaturesRequired}
+              poolServerUrl={BACKEND_URL}
+              reDeployWallet={reDeployWallet}
             />
           )}
         </Route>

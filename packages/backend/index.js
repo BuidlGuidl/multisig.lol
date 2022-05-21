@@ -6,6 +6,7 @@ var bodyParser = require("body-parser");
 var app = express();
 
 let transactions = {};
+let wallets = {};
 
 app.use(cors());
 
@@ -33,6 +34,66 @@ app.post("/", function (request, response) {
   transactions[key][request.body.hash] = request.body;
   console.log("transactions", transactions);
 });
+
+/**----------------------
+ * to get list
+ * ---------------------*/
+app.get("/getWallets/:ownerAddress", function (request, response) {
+  const { ownerAddress } = request.params;
+
+  if (wallets[ownerAddress] === undefined) {
+    wallets[ownerAddress] = [];
+  }
+
+  response.status(200).send({ userWallets: wallets[ownerAddress] });
+});
+
+/**----------------------
+ * to add a user wallet to a list
+ * ---------------------*/
+app.get(
+  "/createWallet/:ownerAddress/:walletName/:walletAddress/:chainId",
+  function (request, response) {
+    const { ownerAddress, walletName, walletAddress, chainId } = request.params;
+    console.log("wallets[ownerAddress]: ", wallets[ownerAddress]);
+
+    if (wallets[ownerAddress] === undefined) {
+      wallets[ownerAddress] = [];
+      wallets[ownerAddress].push({
+        walletName,
+        walletAddress,
+        chainIds: [chainId],
+      });
+    } else {
+      wallets[ownerAddress].push({
+        walletName,
+        walletAddress,
+        chainIds: [Number(chainId)],
+      });
+    }
+
+    response.status(200).send(wallets[ownerAddress]);
+  }
+);
+/**----------------------
+ * update a chainId for a address
+ * ---------------------*/
+app.get(
+  "/updateChainId/:ownerAddress/:walletAddress/:chainId",
+  function (request, response) {
+    const { ownerAddress, walletAddress, chainId } = request.params;
+
+    wallets[ownerAddress].map((data) => {
+      if (data.walletAddress === walletAddress) {
+        // data.chainIds.push(chainId);
+        data.chainIds = [...new Set([...data.chainIds, chainId])];
+      }
+      return data;
+    });
+
+    response.status(200).send(wallets[ownerAddress]);
+  }
+);
 
 if (fs.existsSync("server.key") && fs.existsSync("server.cert")) {
   https

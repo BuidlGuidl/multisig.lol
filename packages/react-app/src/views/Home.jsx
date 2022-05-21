@@ -2,6 +2,8 @@ import React from "react";
 import { Balance, Address, TransactionListItem, Owners } from "../components";
 import QR from "qrcode.react";
 import { List, Button } from "antd";
+import { useState } from "react";
+import { useEffect } from "react";
 
 function Home({
   contractAddress,
@@ -14,7 +16,18 @@ function Home({
   readContracts,
   ownerEvents,
   signaturesRequired,
+  reDeployWallet,
 }) {
+  const [walletName, setWalletName] = useState();
+  const getWalletName = async () => {
+    if (readContracts[contractName]) {
+      let walletName = await readContracts[contractName].name();
+      setWalletName(walletName);
+    }
+  };
+  useEffect(() => {
+    void getWalletName();
+  }, [readContracts[contractName]].address);
   return (
     <>
       <div
@@ -46,6 +59,8 @@ function Home({
                 imageSettings={{ excavate: false }}
               />
             </div>
+
+            <div className="text-2xl">{walletName}</div>
             <div
               // style={{ display: "flex", justifyContent: "center" }}
               className=""
@@ -79,14 +94,16 @@ function Home({
 
           className="my-5"
         >
-          <Button
-            type={"primary"}
-            onClick={() => {
-              window.location = "/create";
-            }}
-          >
-            Propose Transaction
-          </Button>
+          {reDeployWallet === undefined && (
+            <Button
+              type={"primary"}
+              onClick={() => {
+                window.location = "/create";
+              }}
+            >
+              Propose Transaction
+            </Button>
+          )}
         </div>
         <div className="flex justify-center items-center w-screen  ">
           <div className=" w-full md:w-1/2 ">

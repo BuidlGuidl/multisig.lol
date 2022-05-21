@@ -67,9 +67,4 @@ function Owners({ ownerEvents, signaturesRequired, mainnetProvider, blockExplore
   );
 }
 
-function CheckProps(preProps, nextProps) {
-  console.log("preProps,nextProps: ", preProps, nextProps);
-  return false;
-}
-
-export default React.memo(Owners, CheckProps);
+export default React.memo(Owners);
