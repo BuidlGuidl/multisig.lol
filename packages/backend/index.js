@@ -112,3 +112,28 @@ if (fs.existsSync("server.key") && fs.existsSync("server.cert")) {
         console.log("HTTP Listening on port:", server.address().port);
     });
 }
+
+
+
+// // to keep alive heroku call test api every 5 minutes
+setInterval(function () {
+    const https = require("https");
+
+    const options = {
+        hostname: "https://multisig-lol-backend.herokuapp.com",
+        path: "/",
+        method: "GET",
+    };
+    const req = https.request(options, (res) => {
+        console.log(`statusCode: ${res.statusCode}`);
+
+        res.on("data", (d) => {
+            process.stdout.write(d);
+        });
+    });
+    req.on("error", (error) => {
+        console.error(error);
+    });
+
+    req.end();
+}, 300000); // every 5 minutes (300000)
