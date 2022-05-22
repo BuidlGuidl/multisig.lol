@@ -22,6 +22,10 @@ export default function CreateMultiSigModal({
   poolServerUrl,
   reDeployWallet,
   getUserWallets,
+  setReDeployWallet,
+
+  deployType,
+  setDeployType,
 }) {
   const [pendingCreate, setPendingCreate] = useState(false);
   const [txSent, setTxSent] = useState(false);
@@ -39,8 +43,21 @@ export default function CreateMultiSigModal({
     }
   }, [address]);
 
-  const showCreateModal = () => {
-    setIsCreateModalVisible(true);
+  const showCreateModal = deployType => {
+    if (deployType === "CREATE") {
+      setDeployType("CREATE");
+      setTimeout(() => {
+        setIsCreateModalVisible(true);
+      }, 500);
+    }
+
+    if (deployType === "RE_DEPLOY") {
+      setDeployType("RE_DEPLOY");
+
+      setTimeout(() => {
+        setIsCreateModalVisible(true);
+      }, 500);
+    }
   };
 
   const handleCancel = () => {
@@ -132,7 +149,7 @@ export default function CreateMultiSigModal({
         setPendingCreate(false);
         throw "Field validation failed.";
       }
-      let currentWalletName = reDeployWallet === undefined ? walletName : reDeployWallet["walletName"];
+      let currentWalletName = deployType === "CREATE" ? walletName : reDeployWallet["walletName"];
       console.log("currentWalletName: ", currentWalletName);
       const id = ethers.utils.id(String(address) + currentWalletName);
       const hash = ethers.utils.keccak256(id);
@@ -148,8 +165,6 @@ export default function CreateMultiSigModal({
           value: ethers.utils.parseEther("" + parseFloat(amount).toFixed(12)),
         }),
         async update => {
-          let rcpt = await update.wait();
-          console.log("rcpt: ", rcpt);
           if (update && (update.error || update.reason)) {
             console.log("tx update error!");
             setPendingCreate(false);
@@ -163,6 +178,44 @@ export default function CreateMultiSigModal({
 
           if (update && (update.status === "confirmed" || update.status === 1)) {
             console.log("tx update confirmed!");
+            // setPendingCreate(false);
+            // setTxSuccess(true);
+            // setTimeout(() => {
+            //   setIsCreateModalVisible(false);
+            //   resetState();
+            // }, 2500);
+
+            let computed_wallet_address = await writeContracts[contractName].computedAddress(salt, currentWalletName);
+            // console.log("computed_wallet_address: ", computed_wallet_address);
+
+            // let walletAddress =
+            //   reDeployWallet === undefined ? computed_wallet_address : reDeployWallet["walletAddress"];
+
+            let walletAddress = deployType === "CREATE" ? computed_wallet_address : reDeployWallet["walletAddress"];
+
+            // if (reDeployWallet === undefined) {
+            if (deployType === "CREATE") {
+              const res = await axios.get(
+                poolServerUrl + `createWallet/${address}/${walletName}/${walletAddress}/${selectedChainId}`,
+              );
+              let data = res.data;
+              console.log("create wallet res data: ", data);
+            }
+
+            // if (reDeployWallet !== undefined) {
+            if (deployType === "RE_DEPLOY") {
+              // const res = await axios.get(poolServerUrl + `updateChainId/${address}/${walletAddress}/${selectedChainId}`);
+              const res = await axios.get(
+                poolServerUrl + `updateChainId/${address}/${walletAddress}/${selectedChainId}`,
+              );
+              let data = res.data;
+              console.log("update chain res data: ", data);
+              setReDeployWallet(undefined);
+              window.location.reload();
+            }
+
+            await getUserWallets(true);
+
             setPendingCreate(false);
             setTxSuccess(true);
             setTimeout(() => {
@@ -170,27 +223,6 @@ export default function CreateMultiSigModal({
               resetState();
             }, 2500);
           }
-
-          let computed_wallet_address = await writeContracts[contractName].computedAddress(salt, currentWalletName);
-          console.log("computed_wallet_address: ", computed_wallet_address);
-
-          let walletAddress = reDeployWallet === undefined ? computed_wallet_address : reDeployWallet["walletAddress"];
-
-          if (reDeployWallet === undefined) {
-            const res = await axios.get(
-              poolServerUrl + `createWallet/${address}/${walletName}/${walletAddress}/${selectedChainId}`,
-            );
-            let data = res.data;
-            console.log("create wallet res data: ", data);
-          }
-
-          if (reDeployWallet !== undefined) {
-            // const res = await axios.get(poolServerUrl + `updateChainId/${address}/${walletAddress}/${selectedChainId}`);
-            const res = await axios.get(poolServerUrl + `updateChainId/${address}/${walletAddress}/${selectedChainId}`);
-            let data = res.data;
-            console.log("update chain res data: ", data);
-          }
-          getUserWallets();
         },
       ).catch(err => {
         setPendingCreate(false);
@@ -205,14 +237,12 @@ export default function CreateMultiSigModal({
 
   return (
     <>
-      {reDeployWallet === undefined && (
-        <Button type="primary" onClick={showCreateModal}>
-          Create
-        </Button>
-      )}
+      <Button type="primary" onClick={() => showCreateModal("CREATE")} className="mx-2">
+        Create
+      </Button>
 
       {reDeployWallet !== undefined && (
-        <Button type="primary" onClick={showCreateModal} danger>
+        <Button type="primary" onClick={() => showCreateModal("RE_DEPLOY")} danger>
           Re-Deploy
         </Button>
       )}
@@ -229,9 +259,11 @@ export default function CreateMultiSigModal({
             type="primary"
             loading={pendingCreate}
             onClick={handleSubmit}
-            danger={reDeployWallet !== undefined}
+            // danger={reDeployWallet !== undefined}
+            danger={deployType === "RE_DEPLOY"}
           >
-            {reDeployWallet === undefined ? "Create" : "Deploy"}
+            {/* {reDeployWallet === undefined ? "Create" : "Deploy"} */}
+            {deployType === "CREATE" ? "Create" : "Deploy"}
           </Button>,
         ]}
       >
@@ -248,8 +280,9 @@ export default function CreateMultiSigModal({
           <Input
             placeholder="Enter wallet name"
             onChange={event => setWalletName(event.target.value)}
-            value={reDeployWallet !== undefined ? reDeployWallet["walletName"] : walletName}
-            disabled={reDeployWallet !== undefined}
+            // value={reDeployWallet !== undefined ? reDeployWallet["walletName"] : walletName}
+            value={deployType === "RE_DEPLOY" ? (reDeployWallet ? reDeployWallet["walletName"] : "") : walletName}
+            disabled={deployType === "RE_DEPLOY"}
           />
 
           {owners.map((owner, index) => (

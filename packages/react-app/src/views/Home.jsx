@@ -19,8 +19,9 @@ function Home({
   reDeployWallet,
 }) {
   const [walletName, setWalletName] = useState();
+
   const getWalletName = async () => {
-    if (readContracts[contractName]) {
+    if (readContracts[contractName] && reDeployWallet === undefined) {
       let walletName = await readContracts[contractName].name();
       setWalletName(walletName);
     }

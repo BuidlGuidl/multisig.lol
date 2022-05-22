@@ -20,7 +20,8 @@ function Owners({ ownerEvents, signaturesRequired, mainnetProvider, blockExplore
   return (
     <div>
       <h2 style={{ marginTop: 32 }}>
-        Signatures Required: {signaturesRequired ? signaturesRequired.toNumber() : <Spin></Spin>}
+        Signatures Required:{" "}
+        {signaturesRequired && ownerEvents.length !== 0 ? signaturesRequired.toNumber() : <Spin></Spin>}
       </h2>
       <List
         header={<h2>Owners</h2>}

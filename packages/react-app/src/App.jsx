@@ -53,6 +53,7 @@ const USE_NETWORK_SELECTOR = false;
 
 const web3Modal = Web3ModalSetup();
 
+console.log("hardhat_contract.json", deployedContracts["4"]);
 const multiSigWalletABI = [
   {
     inputs: [
@@ -440,6 +441,7 @@ function App(props) {
   const [selectedNetwork, setSelectedNetwork] = useState(networkOptions[0]);
   const [userWallets, setUserWallets] = useState([]);
   const [reDeployWallet, setReDeployWallet] = useState(undefined);
+  const [deployType, setDeployType] = useState("CREATE");
   const location = useLocation();
 
   const cachedNetwork = window.localStorage.getItem("network");
@@ -447,8 +449,10 @@ function App(props) {
 
   // backend transaction handler:
   let BACKEND_URL = "http://localhost:49899/";
+  // let BACKEND_URL = "https://multisig-lol-backend.herokuapp.com/";
   if (targetNetwork && targetNetwork.name && targetNetwork.name != "localhost") {
-    BACKEND_URL = "https://backend.multisig.lol:49899/";
+    // BACKEND_URL = "https://backend.multisig.lol:49899/";
+    BACKEND_URL = "https://multisig-lol-backend.herokuapp.com/"; // naim heroku backend
   }
 
   if (!targetNetwork) targetNetwork = NETWORKS["localhost"];
@@ -514,7 +518,9 @@ function App(props) {
 
   // const contractConfig = useContractConfig();
 
-  const contractConfig = { deployedContracts: deployedContracts || {}, externalContracts: externalContracts || {} };
+  // disabled externalContracts as it is taking old factory address or abi
+  // const contractConfig = { deployedContracts: deployedContracts || {}, externalContracts: externalContracts || {} };
+  const contractConfig = { deployedContracts: deployedContracts || {} };
 
   // Load in your local 📝 contract and read a value from it:
   const readContracts = useContractLoader(localProvider, contractConfig);
@@ -589,8 +595,12 @@ function App(props) {
   const [signaturesRequired, setSignaturesRequired] = useState();
   const [nonce, setNonce] = useState(0);
 
-  const signaturesRequiredContract = useContractReader(readContracts, contractName, "signaturesRequired");
-  const nonceContract = useContractReader(readContracts, contractName, "nonce");
+  const signaturesRequiredContract = useContractReader(
+    reDeployWallet === undefined ? readContracts : null,
+    contractName,
+    "signaturesRequired",
+  );
+  const nonceContract = useContractReader(reDeployWallet === undefined ? readContracts : null, contractName, "nonce");
   useEffect(() => {
     setSignaturesRequired(signaturesRequiredContract);
     setNonce(nonceContract);
@@ -611,11 +621,12 @@ function App(props) {
     let currentMultiSigChainIds = currentMultiSig?.chainIds;
 
     // on load contracts if current sig on  same chain id
-    if (currentMultiSigAddress && currentMultiSigChainIds?.includes(selectedChainId)) {
+    if (currentMultiSigAddress && currentMultiSigChainIds.map(id => Number(id))?.includes(Number(selectedChainId))) {
       readContracts.MultiSigWallet = new ethers.Contract(currentMultiSigAddress, multiSigWalletABI, localProvider);
       writeContracts.MultiSigWallet = new ethers.Contract(currentMultiSigAddress, multiSigWalletABI, userSigner);
       setContractNameForEvent("MultiSigWallet");
       getContractValues();
+      setReDeployWallet(undefined);
     } else {
       setReDeployWallet(currentMultiSig);
     }
@@ -623,7 +634,7 @@ function App(props) {
 
   // MultiSigWallet Events:
   const allExecuteTransactionEvents = useEventListener(
-    currentMultiSigAddress ? readContracts : null,
+    currentMultiSigAddress && reDeployWallet === undefined ? readContracts : null,
     contractNameForEvent,
     "ExecuteTransaction",
     localProvider,
@@ -632,7 +643,7 @@ function App(props) {
   if (DEBUG) console.log("📟 executeTransactionEvents:", allExecuteTransactionEvents);
 
   const allOwnerEvents = useEventListener(
-    currentMultiSigAddress ? readContracts : null,
+    currentMultiSigAddress && reDeployWallet === undefined ? readContracts : null,
     contractNameForEvent,
     "Owner",
     localProvider,
@@ -645,7 +656,7 @@ function App(props) {
 
   useEffect(() => {
     setOwnerEvents(allOwnerEvents.filter(contractEvent => contractEvent.address === currentMultiSigAddress));
-  }, [allOwnerEvents, currentMultiSigAddress]);
+  }, [allOwnerEvents, currentMultiSigAddress, allOwnerEvents.length]);
 
   useEffect(() => {
     const filteredEvents = allExecuteTransactionEvents.filter(
@@ -708,13 +719,24 @@ function App(props) {
    * LOAD THE USER WALLETS DATA
    * ---------------------*/
 
-  const getUserWallets = async () => {
+  const getUserWallets = async isUpdate => {
     let res = await axios.get(BACKEND_URL + `getWallets/${address}`);
     let data = res.data;
     setUserWallets(data["userWallets"]);
+
+    if (isUpdate) {
+      const lastMultiSigAddress = data["userWallets"][data["userWallets"].length - 1]?.walletAddress;
+      setCurrentMultiSigAddress(lastMultiSigAddress);
+      setContractNameForEvent(null);
+      setIsCreateModalVisible(false);
+
+      setTimeout(() => {
+        setContractNameForEvent("MultiSigWallet");
+      }, 10);
+    }
   };
   useEffect(() => {
-    getUserWallets();
+    getUserWallets(false);
   }, [address]);
 
   const faucetAvailable = localProvider && localProvider.connection && targetNetwork.name.indexOf("local") !== -1;
@@ -811,6 +833,7 @@ function App(props) {
           <div>
             <CreateMultiSigModal
               reDeployWallet={reDeployWallet}
+              setReDeployWallet={setReDeployWallet}
               poolServerUrl={BACKEND_URL}
               price={price}
               selectedChainId={selectedChainId}
@@ -822,6 +845,8 @@ function App(props) {
               isCreateModalVisible={isCreateModalVisible}
               setIsCreateModalVisible={setIsCreateModalVisible}
               getUserWallets={getUserWallets}
+              deployType={deployType}
+              setDeployType={setDeployType}
             />
           </div>
 
