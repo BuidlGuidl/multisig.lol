@@ -45,7 +45,6 @@ export default function Balance(props) {
     async function getBalance() {
       if (provider && address) {
         const newBalance = await provider.getBalance(address);
-        console.log("n-newBalance: ", newBalance.toNumber(), provider);
         if (!newBalance.eq(balance ?? zero)) {
           setBalance(newBalance);
         }
