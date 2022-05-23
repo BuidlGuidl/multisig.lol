@@ -171,7 +171,7 @@ export default function TransactionListItem({
       />
       {
         // <List.Item key={item.hash} style={{ position: "relative", display: "flex", flexWrap: "wrap", width: 800 }}>
-        <List.Item key={item.hash}>
+        <List.Item style={{ border: 0 }} key={item.hash} className="b--red m-5 ">
           <>
             <a href={blockExplorer + "tx/" + item.hash} target="_blank">
               <b style={{ padding: 16 }}>#{typeof item.nonce === "number" ? item.nonce : item.nonce.toNumber()}</b>

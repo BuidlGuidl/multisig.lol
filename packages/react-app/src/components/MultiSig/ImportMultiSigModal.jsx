@@ -80,7 +80,7 @@ export default function ImportMultiSigModal({
 
   return (
     <>
-      <Button type="link" onClick={() => setIsModalVisible(true)}>
+      <Button type="primary" ghost onClick={() => setIsModalVisible(true)}>
         Import
       </Button>
       <Modal

@@ -118,11 +118,11 @@ function Home({
           {reDeployWallet === undefined && (
             <div className=" w-full md:w-1/2 ">
               <List
-                bordered
+                // bordered
                 dataSource={executeTransactionEvents}
                 renderItem={item => {
                   return (
-                    <div>
+                    <div className="border-2 rounded-3xl shadow-md mt-4">
                       <TransactionListItem
                         item={Object.create(item)}
                         mainnetProvider={mainnetProvider}

@@ -257,7 +257,7 @@ export default function CreateMultiSigModal({
       </Button>
 
       {reDeployWallet !== undefined && (
-        <Button type="primary" onClick={() => showCreateModal("RE_DEPLOY")} ghost>
+        <Button type="primary" onClick={() => showCreateModal("RE_DEPLOY")} ghost className="mx-2">
           Deploy {reDeployWallet["walletName"]} to {currentNetworkName}
         </Button>
       )}

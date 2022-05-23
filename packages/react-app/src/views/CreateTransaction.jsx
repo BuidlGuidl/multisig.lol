@@ -139,8 +139,11 @@ export default function CreateTransaction({
   };
 
   return (
-    <div>
-      <div style={{ border: "1px solid #cccccc", padding: 16, width: 400, margin: "auto", marginTop: 64 }}>
+    <div className="flex justify-center">
+      <div
+        // style={{ border: "1px solid #cccccc", padding: 16, width: 400, margin: "auto", marginTop: 64 }}
+        className="flex justify-center border-2 m-5 w-96 rounded-2xl shadow-md"
+      >
         <div style={{ margin: 8 }}>
           <div style={{ margin: 8, padding: 8 }}>
             <Select value={methodName} style={{ width: "100%" }} onChange={setMethodName}>

@@ -435,7 +435,8 @@ function App(props) {
   const [injectedProvider, setInjectedProvider] = useState();
   const [address, setAddress] = useState();
   const [selectedNetwork, setSelectedNetwork] = useState(networkOptions[0]);
-  const [userWallets, setUserWallets] = useState([]);
+  const [userWallets, setUserWallets] = useState(undefined);
+  const [walletsFetched, setWalletsFetched] = useState(undefined);
   const [reDeployWallet, setReDeployWallet] = useState(undefined);
   const [deployType, setDeployType] = useState("CREATE");
   const [updateServerWallets, setUpdateServerWallets] = useState(false);
@@ -582,16 +583,16 @@ function App(props) {
    * ---------------------*/
   useEffect(() => {
     if (address) {
-      let multiSigsForUser = [...userWallets.map(data => data.walletAddress)];
+      let multiSigsForUser = userWallets && [...userWallets.map(data => data.walletAddress)];
 
       if (importedMultiSigs && importedMultiSigs[targetNetwork.name]) {
         multiSigsForUser = [...new Set([...importedMultiSigs[targetNetwork.name], ...multiSigsForUser])];
       }
-      const recentMultiSigAddress = multiSigsForUser[multiSigsForUser.length - 1];
+      const recentMultiSigAddress = multiSigsForUser && multiSigsForUser[multiSigsForUser.length - 1];
       setCurrentMultiSigAddress(recentMultiSigAddress);
       setMultiSigs(multiSigsForUser);
     }
-  }, [userWallets.length, address]);
+  }, [userWallets && userWallets.length, address]);
 
   const [signaturesRequired, setSignaturesRequired] = useState();
   const [nonce, setNonce] = useState(0);
@@ -618,7 +619,7 @@ function App(props) {
       setNonce(nonce);
     }
 
-    let currentMultiSig = userWallets.find(data => data.walletAddress === currentMultiSigAddress);
+    let currentMultiSig = userWallets && userWallets.find(data => data.walletAddress === currentMultiSigAddress);
     let currentMultiSigChainIds = currentMultiSig?.chainIds;
 
     // on load contracts if current sig on  same chain id
@@ -675,38 +676,39 @@ function App(props) {
     // console.log('nonce: ', nonce);
 
     if (totalWalletCount !== 0 && totalWalletCount === walletCreateEvents.length && updateServerWallets === false) {
-      let walletsData = walletCreateEvents.map(data => data.args);
+      if (userWallets !== undefined && totalWalletCount !== userWallets.length) {
+        console.log("n-fetch now: ", userWallets.length);
 
-      /**----------------------
-       * iterating over create even data and send it to backend api to update
-       * ---------------------*/
-      for (let index = 0; index < walletsData.length; index++) {
-        let wallet = walletsData[index];
-        let walletName = wallet.name;
-        let walletAddress = wallet.contractAddress;
-        let creator = wallet.creator;
-        let owners = wallet.owners;
-        let signaturesRequired = wallet.signaturesRequired.toNumber();
-
-        let reqData = {
-          owners,
-          signaturesRequired,
-        };
-
-        const res = await axios.post(
-          BACKEND_URL + `createWallet/${creator}/${walletName}/${walletAddress}/${selectedChainId}`,
-          reqData,
-        );
-        let data = res.data;
-        console.log("update wallets on api res data: ", data);
+        let walletsData = walletCreateEvents.map(data => data.args);
+        /**----------------------
+         * iterating over create even data and send it to backend api to update
+         * ---------------------*/
+        for (let index = 0; index < walletsData.length; index++) {
+          let wallet = walletsData[index];
+          let walletName = wallet.name;
+          let walletAddress = wallet.contractAddress;
+          let creator = wallet.creator;
+          let owners = wallet.owners;
+          let signaturesRequired = wallet.signaturesRequired.toNumber();
+          let reqData = {
+            owners,
+            signaturesRequired,
+          };
+          const res = await axios.post(
+            BACKEND_URL + `createWallet/${creator}/${walletName}/${walletAddress}/${selectedChainId}`,
+            reqData,
+          );
+          let data = res.data;
+          console.log("update wallets on api res data: ", data);
+        }
+        setUpdateServerWallets(true);
       }
-      setUpdateServerWallets(true);
     }
   };
 
   useEffect(() => {
     void loadMissingWallets();
-  }, [walletCreateEvents.length]);
+  }, [walletCreateEvents.length, userWallets && userWallets.length]);
 
   // EXTERNAL CONTRACT EXAMPLE:
   // If you want to bring in the mainnet DAI contract it would look like:
@@ -763,6 +765,7 @@ function App(props) {
     let res = await axios.get(BACKEND_URL + `getWallets/${address}`);
     let data = res.data;
     setUserWallets(data["userWallets"]);
+    setWalletsFetched(true);
 
     if (isUpdate) {
       const lastMultiSigAddress = data["userWallets"][data["userWallets"].length - 1]?.walletAddress;
@@ -805,8 +808,9 @@ function App(props) {
 
   const networkSelect = (
     <Select
+      className="w-full text-left"
       defaultValue={targetNetwork.name}
-      style={{ textAlign: "left", width: 170 }}
+      // style={{ textAlign: "left", width: 170 }}
       onChange={value => {
         if (targetNetwork.chainId != NETWORKS[value].chainId) {
           window.localStorage.setItem("network", value);
@@ -871,7 +875,7 @@ function App(props) {
   const WalletActions = () => {
     return (
       <>
-        <div className="flex justify-start items-center p-2 my-2  ">
+        <div className="flex justify-start items-center p-2 my-2  flex-wrap ">
           <div>
             <CreateMultiSigModal
               reDeployWallet={reDeployWallet}
@@ -893,7 +897,7 @@ function App(props) {
             />
           </div>
 
-          <div>
+          <div className="m-2  w-16">
             <ImportMultiSigModal
               mainnetProvider={mainnetProvider}
               targetNetwork={targetNetwork}
@@ -906,10 +910,11 @@ function App(props) {
               poolServerUrl={BACKEND_URL}
             />
           </div>
-          <div>
+          <div className="m-2  w-28">
             <Select
+              className="w-full"
               value={[currentMultiSigAddress]}
-              style={{ width: 120, marginRight: 5 }}
+              // style={{ width: 120, marginRight: 5 }}
               onChange={handleMultiSigChange}
             >
               {/* {multiSigs.map((address, index) => {
@@ -920,7 +925,8 @@ function App(props) {
                 );
               })} */}
 
-              {userWallets.length > 0 &&
+              {userWallets &&
+                userWallets.length > 0 &&
                 userWallets.map((data, index) => {
                   return (
                     <Option key={index} value={data.walletAddress}>
@@ -929,8 +935,8 @@ function App(props) {
                   );
                 })}
             </Select>
-            {networkSelect}
           </div>
+          <div className="m-2  w-28 ">{networkSelect}</div>
         </div>
       </>
     );
