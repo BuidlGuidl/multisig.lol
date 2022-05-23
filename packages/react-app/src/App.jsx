@@ -53,376 +53,11 @@ const USE_NETWORK_SELECTOR = false;
 
 const web3Modal = Web3ModalSetup();
 
-console.log("hardhat_contract.json", deployedContracts["4"]);
-const multiSigWalletABI = [
-  {
-    inputs: [
-      {
-        internalType: "string",
-        name: "_name",
-        type: "string",
-      },
-    ],
-    stateMutability: "payable",
-    type: "constructor",
-  },
-  {
-    anonymous: false,
-    inputs: [
-      {
-        indexed: true,
-        internalType: "address",
-        name: "sender",
-        type: "address",
-      },
-      {
-        indexed: false,
-        internalType: "uint256",
-        name: "amount",
-        type: "uint256",
-      },
-      {
-        indexed: false,
-        internalType: "uint256",
-        name: "balance",
-        type: "uint256",
-      },
-    ],
-    name: "Deposit",
-    type: "event",
-  },
-  {
-    anonymous: false,
-    inputs: [
-      {
-        indexed: true,
-        internalType: "address",
-        name: "owner",
-        type: "address",
-      },
-      {
-        indexed: false,
-        internalType: "address payable",
-        name: "to",
-        type: "address",
-      },
-      {
-        indexed: false,
-        internalType: "uint256",
-        name: "value",
-        type: "uint256",
-      },
-      {
-        indexed: false,
-        internalType: "bytes",
-        name: "data",
-        type: "bytes",
-      },
-      {
-        indexed: false,
-        internalType: "uint256",
-        name: "nonce",
-        type: "uint256",
-      },
-      {
-        indexed: false,
-        internalType: "bytes32",
-        name: "hash",
-        type: "bytes32",
-      },
-      {
-        indexed: false,
-        internalType: "bytes",
-        name: "result",
-        type: "bytes",
-      },
-    ],
-    name: "ExecuteTransaction",
-    type: "event",
-  },
-  {
-    anonymous: false,
-    inputs: [
-      {
-        indexed: true,
-        internalType: "address",
-        name: "owner",
-        type: "address",
-      },
-      {
-        indexed: false,
-        internalType: "bool",
-        name: "added",
-        type: "bool",
-      },
-    ],
-    name: "Owner",
-    type: "event",
-  },
-  {
-    inputs: [
-      {
-        internalType: "address",
-        name: "newSigner",
-        type: "address",
-      },
-      {
-        internalType: "uint256",
-        name: "newSignaturesRequired",
-        type: "uint256",
-      },
-    ],
-    name: "addSigner",
-    outputs: [],
-    stateMutability: "nonpayable",
-    type: "function",
-  },
-  {
-    inputs: [],
-    name: "chainId",
-    outputs: [
-      {
-        internalType: "uint256",
-        name: "",
-        type: "uint256",
-      },
-    ],
-    stateMutability: "view",
-    type: "function",
-  },
-  {
-    inputs: [
-      {
-        internalType: "address payable",
-        name: "to",
-        type: "address",
-      },
-      {
-        internalType: "uint256",
-        name: "value",
-        type: "uint256",
-      },
-      {
-        internalType: "bytes",
-        name: "data",
-        type: "bytes",
-      },
-      {
-        internalType: "bytes[]",
-        name: "signatures",
-        type: "bytes[]",
-      },
-    ],
-    name: "executeTransaction",
-    outputs: [
-      {
-        internalType: "bytes",
-        name: "",
-        type: "bytes",
-      },
-    ],
-    stateMutability: "nonpayable",
-    type: "function",
-  },
-  {
-    inputs: [
-      {
-        internalType: "uint256",
-        name: "_nonce",
-        type: "uint256",
-      },
-      {
-        internalType: "address",
-        name: "to",
-        type: "address",
-      },
-      {
-        internalType: "uint256",
-        name: "value",
-        type: "uint256",
-      },
-      {
-        internalType: "bytes",
-        name: "data",
-        type: "bytes",
-      },
-    ],
-    name: "getTransactionHash",
-    outputs: [
-      {
-        internalType: "bytes32",
-        name: "",
-        type: "bytes32",
-      },
-    ],
-    stateMutability: "view",
-    type: "function",
-  },
-  {
-    inputs: [
-      {
-        internalType: "uint256",
-        name: "_chainId",
-        type: "uint256",
-      },
-      {
-        internalType: "address[]",
-        name: "_owners",
-        type: "address[]",
-      },
-      {
-        internalType: "uint256",
-        name: "_signaturesRequired",
-        type: "uint256",
-      },
-      {
-        internalType: "address",
-        name: "_factory",
-        type: "address",
-      },
-    ],
-    name: "init",
-    outputs: [],
-    stateMutability: "payable",
-    type: "function",
-  },
-  {
-    inputs: [
-      {
-        internalType: "address",
-        name: "",
-        type: "address",
-      },
-    ],
-    name: "isOwner",
-    outputs: [
-      {
-        internalType: "bool",
-        name: "",
-        type: "bool",
-      },
-    ],
-    stateMutability: "view",
-    type: "function",
-  },
-  {
-    inputs: [],
-    name: "name",
-    outputs: [
-      {
-        internalType: "string",
-        name: "",
-        type: "string",
-      },
-    ],
-    stateMutability: "view",
-    type: "function",
-  },
-  {
-    inputs: [],
-    name: "nonce",
-    outputs: [
-      {
-        internalType: "uint256",
-        name: "",
-        type: "uint256",
-      },
-    ],
-    stateMutability: "view",
-    type: "function",
-  },
-  {
-    inputs: [
-      {
-        internalType: "uint256",
-        name: "",
-        type: "uint256",
-      },
-    ],
-    name: "owners",
-    outputs: [
-      {
-        internalType: "address",
-        name: "",
-        type: "address",
-      },
-    ],
-    stateMutability: "view",
-    type: "function",
-  },
-  {
-    inputs: [
-      {
-        internalType: "bytes32",
-        name: "_hash",
-        type: "bytes32",
-      },
-      {
-        internalType: "bytes",
-        name: "_signature",
-        type: "bytes",
-      },
-    ],
-    name: "recover",
-    outputs: [
-      {
-        internalType: "address",
-        name: "",
-        type: "address",
-      },
-    ],
-    stateMutability: "pure",
-    type: "function",
-  },
-  {
-    inputs: [
-      {
-        internalType: "address",
-        name: "oldSigner",
-        type: "address",
-      },
-      {
-        internalType: "uint256",
-        name: "newSignaturesRequired",
-        type: "uint256",
-      },
-    ],
-    name: "removeSigner",
-    outputs: [],
-    stateMutability: "nonpayable",
-    type: "function",
-  },
-  {
-    inputs: [],
-    name: "signaturesRequired",
-    outputs: [
-      {
-        internalType: "uint256",
-        name: "",
-        type: "uint256",
-      },
-    ],
-    stateMutability: "view",
-    type: "function",
-  },
-  {
-    inputs: [
-      {
-        internalType: "uint256",
-        name: "newSignaturesRequired",
-        type: "uint256",
-      },
-    ],
-    name: "updateSignaturesRequired",
-    outputs: [],
-    stateMutability: "nonpayable",
-    type: "function",
-  },
-  {
-    stateMutability: "payable",
-    type: "receive",
-  },
-];
+/**----------------------
+ * taking  multi sig wallet abi from hardhat_contracts.json file
+ * note: abi from hardcode location of localhost
+ * ---------------------*/
+const multiSigWalletABI = deployedContracts["31337"]["localhost"]["contracts"]["MultiSigWallet"]["abi"];
 
 // 🛰 providers
 const providers = [
@@ -442,6 +77,7 @@ function App(props) {
   const [userWallets, setUserWallets] = useState([]);
   const [reDeployWallet, setReDeployWallet] = useState(undefined);
   const [deployType, setDeployType] = useState("CREATE");
+  const [updateServerWallets, setUpdateServerWallets] = useState(false);
   const location = useLocation();
 
   const cachedNetwork = window.localStorage.getItem("network");
@@ -537,6 +173,7 @@ function App(props) {
 
   // MultiSigFactory Events:
   const ownersMultiSigEvents = useEventListener(readContracts, "MultiSigFactory", "Owners", localProvider, 1);
+  const walletCreateEvents = useEventListener(readContracts, "MultiSigFactory", "Create", localProvider, 1);
   if (DEBUG) console.log("📟 ownersMultiSigEvents:", ownersMultiSigEvents);
 
   const [multiSigs, setMultiSigs] = useState([]);
@@ -553,6 +190,9 @@ function App(props) {
   },[userSigner])
   */
 
+  /**----------------------
+   * old code where we are loading contracts from listeners
+   * ---------------------*/
   // useEffect(() => {
   //   if (address) {
   //     let multiSigsForUser = ownersMultiSigEvents.reduce((filtered, createEvent) => {
@@ -668,6 +308,45 @@ function App(props) {
     }
   }, [allExecuteTransactionEvents, currentMultiSigAddress, nonce]);
 
+  const loadMissingWallets = async () => {
+    let totalWalletCount = await readContracts["MultiSigFactory"]?.numberOfMultiSigs();
+    totalWalletCount = totalWalletCount ? totalWalletCount.toNumber() : 0;
+    // console.log('nonce: ', nonce);
+
+    if (totalWalletCount !== 0 && totalWalletCount === walletCreateEvents.length && updateServerWallets === false) {
+      let walletsData = walletCreateEvents.map(data => data.args);
+
+      /**----------------------
+       * iterating over create even data and send it to backend api to update
+       * ---------------------*/
+      for (let index = 0; index < walletsData.length; index++) {
+        let wallet = walletsData[index];
+        let walletName = wallet.name;
+        let walletAddress = wallet.contractAddress;
+        let creator = wallet.creator;
+        let owners = wallet.owners;
+        let signaturesRequired = wallet.signaturesRequired.toNumber();
+
+        let reqData = {
+          owners,
+          signaturesRequired,
+        };
+
+        const res = await axios.post(
+          BACKEND_URL + `createWallet/${creator}/${walletName}/${walletAddress}/${selectedChainId}`,
+          reqData,
+        );
+        let data = res.data;
+        console.log("update wallets on api res data: ", data);
+      }
+      setUpdateServerWallets(true);
+    }
+  };
+
+  useEffect(() => {
+    void loadMissingWallets();
+  }, [walletCreateEvents.length]);
+
   // EXTERNAL CONTRACT EXAMPLE:
   // If you want to bring in the mainnet DAI contract it would look like:
   const mainnetContracts = useContractLoader(mainnetProvider, contractConfig);
@@ -736,8 +415,10 @@ function App(props) {
     }
   };
   useEffect(() => {
-    getUserWallets(false);
-  }, [address]);
+    if (address !== undefined) {
+      getUserWallets(false);
+    }
+  }, [address, updateServerWallets]);
 
   const faucetAvailable = localProvider && localProvider.connection && targetNetwork.name.indexOf("local") !== -1;
 
@@ -829,7 +510,7 @@ function App(props) {
   const WalletActions = () => {
     return (
       <>
-        <div className="flex justify-start items-center p-2 mt-2  ">
+        <div className="flex justify-start items-center p-2 my-2  ">
           <div>
             <CreateMultiSigModal
               reDeployWallet={reDeployWallet}
@@ -847,6 +528,7 @@ function App(props) {
               getUserWallets={getUserWallets}
               deployType={deployType}
               setDeployType={setDeployType}
+              currentNetworkName={targetNetwork.name}
             />
           </div>
 
@@ -860,6 +542,7 @@ function App(props) {
               setCurrentMultiSigAddress={setCurrentMultiSigAddress}
               multiSigWalletABI={multiSigWalletABI}
               localProvider={localProvider}
+              poolServerUrl={BACKEND_URL}
             />
           </div>
           <div>
@@ -894,24 +577,24 @@ function App(props) {
 
   const MainMenu = () => {
     return (
-      <>
+      <div className="flex justify-center mt-5">
         <Menu
           disabled={!userHasMultiSigs}
-          style={{ textAlign: "center", marginTop: 40 }}
+          // style={{ textAlign: "center", marginTop: 40 }}
           selectedKeys={[location.pathname]}
           mode="horizontal"
         >
           <Menu.Item key="/">
             <Link to="/">MultiSig</Link>
           </Menu.Item>
-          <Menu.Item key="/create">
+          <Menu.Item key="/create" disabled={reDeployWallet !== undefined}>
             <Link to="/create">Propose Transaction</Link>
           </Menu.Item>
-          <Menu.Item key="/pool">
+          <Menu.Item key="/pool" disabled={reDeployWallet !== undefined}>
             <Link to="/pool">Pool</Link>
           </Menu.Item>
         </Menu>
-      </>
+      </div>
     );
   };
 

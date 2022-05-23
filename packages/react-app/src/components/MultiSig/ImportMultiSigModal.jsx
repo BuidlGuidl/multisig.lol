@@ -1,6 +1,8 @@
 import React, { useState } from "react";
 import { Button, Modal, Select, Alert } from "antd";
 import { ethers } from "ethers";
+import axios from "axios";
+
 import { useLocalStorage } from "../../hooks";
 
 import { AddressInput } from "..";
@@ -14,6 +16,7 @@ export default function ImportMultiSigModal({
   setCurrentMultiSigAddress,
   multiSigWalletABI,
   localProvider,
+  poolServerUrl,
 }) {
   const [importedMultiSigs, setImportedMultiSigs] = useLocalStorage("importedMultiSigs");
   const [isModalVisible, setIsModalVisible] = useState(false);
@@ -39,7 +42,11 @@ export default function ImportMultiSigModal({
       setPendingImport(true);
 
       const contract = new ethers.Contract(address, multiSigWalletABI, localProvider);
-      await contract.signaturesRequired();
+
+      let signaturesRequired = await contract.signaturesRequired();
+      let owners = await contract.owners();
+      let walletName = await contract.name();
+      let walletAddress = contract.address;
 
       let newImportedMultiSigs = importedMultiSigs || {};
       (newImportedMultiSigs[network] = newImportedMultiSigs[network] || []).push(address);
@@ -49,6 +56,17 @@ export default function ImportMultiSigModal({
       if (network === targetNetwork.name) {
         setMultiSigs([...new Set([...newImportedMultiSigs[network], ...multiSigs])]);
         setCurrentMultiSigAddress(address);
+
+        let reqData = {
+          owners,
+          signaturesRequired,
+        };
+        const res = await axios.post(
+          poolServerUrl + `createWallet/${address}/${walletName}/${walletAddress}/${targetNetwork.chainId}`,
+          reqData,
+        );
+        let data = res.data;
+        console.log("import wallet res data: ", data);
       }
 
       resetState();

@@ -12,6 +12,7 @@ contract MultiSigFactory {
 
     event Create(
         uint256 indexed contractId,
+        string name,
         address indexed contractAddress,
         address creator,
         address[] owners,
@@ -55,30 +56,33 @@ contract MultiSigFactory {
         // multiSigs.push(multiSig);
         // existsMultiSig[address(multiSig)] = true;
 
+        /**----------------------
+         * create2 implementation
+         * ---------------------*/
         address multiSig_address = payable(
             Create2.deploy(
                 0,
                 _salt,
                 abi.encodePacked(
                     type(MultiSigWallet).creationCode,
-                    abi.encode(_name)
+                    abi.encode(
+                        _chainId,
+                        _owners,
+                        _signaturesRequired,
+                        address(this),
+                        _name
+                    )
                 )
             )
         );
         MultiSigWallet multiSig = MultiSigWallet(payable(multiSig_address));
-        // add init values
-        multiSig.init{value: msg.value}(
-            _chainId,
-            _owners,
-            _signaturesRequired,
-            address(this)
-        );
 
         multiSigs.push(multiSig);
         existsMultiSig[address(multiSig_address)] = true;
 
         emit Create(
             id,
+            _name,
             address(multiSig),
             msg.sender,
             _owners,
@@ -87,15 +91,26 @@ contract MultiSigFactory {
         emit Owners(address(multiSig), _owners, _signaturesRequired);
     }
 
-    function computedAddress(bytes32 _salt, string memory _name)
-        public
-        view
-        returns (address)
-    {
+    /**----------------------
+     * get a computed address
+     * ---------------------*/
+    function computedAddress(
+        uint256 _chainId,
+        address[] memory _owners,
+        uint256 _signaturesRequired,
+        bytes32 _salt,
+        string memory _name
+    ) public view returns (address) {
         bytes32 bytecodeHash = keccak256(
             abi.encodePacked(
                 type(MultiSigWallet).creationCode,
-                abi.encode(_name)
+                abi.encode(
+                    _chainId,
+                    _owners,
+                    _signaturesRequired,
+                    address(this),
+                    _name
+                )
             )
         );
         address computed_address = Create2.computeAddress(_salt, bytecodeHash);

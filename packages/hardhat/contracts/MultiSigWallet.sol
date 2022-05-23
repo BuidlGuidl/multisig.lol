@@ -47,33 +47,13 @@ contract MultiSigWallet {
         _;
     }
 
-    // constructor(uint256 _chainId, address[] memory _owners, uint _signaturesRequired, address _factory) payable requireNonZeroSignatures(_signaturesRequired) {
-    //   multiSigFactory = MultiSigFactory(_factory);
-    //   signaturesRequired = _signaturesRequired;
-    //   for (uint i = 0; i < _owners.length; i++) {
-    //     address owner = _owners[i];
-
-    //     require(owner!=address(0), "constructor: zero address");
-    //     require(!isOwner[owner], "constructor: owner not unique");
-
-    //     isOwner[owner] = true;
-    //     owners.push(owner);
-
-    //     emit Owner(owner,isOwner[owner]);
-    //   }
-
-    //   chainId = _chainId;
-    // }
-    constructor(string memory _name) payable {
-        name = _name;
-    }
-
-    function init(
+    constructor(
         uint256 _chainId,
         address[] memory _owners,
         uint256 _signaturesRequired,
-        address _factory
-    ) public payable requireNonZeroSignatures(_signaturesRequired) {
+        address _factory,
+        string memory _name
+    ) payable requireNonZeroSignatures(_signaturesRequired) {
         multiSigFactory = MultiSigFactory(_factory);
         signaturesRequired = _signaturesRequired;
         for (uint256 i = 0; i < _owners.length; i++) {
@@ -89,7 +69,35 @@ contract MultiSigWallet {
         }
 
         chainId = _chainId;
+        name = _name;
     }
+
+    // constructor(string memory _name) payable {
+    //     name = _name;
+    // }
+
+    // function init(
+    //     uint256 _chainId,
+    //     address[] memory _owners,
+    //     uint256 _signaturesRequired,
+    //     address _factory
+    // ) public payable requireNonZeroSignatures(_signaturesRequired) {
+    //     multiSigFactory = MultiSigFactory(_factory);
+    //     signaturesRequired = _signaturesRequired;
+    //     for (uint256 i = 0; i < _owners.length; i++) {
+    //         address owner = _owners[i];
+
+    //         require(owner != address(0), "constructor: zero address");
+    //         require(!isOwner[owner], "constructor: owner not unique");
+
+    //         isOwner[owner] = true;
+    //         owners.push(owner);
+
+    //         emit Owner(owner, isOwner[owner]);
+    //     }
+
+    //     chainId = _chainId;
+    // }
 
     function addSigner(address newSigner, uint256 newSignaturesRequired)
         public

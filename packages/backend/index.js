@@ -53,25 +53,32 @@ app.get("/getWallets/:ownerAddress", function (request, response) {
 /**----------------------
  * to add a user wallet to a list
  * ---------------------*/
-app.get("/createWallet/:ownerAddress/:walletName/:walletAddress/:chainId", function (request, response) {
+app.post("/createWallet/:ownerAddress/:walletName/:walletAddress/:chainId", function (request, response) {
     const { ownerAddress, walletName, walletAddress, chainId } = request.params;
-    console.log("wallets[ownerAddress]: ", wallets[ownerAddress]);
+    const { owners, signaturesRequired } = request.body;
 
     if (wallets[ownerAddress] === undefined) {
+        console.log(`create wallet ${walletName} for ${ownerAddress} on ${chainId} `);
         wallets[ownerAddress] = [];
         wallets[ownerAddress].push({
             walletName,
             walletAddress,
             chainIds: [chainId],
+            signaturesRequired,
+            owners,
         });
     } else {
         let isWalletExists = wallets[ownerAddress].find((data) => data.walletAddress === walletAddress);
+
         // if no wallet exist then push else skip
         if (isWalletExists === undefined) {
+            console.log(`create wallet ${walletName} for ${ownerAddress} on ${chainId} `);
             wallets[ownerAddress].push({
                 walletName,
                 walletAddress,
                 chainIds: [Number(chainId)],
+                signaturesRequired,
+                owners,
             });
         }
     }
@@ -112,8 +119,6 @@ if (fs.existsSync("server.key") && fs.existsSync("server.cert")) {
         console.log("HTTP Listening on port:", server.address().port);
     });
 }
-
-
 
 // // to keep alive heroku call test api every 5 minutes
 setInterval(function () {

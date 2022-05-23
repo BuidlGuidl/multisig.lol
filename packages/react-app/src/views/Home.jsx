@@ -1,7 +1,7 @@
 import React from "react";
 import { Balance, Address, TransactionListItem, Owners } from "../components";
 import QR from "qrcode.react";
-import { List, Button } from "antd";
+import { List, Button, Alert } from "antd";
 import { useState } from "react";
 import { useEffect } from "react";
 
@@ -29,12 +29,20 @@ function Home({
   useEffect(() => {
     void getWalletName();
   }, [readContracts[contractName]].address);
+
   return (
     <>
       <div
         //  style={{ padding: 32, maxWidth: 850, margin: "auto" }}
         className=" flex flex-col justify-center items-center  m-2 "
       >
+        {reDeployWallet !== undefined && (
+          <>
+            <div className="text-left my-2 w-1/2 ">
+              <Alert message="Alert" description="Please deploy this wallet !!" type="warning" showIcon />
+            </div>
+          </>
+        )}
         {/* main contract info */}
         <div className="flex  justify-around  flex-wrap  w-full border-2 p-4 md:w-auto md:rounded-3xl md:shadow-md ">
           {/* contract balanace qr */}
@@ -107,26 +115,28 @@ function Home({
           )}
         </div>
         <div className="flex justify-center items-center w-screen  ">
-          <div className=" w-full md:w-1/2 ">
-            <List
-              bordered
-              dataSource={executeTransactionEvents}
-              renderItem={item => {
-                return (
-                  <div>
-                    <TransactionListItem
-                      item={Object.create(item)}
-                      mainnetProvider={mainnetProvider}
-                      blockExplorer={blockExplorer}
-                      price={price}
-                      readContracts={readContracts}
-                      contractName={contractName}
-                    />
-                  </div>
-                );
-              }}
-            />
-          </div>
+          {reDeployWallet === undefined && (
+            <div className=" w-full md:w-1/2 ">
+              <List
+                bordered
+                dataSource={executeTransactionEvents}
+                renderItem={item => {
+                  return (
+                    <div>
+                      <TransactionListItem
+                        item={Object.create(item)}
+                        mainnetProvider={mainnetProvider}
+                        blockExplorer={blockExplorer}
+                        price={price}
+                        readContracts={readContracts}
+                        contractName={contractName}
+                      />
+                    </div>
+                  );
+                }}
+              />
+            </div>
+          )}
         </div>
       </div>
     </>

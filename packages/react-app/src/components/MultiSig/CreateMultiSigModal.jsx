@@ -23,23 +23,27 @@ export default function CreateMultiSigModal({
   reDeployWallet,
   getUserWallets,
   setReDeployWallet,
-
   deployType,
   setDeployType,
+  currentNetworkName,
 }) {
+  let prevSignaturesRequired =
+    deployType === "RE_DEPLOY" ? (reDeployWallet ? reDeployWallet["signaturesRequired"] : 0) : false;
+  let prevOwners = deployType === "RE_DEPLOY" ? (reDeployWallet ? reDeployWallet["owners"] : []) : [];
+
   const [pendingCreate, setPendingCreate] = useState(false);
   const [txSent, setTxSent] = useState(false);
   const [txError, setTxError] = useState(false);
   const [txSuccess, setTxSuccess] = useState(false);
 
-  const [signaturesRequired, setSignaturesRequired] = useState(false);
+  const [signaturesRequired, setSignaturesRequired] = useState(prevSignaturesRequired);
   const [amount, setAmount] = useState("0");
   const [owners, setOwners] = useState([""]);
   const [walletName, setWalletName] = useState("");
 
   useEffect(() => {
     if (address) {
-      setOwners([address, ""]);
+      setOwners([...new Set([...prevOwners, address])]);
     }
   }, [address]);
 
@@ -185,7 +189,13 @@ export default function CreateMultiSigModal({
             //   resetState();
             // }, 2500);
 
-            let computed_wallet_address = await writeContracts[contractName].computedAddress(salt, currentWalletName);
+            let computed_wallet_address = await writeContracts[contractName].computedAddress(
+              selectedChainId,
+              owners,
+              signaturesRequired,
+              salt,
+              currentWalletName,
+            );
             // console.log("computed_wallet_address: ", computed_wallet_address);
 
             // let walletAddress =
@@ -195,8 +205,13 @@ export default function CreateMultiSigModal({
 
             // if (reDeployWallet === undefined) {
             if (deployType === "CREATE") {
-              const res = await axios.get(
+              let reqData = {
+                owners,
+                signaturesRequired,
+              };
+              const res = await axios.post(
                 poolServerUrl + `createWallet/${address}/${walletName}/${walletAddress}/${selectedChainId}`,
+                reqData,
               );
               let data = res.data;
               console.log("create wallet res data: ", data);
@@ -242,26 +257,20 @@ export default function CreateMultiSigModal({
       </Button>
 
       {reDeployWallet !== undefined && (
-        <Button type="primary" onClick={() => showCreateModal("RE_DEPLOY")} danger>
-          Re-Deploy
+        <Button type="primary" onClick={() => showCreateModal("RE_DEPLOY")} ghost>
+          Deploy {reDeployWallet["walletName"]} to {currentNetworkName}
         </Button>
       )}
       <Modal
         title="Create Multi-Sig Wallet"
         visible={isCreateModalVisible}
         onCancel={handleCancel}
+        destroyOnClose
         footer={[
           <Button key="back" onClick={handleCancel}>
             Cancel
           </Button>,
-          <Button
-            key="submit"
-            type="primary"
-            loading={pendingCreate}
-            onClick={handleSubmit}
-            // danger={reDeployWallet !== undefined}
-            danger={deployType === "RE_DEPLOY"}
-          >
+          <Button key="submit" type="primary" loading={pendingCreate} onClick={handleSubmit}>
             {/* {reDeployWallet === undefined ? "Create" : "Deploy"} */}
             {deployType === "CREATE" ? "Create" : "Deploy"}
           </Button>,
@@ -313,6 +322,13 @@ export default function CreateMultiSigModal({
               style={{ width: "100%" }}
               placeholder="Number of signatures required"
               value={signaturesRequired}
+              // value={
+              //   deployType === "RE_DEPLOY"
+              //     ? reDeployWallet
+              //       ? reDeployWallet["signaturesRequired"]
+              //       : ""
+              //     : signaturesRequired
+              // }
               onChange={setSignaturesRequired}
             />
           </div>
