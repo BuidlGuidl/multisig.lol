@@ -61,7 +61,7 @@ contract MultiSigFactory {
          * ---------------------*/
         address multiSig_address = payable(
             Create2.deploy(
-                0,
+                msg.value,
                 _salt,
                 abi.encodePacked(
                     type(MultiSigWallet).creationCode,
