@@ -436,7 +436,6 @@ function App(props) {
   const [address, setAddress] = useState();
   const [selectedNetwork, setSelectedNetwork] = useState(networkOptions[0]);
   const [userWallets, setUserWallets] = useState(undefined);
-  const [walletsFetched, setWalletsFetched] = useState(undefined);
   const [reDeployWallet, setReDeployWallet] = useState(undefined);
   const [deployType, setDeployType] = useState("CREATE");
   const [updateServerWallets, setUpdateServerWallets] = useState(false);
@@ -765,7 +764,6 @@ function App(props) {
     let res = await axios.get(BACKEND_URL + `getWallets/${address}`);
     let data = res.data;
     setUserWallets(data["userWallets"]);
-    setWalletsFetched(true);
 
     if (isUpdate) {
       const lastMultiSigAddress = data["userWallets"][data["userWallets"].length - 1]?.walletAddress;
