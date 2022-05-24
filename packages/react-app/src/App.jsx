@@ -1,6 +1,5 @@
 import { Button, Col, Menu, Row, Alert, Select } from "antd";
 import Routes from "./Routes";
-import TestModal from "./views/TestModal";
 
 // import CreateMultiSigModal from "./components/MultiSig/CreateMultiSigModal";
 
