@@ -1,5 +1,8 @@
 import { Button, Col, Menu, Row, Alert, Select } from "antd";
 import Routes from "./Routes";
+import TestModal from "./views/TestModal";
+
+// import CreateMultiSigModal from "./components/MultiSig/CreateMultiSigModal";
 
 import "antd/dist/antd.css";
 import {
@@ -38,6 +41,7 @@ import { Transactor, Web3ModalSetup } from "./helpers";
 import { Home, Hints, Subgraph, CreateTransaction, Transactions } from "./views";
 import { useStaticJsonRPC, useLocalStorage } from "./hooks";
 import axios from "axios";
+import { useMemo } from "react";
 
 const { Option } = Select;
 const { ethers } = require("ethers");
@@ -57,368 +61,7 @@ const web3Modal = Web3ModalSetup();
  * taking  multi sig wallet abi from hardhat_contracts.json file
  * note: abi from hardcode location of localhost
  * ---------------------*/
-// const multiSigWalletABI = deployedContracts["31337"]["localhost"]["contracts"]["MultiSigWallet"]["abi"];
-const multiSigWalletABI = [
-  {
-    inputs: [
-      {
-        internalType: "uint256",
-        name: "_chainId",
-        type: "uint256",
-      },
-      {
-        internalType: "address[]",
-        name: "_owners",
-        type: "address[]",
-      },
-      {
-        internalType: "uint256",
-        name: "_signaturesRequired",
-        type: "uint256",
-      },
-      {
-        internalType: "address",
-        name: "_factory",
-        type: "address",
-      },
-      {
-        internalType: "string",
-        name: "_name",
-        type: "string",
-      },
-    ],
-    stateMutability: "payable",
-    type: "constructor",
-  },
-  {
-    anonymous: false,
-    inputs: [
-      {
-        indexed: true,
-        internalType: "address",
-        name: "sender",
-        type: "address",
-      },
-      {
-        indexed: false,
-        internalType: "uint256",
-        name: "amount",
-        type: "uint256",
-      },
-      {
-        indexed: false,
-        internalType: "uint256",
-        name: "balance",
-        type: "uint256",
-      },
-    ],
-    name: "Deposit",
-    type: "event",
-  },
-  {
-    anonymous: false,
-    inputs: [
-      {
-        indexed: true,
-        internalType: "address",
-        name: "owner",
-        type: "address",
-      },
-      {
-        indexed: false,
-        internalType: "address payable",
-        name: "to",
-        type: "address",
-      },
-      {
-        indexed: false,
-        internalType: "uint256",
-        name: "value",
-        type: "uint256",
-      },
-      {
-        indexed: false,
-        internalType: "bytes",
-        name: "data",
-        type: "bytes",
-      },
-      {
-        indexed: false,
-        internalType: "uint256",
-        name: "nonce",
-        type: "uint256",
-      },
-      {
-        indexed: false,
-        internalType: "bytes32",
-        name: "hash",
-        type: "bytes32",
-      },
-      {
-        indexed: false,
-        internalType: "bytes",
-        name: "result",
-        type: "bytes",
-      },
-    ],
-    name: "ExecuteTransaction",
-    type: "event",
-  },
-  {
-    anonymous: false,
-    inputs: [
-      {
-        indexed: true,
-        internalType: "address",
-        name: "owner",
-        type: "address",
-      },
-      {
-        indexed: false,
-        internalType: "bool",
-        name: "added",
-        type: "bool",
-      },
-    ],
-    name: "Owner",
-    type: "event",
-  },
-  {
-    inputs: [
-      {
-        internalType: "address",
-        name: "newSigner",
-        type: "address",
-      },
-      {
-        internalType: "uint256",
-        name: "newSignaturesRequired",
-        type: "uint256",
-      },
-    ],
-    name: "addSigner",
-    outputs: [],
-    stateMutability: "nonpayable",
-    type: "function",
-  },
-  {
-    inputs: [],
-    name: "chainId",
-    outputs: [
-      {
-        internalType: "uint256",
-        name: "",
-        type: "uint256",
-      },
-    ],
-    stateMutability: "view",
-    type: "function",
-  },
-  {
-    inputs: [
-      {
-        internalType: "address payable",
-        name: "to",
-        type: "address",
-      },
-      {
-        internalType: "uint256",
-        name: "value",
-        type: "uint256",
-      },
-      {
-        internalType: "bytes",
-        name: "data",
-        type: "bytes",
-      },
-      {
-        internalType: "bytes[]",
-        name: "signatures",
-        type: "bytes[]",
-      },
-    ],
-    name: "executeTransaction",
-    outputs: [
-      {
-        internalType: "bytes",
-        name: "",
-        type: "bytes",
-      },
-    ],
-    stateMutability: "nonpayable",
-    type: "function",
-  },
-  {
-    inputs: [
-      {
-        internalType: "uint256",
-        name: "_nonce",
-        type: "uint256",
-      },
-      {
-        internalType: "address",
-        name: "to",
-        type: "address",
-      },
-      {
-        internalType: "uint256",
-        name: "value",
-        type: "uint256",
-      },
-      {
-        internalType: "bytes",
-        name: "data",
-        type: "bytes",
-      },
-    ],
-    name: "getTransactionHash",
-    outputs: [
-      {
-        internalType: "bytes32",
-        name: "",
-        type: "bytes32",
-      },
-    ],
-    stateMutability: "view",
-    type: "function",
-  },
-  {
-    inputs: [
-      {
-        internalType: "address",
-        name: "",
-        type: "address",
-      },
-    ],
-    name: "isOwner",
-    outputs: [
-      {
-        internalType: "bool",
-        name: "",
-        type: "bool",
-      },
-    ],
-    stateMutability: "view",
-    type: "function",
-  },
-  {
-    inputs: [],
-    name: "name",
-    outputs: [
-      {
-        internalType: "string",
-        name: "",
-        type: "string",
-      },
-    ],
-    stateMutability: "view",
-    type: "function",
-  },
-  {
-    inputs: [],
-    name: "nonce",
-    outputs: [
-      {
-        internalType: "uint256",
-        name: "",
-        type: "uint256",
-      },
-    ],
-    stateMutability: "view",
-    type: "function",
-  },
-  {
-    inputs: [
-      {
-        internalType: "uint256",
-        name: "",
-        type: "uint256",
-      },
-    ],
-    name: "owners",
-    outputs: [
-      {
-        internalType: "address",
-        name: "",
-        type: "address",
-      },
-    ],
-    stateMutability: "view",
-    type: "function",
-  },
-  {
-    inputs: [
-      {
-        internalType: "bytes32",
-        name: "_hash",
-        type: "bytes32",
-      },
-      {
-        internalType: "bytes",
-        name: "_signature",
-        type: "bytes",
-      },
-    ],
-    name: "recover",
-    outputs: [
-      {
-        internalType: "address",
-        name: "",
-        type: "address",
-      },
-    ],
-    stateMutability: "pure",
-    type: "function",
-  },
-  {
-    inputs: [
-      {
-        internalType: "address",
-        name: "oldSigner",
-        type: "address",
-      },
-      {
-        internalType: "uint256",
-        name: "newSignaturesRequired",
-        type: "uint256",
-      },
-    ],
-    name: "removeSigner",
-    outputs: [],
-    stateMutability: "nonpayable",
-    type: "function",
-  },
-  {
-    inputs: [],
-    name: "signaturesRequired",
-    outputs: [
-      {
-        internalType: "uint256",
-        name: "",
-        type: "uint256",
-      },
-    ],
-    stateMutability: "view",
-    type: "function",
-  },
-  {
-    inputs: [
-      {
-        internalType: "uint256",
-        name: "newSignaturesRequired",
-        type: "uint256",
-      },
-    ],
-    name: "updateSignaturesRequired",
-    outputs: [],
-    stateMutability: "nonpayable",
-    type: "function",
-  },
-  {
-    stateMutability: "payable",
-    type: "receive",
-  },
-];
+const multiSigWalletABI = deployedContracts["31337"]["localhost"]["contracts"]["MultiSigWallet"]["abi"];
 
 // 🛰 providers
 const providers = [
@@ -432,6 +75,9 @@ function App(props) {
   // reference './constants.js' for other networks
   const networkOptions = [initialNetwork.name, "mainnet", "rinkeby"];
 
+  const cachedNetwork = window.localStorage.getItem("network");
+  let targetNetwork = NETWORKS[cachedNetwork || "mainnet"];
+
   const [injectedProvider, setInjectedProvider] = useState();
   const [address, setAddress] = useState();
   const [selectedNetwork, setSelectedNetwork] = useState(networkOptions[0]);
@@ -440,9 +86,7 @@ function App(props) {
   const [deployType, setDeployType] = useState("CREATE");
   const [updateServerWallets, setUpdateServerWallets] = useState(false);
   const location = useLocation();
-
-  const cachedNetwork = window.localStorage.getItem("network");
-  let targetNetwork = NETWORKS[cachedNetwork || "mainnet"];
+  const [isCreateModalVisible, setIsCreateModalVisible] = useState(false);
 
   // backend transaction handler:
   let BACKEND_URL = "http://localhost:49899/";
@@ -672,36 +316,33 @@ function App(props) {
   const loadMissingWallets = async () => {
     let totalWalletCount = await readContracts["MultiSigFactory"]?.numberOfMultiSigs();
     totalWalletCount = totalWalletCount ? totalWalletCount.toNumber() : 0;
-    // console.log('nonce: ', nonce);
 
     if (totalWalletCount !== 0 && totalWalletCount === walletCreateEvents.length && updateServerWallets === false) {
-      if (userWallets !== undefined && totalWalletCount !== userWallets.length) {
-        console.log("n-fetch now: ", userWallets.length);
-
-        let walletsData = walletCreateEvents.map(data => data.args);
-        /**----------------------
-         * iterating over create even data and send it to backend api to update
-         * ---------------------*/
-        for (let index = 0; index < walletsData.length; index++) {
-          let wallet = walletsData[index];
-          let walletName = wallet.name;
-          let walletAddress = wallet.contractAddress;
-          let creator = wallet.creator;
-          let owners = wallet.owners;
-          let signaturesRequired = wallet.signaturesRequired.toNumber();
-          let reqData = {
-            owners,
-            signaturesRequired,
-          };
-          const res = await axios.post(
-            BACKEND_URL + `createWallet/${creator}/${walletName}/${walletAddress}/${selectedChainId}`,
-            reqData,
-          );
-          let data = res.data;
-          console.log("update wallets on api res data: ", data);
-        }
-        setUpdateServerWallets(true);
+      // if (userWallets !== undefined && totalWalletCount !== userWallets.length) {
+      let walletsData = walletCreateEvents.map(data => data.args);
+      /**----------------------
+       * iterating over create even data and send it to backend api to update
+       * ---------------------*/
+      for (let index = 0; index < walletsData.length; index++) {
+        let wallet = walletsData[index];
+        let walletName = wallet.name;
+        let walletAddress = wallet.contractAddress;
+        let creator = wallet.creator;
+        let owners = wallet.owners;
+        let signaturesRequired = wallet.signaturesRequired.toNumber();
+        let reqData = {
+          owners,
+          signaturesRequired,
+        };
+        const res = await axios.post(
+          BACKEND_URL + `createWallet/${creator}/${walletName}/${walletAddress}/${selectedChainId}`,
+          reqData,
+        );
+        let data = res.data;
+        console.log("update wallets on api res data: ", data);
       }
+      setUpdateServerWallets(true);
+      // }
     }
   };
 
@@ -793,8 +434,6 @@ function App(props) {
 
   console.log("currentMultiSigAddress:", currentMultiSigAddress);
 
-  const [isCreateModalVisible, setIsCreateModalVisible] = useState(false);
-
   const selectNetworkOptions = [];
   for (const id in NETWORKS) {
     selectNetworkOptions.push(
@@ -823,99 +462,95 @@ function App(props) {
   );
 
   // top header bar
-  const HeaderBar = () => {
-    return (
-      <>
-        <Header>
-          <div className="relative ">
-            <div className="flex flex-1 items-center p-1">
-              {USE_NETWORK_SELECTOR && (
-                // <div style={{ marginRight: 20 }}>
-                <div className="mr-20">
-                  <NetworkSwitch
-                    networkOptions={networkOptions}
-                    selectedNetwork={selectedNetwork}
-                    setSelectedNetwork={setSelectedNetwork}
-                  />
-                </div>
-              )}
-              <Account
-                useBurner={USE_BURNER_WALLET}
-                address={address}
-                localProvider={localProvider}
-                userSigner={userSigner}
-                mainnetProvider={mainnetProvider}
-                price={price}
-                web3Modal={web3Modal}
-                loadWeb3Modal={loadWeb3Modal}
-                logoutOfWeb3Modal={logoutOfWeb3Modal}
-                blockExplorer={blockExplorer}
-              />
-            </div>
-            {yourLocalBalance.lte(ethers.BigNumber.from("0")) && (
-              <FaucetHint localProvider={localProvider} targetNetwork={targetNetwork} address={address} />
+  const HeaderBar = (
+    <>
+      <Header>
+        <div className="relative ">
+          <div className="flex flex-1 items-center p-1">
+            {USE_NETWORK_SELECTOR && (
+              // <div style={{ marginRight: 20 }}>
+              <div className="mr-20">
+                <NetworkSwitch
+                  networkOptions={networkOptions}
+                  selectedNetwork={selectedNetwork}
+                  setSelectedNetwork={setSelectedNetwork}
+                />
+              </div>
             )}
-          </div>
-        </Header>
-
-        <NetworkDisplay
-          NETWORKCHECK={NETWORKCHECK}
-          localChainId={localChainId}
-          selectedChainId={selectedChainId}
-          targetNetwork={targetNetwork}
-          logoutOfWeb3Modal={logoutOfWeb3Modal}
-          USE_NETWORK_SELECTOR={USE_NETWORK_SELECTOR}
-        />
-      </>
-    );
-  };
-
-  const WalletActions = () => {
-    return (
-      <>
-        <div className="flex justify-start items-center p-2 my-2  flex-wrap ">
-          <div>
-            <CreateMultiSigModal
-              reDeployWallet={reDeployWallet}
-              setReDeployWallet={setReDeployWallet}
-              poolServerUrl={BACKEND_URL}
-              price={price}
-              selectedChainId={selectedChainId}
-              mainnetProvider={mainnetProvider}
+            <Account
+              useBurner={USE_BURNER_WALLET}
               address={address}
-              tx={tx}
-              writeContracts={writeContracts}
-              contractName={"MultiSigFactory"}
-              isCreateModalVisible={isCreateModalVisible}
-              setIsCreateModalVisible={setIsCreateModalVisible}
-              getUserWallets={getUserWallets}
-              deployType={deployType}
-              setDeployType={setDeployType}
-              currentNetworkName={targetNetwork.name}
-            />
-          </div>
-
-          <div className="m-2  w-16">
-            <ImportMultiSigModal
-              mainnetProvider={mainnetProvider}
-              targetNetwork={targetNetwork}
-              networkOptions={selectNetworkOptions}
-              multiSigs={multiSigs}
-              setMultiSigs={setMultiSigs}
-              setCurrentMultiSigAddress={setCurrentMultiSigAddress}
-              multiSigWalletABI={multiSigWalletABI}
               localProvider={localProvider}
-              poolServerUrl={BACKEND_URL}
+              userSigner={userSigner}
+              mainnetProvider={mainnetProvider}
+              price={price}
+              web3Modal={web3Modal}
+              loadWeb3Modal={loadWeb3Modal}
+              logoutOfWeb3Modal={logoutOfWeb3Modal}
+              blockExplorer={blockExplorer}
             />
           </div>
-          <div className="m-2  w-28">
-            <Select
-              className="w-full"
-              value={[currentMultiSigAddress]}
-              // style={{ width: 120, marginRight: 5 }}
-              onChange={handleMultiSigChange}
-            >
-              {/* {multiSigs.map((address, index) => {
+          {yourLocalBalance.lte(ethers.BigNumber.from("0")) && (
+            <FaucetHint localProvider={localProvider} targetNetwork={targetNetwork} address={address} />
+          )}
+        </div>
+      </Header>
+
+      <NetworkDisplay
+        NETWORKCHECK={NETWORKCHECK}
+        localChainId={localChainId}
+        selectedChainId={selectedChainId}
+        targetNetwork={targetNetwork}
+        logoutOfWeb3Modal={logoutOfWeb3Modal}
+        USE_NETWORK_SELECTOR={USE_NETWORK_SELECTOR}
+      />
+    </>
+  );
+
+  console.table("n-data: ", address, price);
+  const WalletActions = (
+    <>
+      <div key={address} className="flex justify-start items-center p-2 my-2  flex-wrap ">
+        <div>
+          <CreateMultiSigModal
+            reDeployWallet={reDeployWallet}
+            setReDeployWallet={setReDeployWallet}
+            poolServerUrl={BACKEND_URL}
+            price={price}
+            selectedChainId={selectedChainId}
+            mainnetProvider={mainnetProvider}
+            address={address}
+            tx={tx}
+            writeContracts={writeContracts}
+            contractName={"MultiSigFactory"}
+            isCreateModalVisible={isCreateModalVisible}
+            setIsCreateModalVisible={setIsCreateModalVisible}
+            getUserWallets={getUserWallets}
+            currentNetworkName={targetNetwork.name}
+          />
+        </div>
+
+        <div className="m-2  w-16">
+          <ImportMultiSigModal
+            mainnetProvider={mainnetProvider}
+            targetNetwork={targetNetwork}
+            networkOptions={selectNetworkOptions}
+            multiSigs={multiSigs}
+            setMultiSigs={setMultiSigs}
+            setCurrentMultiSigAddress={setCurrentMultiSigAddress}
+            multiSigWalletABI={multiSigWalletABI}
+            localProvider={localProvider}
+            poolServerUrl={BACKEND_URL}
+          />
+        </div>
+        <div className="m-2  w-28">
+          <Select
+            className="w-full"
+            value={[currentMultiSigAddress]}
+            // style={{ width: 120, marginRight: 5 }}
+            onChange={handleMultiSigChange}
+          >
+            {/* {multiSigs.map((address, index) => {
                 return (
                   <Option key={index} value={address}>
                     {address}
@@ -923,97 +558,92 @@ function App(props) {
                 );
               })} */}
 
-              {userWallets &&
-                userWallets.length > 0 &&
-                userWallets.map((data, index) => {
-                  return (
-                    <Option key={index} value={data.walletAddress}>
-                      {data.walletName}
-                    </Option>
-                  );
-                })}
-            </Select>
-          </div>
-          <div className="m-2  w-28 ">{networkSelect}</div>
+            {userWallets &&
+              userWallets.length > 0 &&
+              userWallets.map((data, index) => {
+                return (
+                  <Option key={index} value={data.walletAddress}>
+                    {data.walletName}
+                  </Option>
+                );
+              })}
+          </Select>
         </div>
-      </>
-    );
-  };
-
-  const MainMenu = () => {
-    return (
-      <div className="flex justify-center mt-5">
-        <Menu
-          disabled={!userHasMultiSigs}
-          // style={{ textAlign: "center", marginTop: 40 }}
-          selectedKeys={[location.pathname]}
-          mode="horizontal"
-        >
-          <Menu.Item key="/">
-            <Link to="/">MultiSig</Link>
-          </Menu.Item>
-          <Menu.Item key="/create" disabled={reDeployWallet !== undefined}>
-            <Link to="/create">Propose Transaction</Link>
-          </Menu.Item>
-          <Menu.Item key="/pool" disabled={reDeployWallet !== undefined}>
-            <Link to="/pool">Pool</Link>
-          </Menu.Item>
-        </Menu>
+        <div className="m-2  w-28 ">{networkSelect}</div>
       </div>
-    );
-  };
+    </>
+  );
 
-  const BurnerWallet = () => {
-    return (
-      <>
-        {/* 🗺 Extra UI like gas price, eth price, faucet, and support: */}
-        <div style={{ position: "fixed", textAlign: "left", left: 0, bottom: 20, padding: 10 }}>
-          <Row align="middle" gutter={[4, 4]}>
-            <Col span={8}>
-              <Ramp price={price} address={address} networks={NETWORKS} />
-            </Col>
+  const MainMenu = (
+    <div className="flex justify-center mt-5">
+      <Menu
+        disabled={!userHasMultiSigs}
+        // style={{ textAlign: "center", marginTop: 40 }}
+        selectedKeys={[location.pathname]}
+        mode="horizontal"
+      >
+        <Menu.Item key="/">
+          <Link to="/">MultiSig</Link>
+        </Menu.Item>
+        <Menu.Item key="/create" disabled={reDeployWallet !== undefined}>
+          <Link to="/create">Propose Transaction</Link>
+        </Menu.Item>
+        <Menu.Item key="/pool" disabled={reDeployWallet !== undefined}>
+          <Link to="/pool">Pool</Link>
+        </Menu.Item>
+      </Menu>
+    </div>
+  );
 
-            <Col span={8} style={{ textAlign: "center", opacity: 0.8 }}>
-              <GasGauge gasPrice={gasPrice} />
-            </Col>
-            <Col span={8} style={{ textAlign: "center", opacity: 1 }}>
-              <Button
-                onClick={() => {
-                  window.open("https://t.me/joinchat/KByvmRe5wkR-8F_zz6AjpA");
-                }}
-                size="large"
-                shape="round"
-              >
-                <span style={{ marginRight: 8 }} role="img" aria-label="support">
-                  💬
-                </span>
-                Support
-              </Button>
-            </Col>
-          </Row>
+  const BurnerWallet = (
+    <>
+      {/* 🗺 Extra UI like gas price, eth price, faucet, and support: */}
+      <div style={{ position: "fixed", textAlign: "left", left: 0, bottom: 20, padding: 10 }}>
+        <Row align="middle" gutter={[4, 4]}>
+          <Col span={8}>
+            <Ramp price={price} address={address} networks={NETWORKS} />
+          </Col>
 
-          <Row align="middle" gutter={[4, 4]}>
-            <Col span={24}>
-              {
-                /*  if the local provider has a signer, let's show the faucet:  */
-                faucetAvailable ? (
-                  <Faucet localProvider={localProvider} price={price} ensProvider={mainnetProvider} />
-                ) : (
-                  ""
-                )
-              }
-            </Col>
-          </Row>
-        </div>
-      </>
-    );
-  };
+          <Col span={8} style={{ textAlign: "center", opacity: 0.8 }}>
+            <GasGauge gasPrice={gasPrice} />
+          </Col>
+          <Col span={8} style={{ textAlign: "center", opacity: 1 }}>
+            <Button
+              onClick={() => {
+                window.open("https://t.me/joinchat/KByvmRe5wkR-8F_zz6AjpA");
+              }}
+              size="large"
+              shape="round"
+            >
+              <span style={{ marginRight: 8 }} role="img" aria-label="support">
+                💬
+              </span>
+              Support
+            </Button>
+          </Col>
+        </Row>
+
+        <Row align="middle" gutter={[4, 4]}>
+          <Col span={24}>
+            {
+              /*  if the local provider has a signer, let's show the faucet:  */
+              faucetAvailable ? (
+                <Faucet localProvider={localProvider} price={price} ensProvider={mainnetProvider} />
+              ) : (
+                ""
+              )
+            }
+          </Col>
+        </Row>
+      </div>
+    </>
+  );
 
   return (
-    <div className="App">
-      <HeaderBar />
-      <WalletActions />
-      <MainMenu />
+    <div className="App" key={address}>
+      {HeaderBar}
+      {WalletActions}
+      {MainMenu}
       <Routes
         BACKEND_URL={BACKEND_URL}
         DEBUG={DEBUG}
@@ -1043,12 +673,11 @@ function App(props) {
         userSigner={userSigner}
         writeContracts={writeContracts}
         yourLocalBalance={yourLocalBalance}
-        key={currentMultiSigAddress}
         reDeployWallet={reDeployWallet}
       />
 
       <ThemeSwitch />
-      <BurnerWallet />
+      {BurnerWallet}
     </div>
   );
 }

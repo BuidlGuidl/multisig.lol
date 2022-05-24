@@ -1,4 +1,4 @@
-import React, { useState, useEffect } from "react";
+import React, { useState, useEffect, useMemo } from "react";
 import { Button, Modal, InputNumber } from "antd";
 import { PlusOutlined, DeleteOutlined } from "@ant-design/icons";
 import { ethers } from "ethers";
@@ -6,10 +6,12 @@ import { Input } from "antd";
 import { hexZeroPad, hexlify } from "@ethersproject/bytes";
 import axios from "axios";
 
-import { AddressInput, EtherInput } from "..";
+import { AddressInput, EtherInput, Address } from "..";
 import CreateModalSentOverlay from "./CreateModalSentOverlay";
 
-export default function CreateMultiSigModal({
+const DEBUG = true;
+
+function CreateMultiSigModal({
   price,
   selectedChainId,
   mainnetProvider,
@@ -23,27 +25,24 @@ export default function CreateMultiSigModal({
   reDeployWallet,
   getUserWallets,
   setReDeployWallet,
-  deployType,
-  setDeployType,
   currentNetworkName,
 }) {
-  let prevSignaturesRequired =
-    deployType === "RE_DEPLOY" ? (reDeployWallet ? reDeployWallet["signaturesRequired"] : 0) : false;
-  let prevOwners = deployType === "RE_DEPLOY" ? (reDeployWallet ? reDeployWallet["owners"] : []) : [];
-
+  const [deployType, setDeployType] = useState("CREATE");
   const [pendingCreate, setPendingCreate] = useState(false);
   const [txSent, setTxSent] = useState(false);
   const [txError, setTxError] = useState(false);
   const [txSuccess, setTxSuccess] = useState(false);
 
-  const [signaturesRequired, setSignaturesRequired] = useState(prevSignaturesRequired);
+  const [signaturesRequired, setSignaturesRequired] = useState(undefined);
   const [amount, setAmount] = useState("0");
   const [owners, setOwners] = useState([""]);
   const [walletName, setWalletName] = useState("");
+  const [preComputedAddress, setPreComputedAddress] = useState("");
 
   useEffect(() => {
     if (address) {
-      setOwners([...new Set([...prevOwners, address])]);
+      // setOwners([...new Set([...prevOwners, address])]);
+      setOwners([...new Set([address])]);
     }
   }, [address]);
 
@@ -52,15 +51,21 @@ export default function CreateMultiSigModal({
       setDeployType("CREATE");
       setTimeout(() => {
         setIsCreateModalVisible(true);
-      }, 500);
+      }, 100);
     }
 
     if (deployType === "RE_DEPLOY") {
+      // on redploy get previous data in states
+      let prevSignaturesRequired = reDeployWallet ? reDeployWallet["signaturesRequired"] : 0;
+      let prevOwners = reDeployWallet ? reDeployWallet["owners"] : [];
+
       setDeployType("RE_DEPLOY");
+      setSignaturesRequired(prevSignaturesRequired);
+      setOwners([...new Set([...prevOwners, address])]);
 
       setTimeout(() => {
         setIsCreateModalVisible(true);
-      }, 500);
+      }, 100);
     }
   };
 
@@ -159,6 +164,7 @@ export default function CreateMultiSigModal({
       const hash = ethers.utils.keccak256(id);
       const salt = hexZeroPad(hexlify(hash), 32);
 
+      console.log("owners: ", owners);
       tx(
         // old create
         // writeContracts[contractName].create(selectedChainId, owners, signaturesRequired, {
@@ -190,16 +196,12 @@ export default function CreateMultiSigModal({
             // }, 2500);
 
             let computed_wallet_address = await writeContracts[contractName].computedAddress(
-              selectedChainId,
-              owners,
-              signaturesRequired,
+              // selectedChainId,
+              // owners,
+              // signaturesRequired,
               salt,
               currentWalletName,
             );
-            // console.log("computed_wallet_address: ", computed_wallet_address);
-
-            // let walletAddress =
-            //   reDeployWallet === undefined ? computed_wallet_address : reDeployWallet["walletAddress"];
 
             let walletAddress = deployType === "CREATE" ? computed_wallet_address : reDeployWallet["walletAddress"];
 
@@ -224,6 +226,7 @@ export default function CreateMultiSigModal({
                 poolServerUrl + `updateChainId/${address}/${walletAddress}/${selectedChainId}`,
               );
               let data = res.data;
+
               console.log("update chain res data: ", data);
               setReDeployWallet(undefined);
               window.location.reload();
@@ -250,6 +253,8 @@ export default function CreateMultiSigModal({
     }
   };
 
+  console.log("n-address: ", address, walletName);
+
   return (
     <>
       <Button type="primary" onClick={() => showCreateModal("CREATE")} className="mx-2">
@@ -261,7 +266,9 @@ export default function CreateMultiSigModal({
           Deploy {reDeployWallet["walletName"]} to {currentNetworkName}
         </Button>
       )}
+
       <Modal
+        key={address}
         title="Create Multi-Sig Wallet"
         visible={isCreateModalVisible}
         onCancel={handleCancel}
@@ -274,6 +281,35 @@ export default function CreateMultiSigModal({
             {/* {reDeployWallet === undefined ? "Create" : "Deploy"} */}
             {deployType === "CREATE" ? "Create" : "Deploy"}
           </Button>,
+          DEBUG && (
+            <Button
+              key="submit_computed"
+              type="primary"
+              loading={pendingCreate}
+              onClick={async () => {
+                let currentWalletName = deployType === "CREATE" ? walletName : reDeployWallet["walletName"];
+                console.log("currentWalletName: ", currentWalletName);
+                const id = ethers.utils.id(String(address) + currentWalletName);
+                const hash = ethers.utils.keccak256(id);
+                const salt = hexZeroPad(hexlify(hash), 32);
+
+                console.log("writeContracts[contractName]: ", writeContracts[contractName].address);
+
+                let computed_wallet_address = await writeContracts[contractName].computedAddress(
+                  // selectedChainId,
+                  // owners,
+                  // signaturesRequired,
+                  salt,
+                  currentWalletName,
+                );
+                setPreComputedAddress(computed_wallet_address);
+
+                console.log("n-computed_wallet_address: ", computed_wallet_address);
+              }}
+            >
+              precompute address
+            </Button>
+          ),
         ]}
       >
         {txSent && (
@@ -292,6 +328,7 @@ export default function CreateMultiSigModal({
             // value={reDeployWallet !== undefined ? reDeployWallet["walletName"] : walletName}
             value={deployType === "RE_DEPLOY" ? (reDeployWallet ? reDeployWallet["walletName"] : "") : walletName}
             disabled={deployType === "RE_DEPLOY"}
+            key={address}
           />
 
           {owners.map((owner, index) => (
@@ -341,20 +378,20 @@ export default function CreateMultiSigModal({
               onChange={setAmount}
             />
           </div>
-          {/* <Button
-            type="primary"
-            onClick={async () => {
-              const id = ethers.utils.id(String(address) + "N");
-              const hash = ethers.utils.keccak256(id);
-              const salt = hexZeroPad(hexlify(hash), 32);
-              let caddress = await writeContracts[contractName].computedAddress(salt, "N2");
-              console.log("caddress: ", caddress);
-            }}
-          >
-            computed address
-          </Button> */}
+          {DEBUG && (
+            <div className="flex  flex-col justify-center items-center">
+              <span className="text-xl">Precomputed Address</span>
+              <span className="text-lg"> chain id:{selectedChainId}</span>
+              <Address address={preComputedAddress} />
+            </div>
+          )}
         </div>
       </Modal>
     </>
   );
 }
+
+const checkProps = (prePorps, nextProps) => {
+  return nextProps?.address !== prePorps?.address;
+};
+export default React.memo(CreateMultiSigModal, checkProps);

@@ -28,11 +28,11 @@ module.exports = async ({ getNamedAccounts, deployments, getChainId }) => {
   const MultiSigWalletDeployed = await deploy("MultiSigWallet", {
     from: deployer,
     args: [
-      chainId,
-      ["0x813f45BD0B48a334A3cc06bCEf1c44AAd907b8c1"],
-      1,
-      MultiSigFactoryDeployed.address,
+      // chainId,
+      // ["0x813f45BD0B48a334A3cc06bCEf1c44AAd907b8c1"],
+      // 1,
       "default_name",
+      MultiSigFactoryDeployed.address,
     ],
     log: true,
   });

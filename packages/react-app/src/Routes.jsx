@@ -59,7 +59,6 @@ const Routes = ({
             </Row>
           ) : (
             <Home
-              key={currentMultiSigAddress}
               contractAddress={currentMultiSigAddress}
               localProvider={localProvider}
               price={price}

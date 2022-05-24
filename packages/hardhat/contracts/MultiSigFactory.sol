@@ -52,10 +52,6 @@ contract MultiSigFactory {
     ) public payable {
         uint256 id = numberOfMultiSigs();
 
-        // MultiSigWallet multiSig = (new MultiSigWallet){value: msg.value}(_chainId, _owners, _signaturesRequired, address(this));
-        // multiSigs.push(multiSig);
-        // existsMultiSig[address(multiSig)] = true;
-
         /**----------------------
          * create2 implementation
          * ---------------------*/
@@ -65,17 +61,15 @@ contract MultiSigFactory {
                 _salt,
                 abi.encodePacked(
                     type(MultiSigWallet).creationCode,
-                    abi.encode(
-                        _chainId,
-                        _owners,
-                        _signaturesRequired,
-                        address(this),
-                        _name
-                    )
+                    abi.encode(_name, address(this))
                 )
             )
         );
+
         MultiSigWallet multiSig = MultiSigWallet(payable(multiSig_address));
+
+        // add init values
+        multiSig.init(_chainId, _owners, _signaturesRequired);
 
         multiSigs.push(multiSig);
         existsMultiSig[address(multiSig_address)] = true;
@@ -95,9 +89,9 @@ contract MultiSigFactory {
      * get a computed address
      * ---------------------*/
     function computedAddress(
-        uint256 _chainId,
-        address[] memory _owners,
-        uint256 _signaturesRequired,
+        // uint256 _chainId,
+        // address[] memory _owners,
+        // uint256 _signaturesRequired,
         bytes32 _salt,
         string memory _name
     ) public view returns (address) {
@@ -105,11 +99,11 @@ contract MultiSigFactory {
             abi.encodePacked(
                 type(MultiSigWallet).creationCode,
                 abi.encode(
-                    _chainId,
-                    _owners,
-                    _signaturesRequired,
-                    address(this),
-                    _name
+                    // _chainId,
+                    // _owners,
+                    // _signaturesRequired,
+                    _name,
+                    address(this)
                 )
             )
         );

@@ -54,8 +54,10 @@ app.get("/getWallets/:ownerAddress", function (request, response) {
  * to add a user wallet to a list
  * ---------------------*/
 app.post("/createWallet/:ownerAddress/:walletName/:walletAddress/:chainId", function (request, response) {
-    const { ownerAddress, walletName, walletAddress, chainId } = request.params;
+    let { ownerAddress, walletName, walletAddress, chainId } = request.params;
     const { owners, signaturesRequired } = request.body;
+
+    chainId = Number(chainId);
 
     if (wallets[ownerAddress] === undefined) {
         console.log(`create wallet ${walletName} for ${ownerAddress} on ${chainId} `);
@@ -81,6 +83,18 @@ app.post("/createWallet/:ownerAddress/:walletName/:walletAddress/:chainId", func
                 owners,
             });
         }
+        // if data is exisist then only update the chainid
+        if (isWalletExists !== undefined) {
+            console.log(`update wallet ${walletName} for ${ownerAddress} on ${chainId} `);
+
+            wallets[ownerAddress].map((data) => {
+                if (data.walletAddress === walletAddress) {
+                    // data.chainIds.push(chainId);
+                    data.chainIds = [...new Set([...data.chainIds, Number(chainId)])];
+                }
+                return data;
+            });
+        }
     }
 
     response.status(200).send(wallets[ownerAddress]);
@@ -89,7 +103,8 @@ app.post("/createWallet/:ownerAddress/:walletName/:walletAddress/:chainId", func
  * update a chainId for a address
  * ---------------------*/
 app.get("/updateChainId/:ownerAddress/:walletAddress/:chainId", function (request, response) {
-    const { ownerAddress, walletAddress, chainId } = request.params;
+    let { ownerAddress, walletAddress, chainId } = request.params;
+    chainId = Number(chainId);
 
     wallets[ownerAddress].map((data) => {
         if (data.walletAddress === walletAddress) {
