@@ -85,13 +85,7 @@ contract MultiSigWallet {
         uint256 _chainId,
         address[] memory _owners,
         uint256 _signaturesRequired
-    )
-        public
-        payable
-        // address _factory
-        onlyFactory
-    {
-        // multiSigFactory = MultiSigFactory(_factory);
+    ) public payable onlyFactory {
         signaturesRequired = _signaturesRequired;
         for (uint256 i = 0; i < _owners.length; i++) {
             address owner = _owners[i];
