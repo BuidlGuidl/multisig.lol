@@ -68,7 +68,9 @@ contract MultiSigFactory {
 
         MultiSigWallet multiSig = MultiSigWallet(payable(multiSig_address));
 
-        // add init values
+        /**----------------------
+         * init remaining values
+         * ---------------------*/
         multiSig.init(_chainId, _owners, _signaturesRequired);
 
         multiSigs.push(multiSig);
@@ -86,25 +88,17 @@ contract MultiSigFactory {
     }
 
     /**----------------------
-     * get a computed address
+     * get a computed address 
      * ---------------------*/
-    function computedAddress(
-        // uint256 _chainId,
-        // address[] memory _owners,
-        // uint256 _signaturesRequired,
-        bytes32 _salt,
-        string memory _name
-    ) public view returns (address) {
+    function computedAddress(bytes32 _salt, string memory _name)
+        public
+        view
+        returns (address)
+    {
         bytes32 bytecodeHash = keccak256(
             abi.encodePacked(
                 type(MultiSigWallet).creationCode,
-                abi.encode(
-                    // _chainId,
-                    // _owners,
-                    // _signaturesRequired,
-                    _name,
-                    address(this)
-                )
+                abi.encode(_name, address(this))
             )
         );
         address computed_address = Create2.computeAddress(_salt, bytecodeHash);

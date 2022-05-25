@@ -62,6 +62,8 @@ const web3Modal = Web3ModalSetup();
  * ---------------------*/
 const multiSigWalletABI = deployedContracts["31337"]["localhost"]["contracts"]["MultiSigWallet"]["abi"];
 
+console.log("deployedContracts: ", deployedContracts);
+
 // 🛰 providers
 const providers = [
   "https://eth-mainnet.gateway.pokt.network/v1/lb/611156b4a585a20035148406",
@@ -82,7 +84,6 @@ function App(props) {
   const [selectedNetwork, setSelectedNetwork] = useState(networkOptions[0]);
   const [userWallets, setUserWallets] = useState(undefined);
   const [reDeployWallet, setReDeployWallet] = useState(undefined);
-  const [deployType, setDeployType] = useState("CREATE");
   const [updateServerWallets, setUpdateServerWallets] = useState(false);
   const location = useLocation();
   const [isCreateModalVisible, setIsCreateModalVisible] = useState(false);
@@ -300,7 +301,7 @@ function App(props) {
 
   useEffect(() => {
     setOwnerEvents(allOwnerEvents.filter(contractEvent => contractEvent.address === currentMultiSigAddress));
-  }, [allOwnerEvents, currentMultiSigAddress, allOwnerEvents.length]);
+  }, [allOwnerEvents, currentMultiSigAddress, contractNameForEvent]);
 
   useEffect(() => {
     const filteredEvents = allExecuteTransactionEvents.filter(
@@ -413,7 +414,7 @@ function App(props) {
 
       setTimeout(() => {
         setContractNameForEvent("MultiSigWallet");
-      }, 10);
+      }, 100);
     }
   };
   useEffect(() => {
@@ -464,7 +465,7 @@ function App(props) {
   const HeaderBar = (
     <>
       <Header>
-        <div className="relative ">
+        <div className="relative " key={address}>
           <div className="flex flex-1 items-center p-1">
             {USE_NETWORK_SELECTOR && (
               // <div style={{ marginRight: 20 }}>
@@ -506,12 +507,12 @@ function App(props) {
     </>
   );
 
-  console.table("n-data: ", address, price);
   const WalletActions = (
     <>
       <div key={address} className="flex justify-start items-center p-2 my-2  flex-wrap ">
         <div>
           <CreateMultiSigModal
+            key={address}
             reDeployWallet={reDeployWallet}
             setReDeployWallet={setReDeployWallet}
             poolServerUrl={BACKEND_URL}
@@ -574,13 +575,8 @@ function App(props) {
   );
 
   const MainMenu = (
-    <div className="flex justify-center mt-5">
-      <Menu
-        disabled={!userHasMultiSigs}
-        // style={{ textAlign: "center", marginTop: 40 }}
-        selectedKeys={[location.pathname]}
-        mode="horizontal"
-      >
+    <div className="flex justify-center mt-5" key={address}>
+      <Menu disabled={!userHasMultiSigs} selectedKeys={[location.pathname]} mode="horizontal">
         <Menu.Item key="/">
           <Link to="/">MultiSig</Link>
         </Menu.Item>
@@ -639,11 +635,12 @@ function App(props) {
   );
 
   return (
-    <div className="App" key={address}>
+    <div className="App">
       {HeaderBar}
       {WalletActions}
       {MainMenu}
       <Routes
+        // key={currentMultiSigAddress}
         BACKEND_URL={BACKEND_URL}
         DEBUG={DEBUG}
         account={address}

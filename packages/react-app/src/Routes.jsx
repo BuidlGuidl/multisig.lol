@@ -36,6 +36,7 @@ const Routes = ({
   subgraphUri,
   reDeployWallet,
 }) => {
+  console.log("n-ownerEvents:Routes ", ownerEvents);
   return (
     <>
       <Switch>
@@ -59,6 +60,7 @@ const Routes = ({
             </Row>
           ) : (
             <Home
+              key={currentMultiSigAddress}
               contractAddress={currentMultiSigAddress}
               localProvider={localProvider}
               price={price}

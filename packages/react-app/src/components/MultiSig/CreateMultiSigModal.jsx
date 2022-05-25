@@ -9,7 +9,7 @@ import axios from "axios";
 import { AddressInput, EtherInput, Address } from "..";
 import CreateModalSentOverlay from "./CreateModalSentOverlay";
 
-const DEBUG = true;
+const DEBUG = false;
 
 function CreateMultiSigModal({
   price,
@@ -41,7 +41,6 @@ function CreateMultiSigModal({
 
   useEffect(() => {
     if (address) {
-      // setOwners([...new Set([...prevOwners, address])]);
       setOwners([...new Set([address])]);
     }
   }, [address]);
@@ -49,6 +48,7 @@ function CreateMultiSigModal({
   const showCreateModal = deployType => {
     if (deployType === "CREATE") {
       setDeployType("CREATE");
+      setOwners([...new Set([address])]);
       setTimeout(() => {
         setIsCreateModalVisible(true);
       }, 100);
@@ -205,7 +205,6 @@ function CreateMultiSigModal({
 
             let walletAddress = deployType === "CREATE" ? computed_wallet_address : reDeployWallet["walletAddress"];
 
-            // if (reDeployWallet === undefined) {
             if (deployType === "CREATE") {
               let reqData = {
                 owners,
@@ -217,9 +216,17 @@ function CreateMultiSigModal({
               );
               let data = res.data;
               console.log("create wallet res data: ", data);
+
+              setPendingCreate(false);
+              setTxSuccess(true);
+              // setTimeout(() => {
+              //   setIsCreateModalVisible(false);
+              // resetState();
+              // }, 2500);
+
+              // window.location.reload();
             }
 
-            // if (reDeployWallet !== undefined) {
             if (deployType === "RE_DEPLOY") {
               // const res = await axios.get(poolServerUrl + `updateChainId/${address}/${walletAddress}/${selectedChainId}`);
               const res = await axios.get(
@@ -232,14 +239,8 @@ function CreateMultiSigModal({
               window.location.reload();
             }
 
+            resetState();
             await getUserWallets(true);
-
-            setPendingCreate(false);
-            setTxSuccess(true);
-            setTimeout(() => {
-              setIsCreateModalVisible(false);
-              resetState();
-            }, 2500);
           }
         },
       ).catch(err => {
@@ -252,8 +253,6 @@ function CreateMultiSigModal({
       console.log("CREATE MUTLI-SIG SUBMIT FAILED: ", e);
     }
   };
-
-  console.log("n-address: ", address, walletName);
 
   return (
     <>

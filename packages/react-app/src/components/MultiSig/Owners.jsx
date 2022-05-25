@@ -5,6 +5,7 @@ import { Address } from "..";
 const { Panel } = Collapse;
 
 function Owners({ ownerEvents, signaturesRequired, mainnetProvider, blockExplorer }) {
+  console.log("n-ownerEvents: Owner ", ownerEvents);
   const owners = new Set();
   const prevOwners = new Set();
   ownerEvents.forEach(ownerEvent => {
@@ -67,5 +68,4 @@ function Owners({ ownerEvents, signaturesRequired, mainnetProvider, blockExplore
     </div>
   );
 }
-
-export default React.memo(Owners);
+export default Owners;

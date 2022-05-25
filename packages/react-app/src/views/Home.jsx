@@ -18,6 +18,7 @@ function Home({
   signaturesRequired,
   reDeployWallet,
 }) {
+  console.log("n-ownerEvents: HOME ", ownerEvents);
   const [walletName, setWalletName] = useState();
 
   const getWalletName = async () => {
@@ -142,5 +143,8 @@ function Home({
     </>
   );
 }
-
-export default Home;
+const checkProps = (preProps, nextProps) => {
+  let ownerEvents = nextProps.ownerEvents.filter(contractEvent => contractEvent.address === nextProps.contractAddress);
+  return ownerEvents.length === 0 && preProps.contractAddress === nextProps.contractAddress;
+};
+export default React.memo(Home, checkProps);
