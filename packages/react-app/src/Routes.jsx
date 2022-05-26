@@ -36,7 +36,6 @@ const Routes = ({
   subgraphUri,
   reDeployWallet,
 }) => {
-  console.log("n-ownerEvents:Routes ", ownerEvents);
   return (
     <>
       <Switch>

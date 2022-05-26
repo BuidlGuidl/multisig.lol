@@ -104,7 +104,7 @@ export default function Transactions({
       >
         #{nonce ? nonce.toNumber() : <Spin />}
       </h1>
-      <div className="xl:w-1/2">
+      <div className="lg:w-screen lg:p-x-52    txListWidth">
         <List
           // bordered
           dataSource={transactions}
@@ -113,7 +113,7 @@ export default function Transactions({
             const hasEnoughSignatures = item.signatures.length <= signaturesRequired.toNumber();
 
             return (
-              <div className="border-2 rounded-3xl shadow-md mt-4">
+              <div className="border-2 rounded-2xl shadow-md mt-4">
                 <TransactionListItem
                   item={item}
                   mainnetProvider={mainnetProvider}

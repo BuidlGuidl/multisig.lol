@@ -115,15 +115,15 @@ function Home({
             </Button>
           )}
         </div>
-        <div className="flex justify-center items-center w-screen  ">
+        <div className="flex justify-center items-center w-screen   ">
           {reDeployWallet === undefined && (
-            <div className=" w-full md:w-1/2 ">
+            <div className=" w-full md:w-1/2  py-5 ">
               <List
                 // bordered
                 dataSource={executeTransactionEvents}
                 renderItem={item => {
                   return (
-                    <div className="border-2 rounded-3xl shadow-md mt-4">
+                    <div className="border-2 rounded-3xl shadow-md mt-4 ">
                       <TransactionListItem
                         item={Object.create(item)}
                         mainnetProvider={mainnetProvider}
@@ -145,6 +145,8 @@ function Home({
 }
 const checkProps = (preProps, nextProps) => {
   let ownerEvents = nextProps.ownerEvents.filter(contractEvent => contractEvent.address === nextProps.contractAddress);
+  console.log("n-ownerEvents: ", ownerEvents);
   return ownerEvents.length === 0 && preProps.contractAddress === nextProps.contractAddress;
+  // return false;
 };
 export default React.memo(Home, checkProps);

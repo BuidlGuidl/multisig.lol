@@ -1,4 +1,4 @@
-import { Button, Col, Menu, Row, Alert, Select } from "antd";
+import { Button, Col, Menu, Row, Select } from "antd";
 import Routes from "./Routes";
 
 // import CreateMultiSigModal from "./components/MultiSig/CreateMultiSigModal";
@@ -14,33 +14,29 @@ import {
 } from "eth-hooks";
 import { useExchangeEthPrice } from "eth-hooks/dapps/dex";
 import { useEventListener } from "eth-hooks/events/";
-import React, { useCallback, useEffect, useState } from "react";
-import { Link, Route, Switch, useLocation } from "react-router-dom";
+import { useCallback, useEffect, useState } from "react";
+import { Link, useLocation } from "react-router-dom";
 import "./App.css";
 import {
   Account,
-  Contract,
+  CreateMultiSigModal,
   Faucet,
+  FaucetHint,
   GasGauge,
   Header,
+  ImportMultiSigModal,
+  NetworkDisplay,
+  NetworkSwitch,
   Ramp,
   ThemeSwitch,
-  NetworkDisplay,
-  FaucetHint,
-  NetworkSwitch,
-  CreateMultiSigModal,
-  ImportMultiSigModal,
 } from "./components";
-import { NETWORKS, ALCHEMY_KEY } from "./constants";
-import externalContracts from "./contracts/external_contracts";
+import { ALCHEMY_KEY, NETWORKS } from "./constants";
 //import multiSigWalletABI from "./contracts/multi_sig_wallet";
 // contracts
+import axios from "axios";
 import deployedContracts from "./contracts/hardhat_contracts.json";
 import { Transactor, Web3ModalSetup } from "./helpers";
-import { Home, Hints, Subgraph, CreateTransaction, Transactions } from "./views";
-import { useStaticJsonRPC, useLocalStorage } from "./hooks";
-import axios from "axios";
-import { useMemo } from "react";
+import { useLocalStorage, useStaticJsonRPC } from "./hooks";
 
 const { Option } = Select;
 const { ethers } = require("ethers");
@@ -62,7 +58,7 @@ const web3Modal = Web3ModalSetup();
  * ---------------------*/
 const multiSigWalletABI = deployedContracts["31337"]["localhost"]["contracts"]["MultiSigWallet"]["abi"];
 
-console.log("deployedContracts: ", deployedContracts);
+// console.log("deployedContracts: ", deployedContracts);
 
 // 🛰 providers
 const providers = [
@@ -79,6 +75,9 @@ function App(props) {
   const cachedNetwork = window.localStorage.getItem("network");
   let targetNetwork = NETWORKS[cachedNetwork || "mainnet"];
 
+  /**----------------------
+   * local states
+   * ---------------------*/
   const [injectedProvider, setInjectedProvider] = useState();
   const [address, setAddress] = useState();
   const [selectedNetwork, setSelectedNetwork] = useState(networkOptions[0]);
@@ -97,12 +96,16 @@ function App(props) {
 
   const [importedMultiSigs] = useLocalStorage("importedMultiSigs");
 
+  /**----------------------
+   * initial configs
+   * ---------------------*/
+
   // backend transaction handler:
   let BACKEND_URL = "http://localhost:49899/";
   // let BACKEND_URL = "https://multisig-lol-backend.herokuapp.com/";
   if (targetNetwork && targetNetwork.name && targetNetwork.name != "localhost") {
     // BACKEND_URL = "https://backend.multisig.lol:49899/";
-    // BACKEND_URL = "https://multisig-lol-backend.herokuapp.com/"; // naim heroku backend
+    BACKEND_URL = "https://multisig-lol-backend.herokuapp.com/"; // naim heroku backend
   }
 
   if (!targetNetwork) targetNetwork = NETWORKS["localhost"];
@@ -121,14 +124,11 @@ function App(props) {
   // 🛰 providers
   if (DEBUG) console.log("📡 Connecting to Mainnet Ethereum");
 
-  /**----------------------
-   * initial configs
-   * ---------------------*/
-
   // If you want to call a function on a new block
   useOnBlock(mainnetProvider, () => {
     console.log(`⛓ A new mainnet block is here: ${mainnetProvider._lastBlockNumber}`);
   });
+
   const logoutOfWeb3Modal = async () => {
     await web3Modal.clearCachedProvider();
     if (injectedProvider && injectedProvider.provider && typeof injectedProvider.provider.disconnect == "function") {
@@ -198,6 +198,7 @@ function App(props) {
   );
   if (DEBUG) console.log("📟 executeTransactionEvents:", allExecuteTransactionEvents);
 
+  console.log("n-contractNameForEvent:App ", contractNameForEvent);
   const allOwnerEvents = useEventListener(
     currentMultiSigAddress && reDeployWallet === undefined ? readContracts : null,
     contractNameForEvent,
@@ -206,6 +207,7 @@ function App(props) {
     1,
   );
   if (DEBUG) console.log("📟 ownerEvents:", allOwnerEvents);
+  console.log("n-allOwnerEvents:App ", allOwnerEvents);
 
   /**----------------------
    * readers hooks
@@ -216,6 +218,145 @@ function App(props) {
     "signaturesRequired",
   );
   const nonceContract = useContractReader(reDeployWallet === undefined ? readContracts : null, contractName, "nonce");
+
+  /**----------------------
+   * methods
+   * ---------------------*/
+
+  const handleMultiSigChange = value => {
+    setContractNameForEvent(null);
+    setCurrentMultiSigAddress(value);
+  };
+
+  async function getAddress() {
+    if (userSigner) {
+      const newAddress = await userSigner.getAddress();
+      setAddress(newAddress);
+    }
+  }
+
+  const updateUserWallets = () => {
+    let multiSigsForUser = userWallets && [...userWallets.map(data => data.walletAddress)];
+
+    if (importedMultiSigs && importedMultiSigs[targetNetwork.name]) {
+      multiSigsForUser = [...new Set([...importedMultiSigs[targetNetwork.name], ...multiSigsForUser])];
+    }
+    const recentMultiSigAddress = multiSigsForUser && multiSigsForUser[multiSigsForUser.length - 1];
+    setCurrentMultiSigAddress(recentMultiSigAddress);
+    setMultiSigs(multiSigsForUser);
+  };
+
+  const createEthersContractWallet = () => {
+    async function getContractValues() {
+      const latestSignaturesRequired = await readContracts.MultiSigWallet.signaturesRequired();
+      setSignaturesRequired(latestSignaturesRequired);
+
+      const nonce = await readContracts.MultiSigWallet.nonce();
+      setNonce(nonce);
+    }
+
+    let currentMultiSig = userWallets && userWallets.find(data => data.walletAddress === currentMultiSigAddress);
+    let currentMultiSigChainIds = currentMultiSig?.chainIds;
+
+    // on load contracts if current sig on  same chain id
+    if (currentMultiSigAddress && currentMultiSigChainIds.map(id => Number(id))?.includes(Number(selectedChainId))) {
+      readContracts.MultiSigWallet = new ethers.Contract(currentMultiSigAddress, multiSigWalletABI, localProvider);
+      writeContracts.MultiSigWallet = new ethers.Contract(currentMultiSigAddress, multiSigWalletABI, userSigner);
+      setContractNameForEvent("MultiSigWallet");
+      getContractValues();
+      setReDeployWallet(undefined);
+    } else {
+      setReDeployWallet(currentMultiSig);
+    }
+  };
+
+  const updateExecutedEvents = () => {
+    const filteredEvents = allExecuteTransactionEvents.filter(
+      contractEvent => contractEvent.address === currentMultiSigAddress,
+    );
+    const nonceNum = typeof nonce === "number" ? nonce : nonce?.toNumber();
+    if (nonceNum === filteredEvents.length) {
+      setExecuteTransactionEvents(filteredEvents.reverse());
+    }
+  };
+
+  const syncWalletsWithServer = async () => {
+    let totalWalletCount = await readContracts["MultiSigFactory"]?.numberOfMultiSigs();
+    totalWalletCount = totalWalletCount ? totalWalletCount.toNumber() : 0;
+
+    if (totalWalletCount !== 0 && totalWalletCount === walletCreateEvents.length && updateServerWallets === false) {
+      // if (userWallets !== undefined && totalWalletCount !== userWallets.length) {
+      let walletsData = walletCreateEvents.map(data => data.args);
+      /**----------------------
+       * iterating over create even data and send it to backend api to update
+       * ---------------------*/
+      for (let index = 0; index < walletsData.length; index++) {
+        let wallet = walletsData[index];
+        let walletName = wallet.name;
+        let walletAddress = wallet.contractAddress;
+        let creator = wallet.creator;
+        let owners = wallet.owners;
+        let signaturesRequired = wallet.signaturesRequired.toNumber();
+        let reqData = {
+          owners,
+          signaturesRequired,
+        };
+        const res = await axios.post(
+          BACKEND_URL + `createWallet/${creator}/${walletName}/${walletAddress}/${selectedChainId}`,
+          reqData,
+        );
+        let data = res.data;
+        console.log("update wallets on api res data: ", data);
+      }
+      setUpdateServerWallets(true);
+      // }
+    }
+  };
+
+  const loadWeb3Modal = useCallback(async () => {
+    const provider = await web3Modal.connect();
+    setInjectedProvider(new ethers.providers.Web3Provider(provider));
+
+    provider.on("chainChanged", chainId => {
+      console.log(`chain changed to ${chainId}! updating providers`);
+      setInjectedProvider(new ethers.providers.Web3Provider(provider));
+    });
+
+    provider.on("accountsChanged", () => {
+      console.log(`account changed!`);
+      setInjectedProvider(new ethers.providers.Web3Provider(provider));
+    });
+
+    // Subscribe to session disconnection
+    provider.on("disconnect", (code, reason) => {
+      console.log(code, reason);
+      logoutOfWeb3Modal();
+    });
+    // eslint-disable-next-line
+  }, [setInjectedProvider]);
+
+  const getUserWallets = async isUpdate => {
+    let res = await axios.get(BACKEND_URL + `getWallets/${address}`);
+    let data = res.data;
+    setUserWallets(data["userWallets"]);
+
+    // set and reset  ContractNameForEvent to load the ownerevents
+    setContractNameForEvent(null);
+    setTimeout(() => {
+      setContractNameForEvent("MultiSigWallet");
+    }, 100);
+
+    if (isUpdate) {
+      const lastMultiSigAddress = data["userWallets"][data["userWallets"].length - 1]?.walletAddress;
+      setCurrentMultiSigAddress(lastMultiSigAddress);
+      setContractNameForEvent(null);
+      setIsCreateModalVisible(false);
+
+      setTimeout(() => {
+        setContractNameForEvent("MultiSigWallet");
+      }, 100);
+    }
+  };
 
   /*
     if you want to hardcode a specific multisig for the frontend for everyone:
@@ -260,28 +401,16 @@ function App(props) {
    * set main account address once provider and signer loads
    * ---------------------*/
   useEffect(() => {
-    async function getAddress() {
-      if (userSigner) {
-        const newAddress = await userSigner.getAddress();
-        setAddress(newAddress);
-      }
-    }
     getAddress();
   }, [userSigner]);
 
   /**----------------------
    * load user sig wallets data from api
    * ---------------------*/
+
   useEffect(() => {
     if (address) {
-      let multiSigsForUser = userWallets && [...userWallets.map(data => data.walletAddress)];
-
-      if (importedMultiSigs && importedMultiSigs[targetNetwork.name]) {
-        multiSigsForUser = [...new Set([...importedMultiSigs[targetNetwork.name], ...multiSigsForUser])];
-      }
-      const recentMultiSigAddress = multiSigsForUser && multiSigsForUser[multiSigsForUser.length - 1];
-      setCurrentMultiSigAddress(recentMultiSigAddress);
-      setMultiSigs(multiSigsForUser);
+      updateUserWallets();
     }
   }, [userWallets && userWallets.length, address]);
 
@@ -296,28 +425,9 @@ function App(props) {
   /**----------------------
    * load selected wallet contract to read and write
    * ---------------------*/
+
   useEffect(() => {
-    async function getContractValues() {
-      const latestSignaturesRequired = await readContracts.MultiSigWallet.signaturesRequired();
-      setSignaturesRequired(latestSignaturesRequired);
-
-      const nonce = await readContracts.MultiSigWallet.nonce();
-      setNonce(nonce);
-    }
-
-    let currentMultiSig = userWallets && userWallets.find(data => data.walletAddress === currentMultiSigAddress);
-    let currentMultiSigChainIds = currentMultiSig?.chainIds;
-
-    // on load contracts if current sig on  same chain id
-    if (currentMultiSigAddress && currentMultiSigChainIds.map(id => Number(id))?.includes(Number(selectedChainId))) {
-      readContracts.MultiSigWallet = new ethers.Contract(currentMultiSigAddress, multiSigWalletABI, localProvider);
-      writeContracts.MultiSigWallet = new ethers.Contract(currentMultiSigAddress, multiSigWalletABI, userSigner);
-      setContractNameForEvent("MultiSigWallet");
-      getContractValues();
-      setReDeployWallet(undefined);
-    } else {
-      setReDeployWallet(currentMultiSig);
-    }
+    createEthersContractWallet();
   }, [currentMultiSigAddress, readContracts, writeContracts, selectedChainId]);
 
   /**----------------------
@@ -330,54 +440,16 @@ function App(props) {
   /**----------------------
    * set exected transcaction events
    * ---------------------*/
+
   useEffect(() => {
-    const filteredEvents = allExecuteTransactionEvents.filter(
-      contractEvent => contractEvent.address === currentMultiSigAddress,
-    );
-    const nonceNum = typeof nonce === "number" ? nonce : nonce?.toNumber();
-    if (nonceNum === filteredEvents.length) {
-      setExecuteTransactionEvents(filteredEvents.reverse());
-    }
+    updateExecutedEvents();
   }, [allExecuteTransactionEvents, currentMultiSigAddress, nonce]);
-
-  const loadMissingWallets = async () => {
-    let totalWalletCount = await readContracts["MultiSigFactory"]?.numberOfMultiSigs();
-    totalWalletCount = totalWalletCount ? totalWalletCount.toNumber() : 0;
-
-    if (totalWalletCount !== 0 && totalWalletCount === walletCreateEvents.length && updateServerWallets === false) {
-      // if (userWallets !== undefined && totalWalletCount !== userWallets.length) {
-      let walletsData = walletCreateEvents.map(data => data.args);
-      /**----------------------
-       * iterating over create even data and send it to backend api to update
-       * ---------------------*/
-      for (let index = 0; index < walletsData.length; index++) {
-        let wallet = walletsData[index];
-        let walletName = wallet.name;
-        let walletAddress = wallet.contractAddress;
-        let creator = wallet.creator;
-        let owners = wallet.owners;
-        let signaturesRequired = wallet.signaturesRequired.toNumber();
-        let reqData = {
-          owners,
-          signaturesRequired,
-        };
-        const res = await axios.post(
-          BACKEND_URL + `createWallet/${creator}/${walletName}/${walletAddress}/${selectedChainId}`,
-          reqData,
-        );
-        let data = res.data;
-        console.log("update wallets on api res data: ", data);
-      }
-      setUpdateServerWallets(true);
-      // }
-    }
-  };
 
   /**----------------------
    * sync wallets with server on load
    * ---------------------*/
   useEffect(() => {
-    void loadMissingWallets();
+    void syncWalletsWithServer();
   }, [walletCreateEvents.length, userWallets && userWallets.length]);
 
   // Then read your DAI balance like:
@@ -389,28 +461,6 @@ function App(props) {
   const addressFromENS = useResolveName(mainnetProvider, "austingriffith.eth");
   console.log("🏷 Resolved austingriffith.eth as:",addressFromENS)
   */
-
-  const loadWeb3Modal = useCallback(async () => {
-    const provider = await web3Modal.connect();
-    setInjectedProvider(new ethers.providers.Web3Provider(provider));
-
-    provider.on("chainChanged", chainId => {
-      console.log(`chain changed to ${chainId}! updating providers`);
-      setInjectedProvider(new ethers.providers.Web3Provider(provider));
-    });
-
-    provider.on("accountsChanged", () => {
-      console.log(`account changed!`);
-      setInjectedProvider(new ethers.providers.Web3Provider(provider));
-    });
-
-    // Subscribe to session disconnection
-    provider.on("disconnect", (code, reason) => {
-      console.log(code, reason);
-      logoutOfWeb3Modal();
-    });
-    // eslint-disable-next-line
-  }, [setInjectedProvider]);
 
   /**----------------------
    * load web3 modal
@@ -425,22 +475,6 @@ function App(props) {
    * LOAD THE USER WALLETS DATA
    * ---------------------*/
 
-  const getUserWallets = async isUpdate => {
-    let res = await axios.get(BACKEND_URL + `getWallets/${address}`);
-    let data = res.data;
-    setUserWallets(data["userWallets"]);
-
-    if (isUpdate) {
-      const lastMultiSigAddress = data["userWallets"][data["userWallets"].length - 1]?.walletAddress;
-      setCurrentMultiSigAddress(lastMultiSigAddress);
-      setContractNameForEvent(null);
-      setIsCreateModalVisible(false);
-
-      setTimeout(() => {
-        setContractNameForEvent("MultiSigWallet");
-      }, 100);
-    }
-  };
   useEffect(() => {
     if (address !== undefined) {
       getUserWallets(false);
@@ -450,11 +484,6 @@ function App(props) {
   const faucetAvailable = localProvider && localProvider.connection && targetNetwork.name.indexOf("local") !== -1;
 
   const userHasMultiSigs = currentMultiSigAddress ? true : false;
-
-  const handleMultiSigChange = value => {
-    setContractNameForEvent(null);
-    setCurrentMultiSigAddress(value);
-  };
 
   console.log("currentMultiSigAddress:", currentMultiSigAddress);
 

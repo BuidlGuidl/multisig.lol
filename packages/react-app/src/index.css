@@ -14,10 +14,30 @@ code {
   font-family: source-code-pro, Menlo, Monaco, Consolas, "Courier New", monospace;
 }
 
-.b-red{
-  border:1px solid red;
+.b-red {
+  border: 1px solid red;
 }
 
-.b-blue{
-  border:1px solid blue;
+.b-blue {
+  border: 1px solid blue;
+}
+
+@layer utilities {
+  @screen lg {
+    .txListWidth {
+      width: 70% !important;
+    }
+  }
+
+  @screen md {
+    .txListWidth {
+      width: 70%;
+    }
+  }
+
+  @screen sm {
+    .txListWidth {
+      width: 100%;
+    }
+  }
 }
