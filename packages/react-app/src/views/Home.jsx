@@ -145,6 +145,5 @@ function Home({
 const checkProps = (preProps, nextProps) => {
   let ownerEvents = nextProps.ownerEvents.filter(contractEvent => contractEvent.address === nextProps.contractAddress);
   return ownerEvents.length === 0 && preProps.contractAddress === nextProps.contractAddress;
-  // return false;
 };
 export default React.memo(Home, checkProps);
