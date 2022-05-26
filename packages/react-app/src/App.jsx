@@ -35,6 +35,8 @@ import { ALCHEMY_KEY, NETWORKS } from "./constants";
 // contracts
 import axios from "axios";
 import deployedContracts from "./contracts/hardhat_contracts.json";
+import MultiSigWalletAbi from "./configs/MultiSigWallet_ABI.json";
+
 import { Transactor, Web3ModalSetup } from "./helpers";
 import { useLocalStorage, useStaticJsonRPC } from "./hooks";
 
@@ -53,12 +55,10 @@ const USE_NETWORK_SELECTOR = false;
 const web3Modal = Web3ModalSetup();
 
 /**----------------------
- * taking  multi sig wallet abi from hardhat_contracts.json file
- * note: abi from hardcode location of localhost
+ * taking hardcoded multi sig wallet abi from MultiSigWallet_ABI.json file
+ * note: if you update MultiSigWallet.sol file then you need to update this file from hardhat artifacts wallet
  * ---------------------*/
-const multiSigWalletABI = deployedContracts["31337"]["localhost"]["contracts"]["MultiSigWallet"]["abi"];
-
-// console.log("deployedContracts: ", deployedContracts);
+const multiSigWalletABI = MultiSigWalletAbi["abi"];
 
 // 🛰 providers
 const providers = [
