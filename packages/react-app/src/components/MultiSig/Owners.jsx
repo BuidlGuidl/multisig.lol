@@ -1,10 +1,23 @@
 import React, { useEffect } from "react";
 import { Select, List, Spin, Collapse } from "antd";
+import axios from "axios";
+
 import { Address } from "..";
 
 const { Panel } = Collapse;
 
-function Owners({ ownerEvents, signaturesRequired, mainnetProvider, blockExplorer }) {
+// address={address}
+// poolServerUrl={poolServerUrl}
+// contractAddress={contractAddress}
+function Owners({
+  ownerEvents,
+  signaturesRequired,
+  mainnetProvider,
+  blockExplorer,
+  address,
+  poolServerUrl,
+  contractAddress,
+}) {
   const owners = new Set();
   const prevOwners = new Set();
   ownerEvents.forEach(ownerEvent => {
@@ -16,6 +29,19 @@ function Owners({ ownerEvents, signaturesRequired, mainnetProvider, blockExplore
       owners.delete(ownerEvent.args.owner);
     }
   });
+  const updateOwners = async owners => {
+    let reqData = {
+      owners: [...owners],
+    };
+    const res = await axios.post(poolServerUrl + `updateOwners/${address}/${contractAddress}`, reqData);
+    console.log("update owner response", res.data);
+  };
+
+  useEffect(() => {
+    if (signaturesRequired && owners.size > 0) {
+      updateOwners(owners);
+    }
+  }, [owners.size, signaturesRequired]);
 
   return (
     <div>

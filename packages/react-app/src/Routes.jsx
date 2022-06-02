@@ -60,6 +60,7 @@ const Routes = ({
           ) : (
             <Home
               key={currentMultiSigAddress}
+              address={address}
               contractAddress={currentMultiSigAddress}
               localProvider={localProvider}
               price={price}

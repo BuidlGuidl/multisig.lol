@@ -6,6 +6,7 @@ import { useState } from "react";
 import { useEffect } from "react";
 
 function Home({
+  address,
   contractAddress,
   localProvider,
   price,
@@ -17,6 +18,7 @@ function Home({
   ownerEvents,
   signaturesRequired,
   reDeployWallet,
+  poolServerUrl,
 }) {
   const [walletName, setWalletName] = useState();
 
@@ -93,6 +95,9 @@ function Home({
               signaturesRequired={signaturesRequired}
               mainnetProvider={mainnetProvider}
               blockExplorer={blockExplorer}
+              address={address}
+              poolServerUrl={poolServerUrl}
+              contractAddress={contractAddress}
             />
           </div>
         </div>

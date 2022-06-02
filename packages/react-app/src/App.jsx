@@ -198,7 +198,6 @@ function App(props) {
   );
   if (DEBUG) console.log("📟 executeTransactionEvents:", allExecuteTransactionEvents);
 
-  console.log("n-contractNameForEvent:App ", contractNameForEvent);
   const allOwnerEvents = useEventListener(
     currentMultiSigAddress && reDeployWallet === undefined ? readContracts : null,
     contractNameForEvent,
@@ -207,7 +206,6 @@ function App(props) {
     1,
   );
   if (DEBUG) console.log("📟 ownerEvents:", allOwnerEvents);
-  console.log("n-allOwnerEvents:App ", allOwnerEvents);
 
   /**----------------------
    * readers hooks

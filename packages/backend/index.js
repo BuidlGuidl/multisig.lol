@@ -47,7 +47,15 @@ app.get("/getWallets/:ownerAddress", function (request, response) {
         wallets[ownerAddress] = [];
     }
 
-    response.status(200).send({ userWallets: wallets[ownerAddress] });
+    let userWallets = Object.keys(wallets).map((ownerAddr) => {
+        let filteredOwners = wallets[ownerAddr].filter((walletData) => walletData.owners.includes(ownerAddress));
+        if (filteredOwners.length > 0) {
+            return filteredOwners;
+        } else {
+            return [];
+        }
+    });
+    response.status(200).send({ userWallets: userWallets.flat() });
 });
 
 /**----------------------
@@ -110,6 +118,24 @@ app.get("/updateChainId/:ownerAddress/:walletAddress/:chainId", function (reques
         if (data.walletAddress === walletAddress) {
             // data.chainIds.push(chainId);
             data.chainIds = [...new Set([...data.chainIds, chainId])];
+        }
+        return data;
+    });
+
+    response.status(200).send(wallets[ownerAddress]);
+});
+
+/**----------------------
+ * update owner list
+ * ---------------------*/
+app.post("/updateOwners/:ownerAddress/:walletAddress", function (request, response) {
+    let { ownerAddress, walletAddress } = request.params;
+    let { owners } = request.body;
+
+    wallets[ownerAddress].map((data) => {
+        if (data.walletAddress === walletAddress) {
+            // data.chainIds.push(chainId);
+            data.owners = [...new Set([...data.owners, ...owners])];
         }
         return data;
     });
