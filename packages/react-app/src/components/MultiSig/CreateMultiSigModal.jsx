@@ -161,7 +161,8 @@ function CreateMultiSigModal({
         throw "Field validation failed.";
       }
       let currentWalletName = deployType === "CREATE" ? walletName : reDeployWallet["walletName"];
-      const id = ethers.utils.id(currentWalletName);
+      // const id = ethers.utils.id(currentWalletName);
+      const id = ethers.utils.id(String(address) + currentWalletName);
       const hash = ethers.utils.keccak256(id);
       const salt = hexZeroPad(hexlify(hash), 32);
 
@@ -257,7 +258,7 @@ function CreateMultiSigModal({
 
   const checkWalletExist = async () => {
     let currentWalletName = deployType === "CREATE" ? walletName : reDeployWallet["walletName"];
-    const id = ethers.utils.id(currentWalletName);
+    const id = ethers.utils.id(String(address) + currentWalletName);
     const hash = ethers.utils.keccak256(id);
     const salt = hexZeroPad(hexlify(hash), 32);
 
