@@ -74,6 +74,7 @@ function CreateMultiSigModal({
     setWalletName("");
     setIsCreateModalVisible(false);
     getUserWallets();
+    setIsWalletExist(false);
   };
 
   const addOwnerField = () => {
@@ -150,6 +151,7 @@ function CreateMultiSigModal({
     setOwners([""]);
     setAmount("0");
     setSignaturesRequired(false);
+    setIsWalletExist(false);
   };
 
   const handleSubmit = () => {
@@ -172,7 +174,7 @@ function CreateMultiSigModal({
         //   value: ethers.utils.parseEther("" + parseFloat(amount).toFixed(12)),
         // }
         // create 2
-        writeContracts[contractName].create(selectedChainId, owners, signaturesRequired, salt, currentWalletName, {
+        writeContracts[contractName].create2(selectedChainId, owners, signaturesRequired, salt, currentWalletName, {
           value: ethers.utils.parseEther("" + parseFloat(amount).toFixed(12)),
         }),
         async update => {

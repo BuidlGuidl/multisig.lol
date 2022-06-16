@@ -185,7 +185,8 @@ function App(props) {
   //📟 Listen for broadcast events
   // MultiSigFactory Events:
   const ownersMultiSigEvents = useEventListener(readContracts, "MultiSigFactory", "Owners", localProvider, 1);
-  const walletCreateEvents = useEventListener(readContracts, "MultiSigFactory", "Create", localProvider, 1);
+  // const walletCreateEvents = useEventListener(readContracts, "MultiSigFactory", "Create", localProvider, 1);
+  const walletCreate2Events = useEventListener(readContracts, "MultiSigFactory", "Create2Event", localProvider, 1);
   if (DEBUG) console.log("📟 ownersMultiSigEvents:", ownersMultiSigEvents);
 
   // MultiSigWallet Events:
@@ -282,9 +283,9 @@ function App(props) {
     let totalWalletCount = await readContracts["MultiSigFactory"]?.numberOfMultiSigs();
     totalWalletCount = totalWalletCount ? totalWalletCount.toNumber() : 0;
 
-    if (totalWalletCount !== 0 && totalWalletCount === walletCreateEvents.length && updateServerWallets === false) {
+    if (totalWalletCount !== 0 && totalWalletCount === walletCreate2Events.length && updateServerWallets === false) {
       // if (userWallets !== undefined && totalWalletCount !== userWallets.length) {
-      let walletsData = walletCreateEvents.map(data => data.args);
+      let walletsData = walletCreate2Events.map(data => data.args);
       /**----------------------
        * iterating over create even data and send it to backend api to update
        * ---------------------*/
@@ -448,7 +449,7 @@ function App(props) {
    * ---------------------*/
   useEffect(() => {
     void syncWalletsWithServer();
-  }, [walletCreateEvents.length, userWallets && userWallets.length]);
+  }, [walletCreate2Events.length, userWallets && userWallets.length]);
 
   // Then read your DAI balance like:
   // const myMainnetDAIBalance = useContractReader(mainnetContracts, "DAI", "balanceOf", [
