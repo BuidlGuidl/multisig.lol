@@ -1,64 +1,91 @@
 import React, { useEffect } from "react";
 import { Select, List, Spin, Collapse } from "antd";
+import axios from "axios";
+
 import { Address } from "..";
 
 const { Panel } = Collapse;
 
-export default function Owners({
+// address={address}
+// poolServerUrl={poolServerUrl}
+// contractAddress={contractAddress}
+function Owners({
   ownerEvents,
   signaturesRequired,
   mainnetProvider,
-  blockExplorer
+  blockExplorer,
+  address,
+  poolServerUrl,
+  contractAddress,
 }) {
   const owners = new Set();
   const prevOwners = new Set();
-  ownerEvents.forEach((ownerEvent) => {
+  ownerEvents.forEach(ownerEvent => {
     if (ownerEvent.args.added) {
       owners.add(ownerEvent.args.owner);
-      prevOwners.delete(ownerEvent.args.owner)
+      prevOwners.delete(ownerEvent.args.owner);
     } else {
-      prevOwners.add(ownerEvent.args.owner)
+      prevOwners.add(ownerEvent.args.owner);
       owners.delete(ownerEvent.args.owner);
     }
   });
+  const updateOwners = async owners => {
+    let reqData = {
+      owners: [...owners],
+    };
+    const res = await axios.post(poolServerUrl + `updateOwners/${address}/${contractAddress}`, reqData);
+    console.log("update owner response", res.data);
+  };
+
+  useEffect(() => {
+    if (signaturesRequired && owners.size > 0) {
+      updateOwners(owners);
+    }
+  }, [owners.size, signaturesRequired]);
 
   return (
     <div>
-      <h2 style={{marginTop:32}}>Signatures Required: {signaturesRequired ? signaturesRequired.toNumber() :<Spin></Spin>}</h2>
+      <h2 style={{ marginTop: 32 }}>
+        Signatures Required:{" "}
+        {signaturesRequired && ownerEvents.length !== 0 ? signaturesRequired.toNumber() : <Spin></Spin>}
+      </h2>
       <List
         header={<h2>Owners</h2>}
-        style={{maxWidth:400, margin:"auto", marginTop:32}}
+        style={{ maxWidth: 400, margin: "auto", marginTop: 32 }}
         bordered
         dataSource={[...owners]}
-        renderItem={(ownerAddress) => {
+        renderItem={ownerAddress => {
           return (
             <List.Item key={"owner_" + ownerAddress}>
               <Address
                 address={ownerAddress}
                 ensProvider={mainnetProvider}
                 blockExplorer={blockExplorer}
-                fontSize={24}
+                fontSize={20}
               />
             </List.Item>
-          )
+          );
         }}
       />
 
-      <Collapse collapsible={prevOwners.size == 0 ? "disabled" : ""} style={{maxWidth:400, margin:"auto", marginTop:10}}>
+      <Collapse
+        collapsible={prevOwners.size == 0 ? "disabled" : ""}
+        style={{ maxWidth: 400, margin: "auto", marginTop: 10 }}
+      >
         <Panel header="Previous Owners" key="1">
           <List
             dataSource={[...prevOwners]}
-            renderItem={(prevOwnerAddress) => {
+            renderItem={prevOwnerAddress => {
               return (
                 <List.Item key={"owner_" + prevOwnerAddress}>
                   <Address
                     address={prevOwnerAddress}
                     ensProvider={mainnetProvider}
                     blockExplorer={blockExplorer}
-                    fontSize={24}
+                    fontSize={20}
                   />
                 </List.Item>
-              )
+              );
             }}
           />
         </Panel>
@@ -66,3 +93,4 @@ export default function Owners({
     </div>
   );
 }
+export default Owners;
