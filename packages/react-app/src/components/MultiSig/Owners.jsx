@@ -39,7 +39,8 @@ function Owners({
 
   useEffect(() => {
     if (signaturesRequired && owners.size > 0) {
-      updateOwners(owners);
+      //  disabled for updating owners at backend as it is automatically updated
+      // updateOwners(owners);
     }
   }, [owners.size, signaturesRequired]);
 

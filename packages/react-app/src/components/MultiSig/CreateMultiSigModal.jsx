@@ -213,10 +213,13 @@ function CreateMultiSigModal({
                 owners,
                 signaturesRequired,
               };
+
+              console.log("n-reqData: ", reqData);
               const res = await axios.post(
                 poolServerUrl + `createWallet/${address}/${walletName}/${walletAddress}/${selectedChainId}`,
                 reqData,
               );
+
               let data = res.data;
               console.log("create wallet res data: ", data);
 
