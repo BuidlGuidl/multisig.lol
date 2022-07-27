@@ -1,6 +1,6 @@
 import React, { useEffect, useState, useRef } from "react";
 import { useHistory } from "react-router-dom";
-import { Button, Input, Select, InputNumber, Space, Tooltip } from "antd";
+import { Button, Input, Select, InputNumber, Space, Tooltip, Alert } from "antd";
 import { CodeOutlined } from "@ant-design/icons";
 import { AddressInput, EtherInput, WalletConnectInput } from "../components";
 import TransactionDetailsModal from "../components/MultiSig/TransactionDetailsModal";
@@ -35,6 +35,7 @@ export default function CreateTransaction({
   const [isModalVisible, setIsModalVisible] = useState(false);
   const [loading, setLoading] = useState(false);
   const [isWalletConnectTransaction, setIsWalletConnectTransaction] = useState(false);
+  const [isOwner, setIsOwner] = useState();
 
   const [hasEdited, setHasEdited] = useState(); //we want the signaturesRequired to update from the contract _until_ they edit it
 
@@ -108,6 +109,8 @@ export default function CreateTransaction({
         console.log("recover: ", recover);
 
         const isOwner = await readContracts[contractName].isOwner(recover);
+        setIsOwner(isOwner);
+
         console.log("isOwner: ", isOwner);
 
         if (isOwner) {
@@ -130,6 +133,7 @@ export default function CreateTransaction({
           }, 1000);
         } else {
           console.log("ERROR, NOT OWNER.");
+          setLoading(false);
         }
       }
     } catch (error) {
@@ -139,7 +143,7 @@ export default function CreateTransaction({
   };
 
   return (
-    <div className="flex justify-center">
+    <div className="flex justify-center flex-col items-center">
       <div
         // style={{ border: "1px solid #cccccc", padding: 16, width: 400, margin: "auto", marginTop: 64 }}
         className="flex justify-center border-2 m-5 w-96 rounded-2xl shadow-md"
@@ -227,6 +231,8 @@ export default function CreateTransaction({
           )}
         </div>
       </div>
+
+      {isOwner === false && <Alert message="you are not the owner ! " type="error" showIcon />}
     </div>
   );
 }

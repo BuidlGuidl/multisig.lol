@@ -135,7 +135,8 @@ app.post("/updateOwners/:ownerAddress/:walletAddress", function (request, respon
     wallets[ownerAddress].map((data) => {
         if (data.walletAddress === walletAddress) {
             // data.chainIds.push(chainId);
-            data.owners = [...new Set([...data.owners, ...owners])];
+            // data.owners = [...new Set([...data.owners, ...owners])];
+            data.owners = [...new Set([...owners])];
         }
         return data;
     });

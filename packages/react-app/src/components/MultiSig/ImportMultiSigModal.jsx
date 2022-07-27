@@ -17,6 +17,7 @@ export default function ImportMultiSigModal({
   multiSigWalletABI,
   localProvider,
   poolServerUrl,
+  getUserWallets,
 }) {
   const [importedMultiSigs, setImportedMultiSigs] = useLocalStorage("importedMultiSigs");
   const [isModalVisible, setIsModalVisible] = useState(false);
@@ -44,33 +45,75 @@ export default function ImportMultiSigModal({
       const contract = new ethers.Contract(address, multiSigWalletABI, localProvider);
 
       let signaturesRequired = await contract.signaturesRequired();
-      let owners = await contract.owners();
+      signaturesRequired = signaturesRequired.toString();
+      // let owners = await contract.owners();
+      let owners = [];
       let walletName = await contract.name();
       let walletAddress = contract.address;
 
+      let ownnersCount = await contract.numberOfOwners();
+      ownnersCount = ownnersCount.toString();
+      for (let index = 0; index < +ownnersCount; index++) {
+        let owner = await contract.owners(index);
+        owners.push(owner);
+      }
+
+      console.log("owners: ", owners);
+      // {
+      //     "walletName": "test",
+      //     "walletAddress": "0x92973c0DFb0676713A161471841e475b3c6ad087",
+      //     "chainIds": [
+      //         31337
+      //     ],
+      //     "signaturesRequired": 1,
+      //     "owners": [
+      //         "0x813f45BD0B48a334A3cc06bCEf1c44AAd907b8c1"
+      //     ]
+      // }
+
+      // old code wallet with address
+      // let newImportedMultiSigs = importedMultiSigs || {};
+      // (newImportedMultiSigs[network] = newImportedMultiSigs[network] || []).push(address);
+      // newImportedMultiSigs[network] = [...new Set(newImportedMultiSigs[network])];
+      // setImportedMultiSigs(newImportedMultiSigs);
+
+      let importWalletData = {
+        walletName,
+        walletAddress,
+        chainIds: [targetNetwork.chainId],
+        signaturesRequired: +signaturesRequired,
+        owners,
+      };
+
+      console.log("n-importWalletData: ", importWalletData);
+
       let newImportedMultiSigs = importedMultiSigs || {};
-      (newImportedMultiSigs[network] = newImportedMultiSigs[network] || []).push(address);
-      newImportedMultiSigs[network] = [...new Set(newImportedMultiSigs[network])];
+      (newImportedMultiSigs[network] = newImportedMultiSigs[network] || []).push(importWalletData);
+      newImportedMultiSigs[network] = [newImportedMultiSigs[network]];
+      console.log("n-newImportedMultiSigs[network]: ", newImportedMultiSigs[network]);
       setImportedMultiSigs(newImportedMultiSigs);
 
-      if (network === targetNetwork.name) {
-        setMultiSigs([...new Set([...newImportedMultiSigs[network], ...multiSigs])]);
-        setCurrentMultiSigAddress(address);
+      await getUserWallets(true);
 
-        let reqData = {
-          owners,
-          signaturesRequired,
-        };
-        const res = await axios.post(
-          poolServerUrl + `createWallet/${address}/${walletName}/${walletAddress}/${targetNetwork.chainId}`,
-          reqData,
-        );
-        let data = res.data;
-        console.log("import wallet res data: ", data);
-      }
+      // if (network === targetNetwork.name) {
+      //   setMultiSigs([...new Set([...newImportedMultiSigs[network], ...multiSigs])]);
+      //   setCurrentMultiSigAddress(address);
+
+      //   let reqData = {
+      //     owners,
+      //     signaturesRequired,
+      //   };
+      //   const res = await axios.post(
+      //     poolServerUrl + `createWallet/${address}/${walletName}/${walletAddress}/${targetNetwork.chainId}`,
+      //     reqData,
+      //   );
+      //   let data = res.data;
+      //   console.log("import wallet res data: ", data);
+      // }
 
       resetState();
       setIsModalVisible(false);
+      window.location.reload();
     } catch (e) {
       console.log("Import error:", e);
       setError(true);
