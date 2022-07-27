@@ -108,7 +108,7 @@ module.exports = {
         mnemonic: mnemonic(),
       },
     },
-    xdai: {
+    gnosis: {
       url: "https://rpc.gnosischain.com",
       gasPrice: 1000000000,
       accounts: {
@@ -163,6 +163,15 @@ module.exports = {
       },
       companionNetworks: {
         l1: "localArbitrumL1",
+      },
+    },
+    arbitrum: {
+      url: "https://arb1.arbitrum.io/rpc",
+      accounts: {
+        mnemonic: mnemonic(),
+      },
+      companionNetworks: {
+        l1: "mainnet",
       },
     },
     localArbitrumL1: {

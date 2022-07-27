@@ -22,7 +22,7 @@ export const NETWORKS = {
     name: "mainnet",
     color: "#ff8b9e",
     chainId: 1,
-    rpcUrl: `https://mainnet.infura.io/v3/${INFURA_ID}`,
+    rpcUrl: "https://rpc.scaffoldeth.io:48544",//`https://mainnet.infura.io/v3/${INFURA_ID}`,
     blockExplorer: "https://etherscan.io/",
   },
   gnosis: {
@@ -50,6 +50,14 @@ export const NETWORKS = {
     chainId: 10,
     blockExplorer: "https://optimistic.etherscan.io/",
     rpcUrl: `https://mainnet.optimism.io`,
+  },
+  arbitrum: {
+    name: "arbitrum",
+    color: "#50a0ea",
+    chainId: 42161,
+    blockExplorer: "https://explorer.arbitrum.io/#/",
+    rpcUrl: `https://arb1.arbitrum.io/rpc`,
+    gasPrice: 0,
   },
   kovan: {
     name: "kovan",
@@ -114,14 +122,7 @@ export const NETWORKS = {
     blockExplorer: "https://rinkeby-explorer.arbitrum.io/#/",
     rpcUrl: `https://rinkeby.arbitrum.io/rpc`,
   },
-  arbitrum: {
-    name: "Arbitrum",
-    color: "#50a0ea",
-    chainId: 42161,
-    blockExplorer: "https://explorer.arbitrum.io/#/",
-    rpcUrl: `https://arb1.arbitrum.io/rpc`,
-    gasPrice: 0,
-  },
+
   localOptimismL1: {
     name: "localOptimismL1",
     color: "#f01a37",

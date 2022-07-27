@@ -73,7 +73,7 @@ function App(props) {
   const networkOptions = [initialNetwork.name, "mainnet", "rinkeby"];
 
   const cachedNetwork = window.localStorage.getItem("network");
-  let targetNetwork = NETWORKS[cachedNetwork || "localhost"];
+  let targetNetwork = NETWORKS[cachedNetwork || "mainnet"];
 
   /**----------------------
    * local states
@@ -107,7 +107,7 @@ function App(props) {
     BACKEND_URL = "https://backend.multisig.lol:49899/";
   }
 
-  if (!targetNetwork) targetNetwork = NETWORKS["localhost"];
+  if (!targetNetwork) targetNetwork = NETWORKS["mainnet"];
 
   // 🔭 block explorer URL
   const blockExplorer = targetNetwork.blockExplorer;
