@@ -161,7 +161,7 @@ if (fs.existsSync("server.key") && fs.existsSync("server.cert")) {
         console.log("HTTP Listening on port:", server.address().port);
     });
 }
-
+/*
 // // to keep alive heroku call test api every 5 minutes
 setInterval(function () {
     const https = require("https");
@@ -184,3 +184,4 @@ setInterval(function () {
 
     req.end();
 }, 300000); // every 5 minutes (300000)
+*/
