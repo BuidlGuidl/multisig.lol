@@ -95,6 +95,7 @@ function App(props) {
   const [executeTransactionEvents, setExecuteTransactionEvents] = useState();
 
   const [importedMultiSigs] = useLocalStorage("importedMultiSigs");
+  const [multiSigFactoryData, setMultiSigFactoryData] = useLocalStorage("multiSigFactoryData");
 
   /**----------------------
    * initial configs
@@ -237,9 +238,10 @@ function App(props) {
   const updateUserWallets = () => {
     let multiSigsForUser = userWallets && [...userWallets.map(data => data.walletAddress)];
 
-    if (importedMultiSigs && importedMultiSigs[targetNetwork.name]) {
-      multiSigsForUser = [...new Set([...importedMultiSigs[targetNetwork.name], ...multiSigsForUser])];
-    }
+    // if (importedMultiSigs && importedMultiSigs[targetNetwork.name]) {
+    //   multiSigsForUser = [...new Set([...importedMultiSigs[targetNetwork.name], ...multiSigsForUser])];
+    //   console.log("n-multiSigsForUser: after merge ", multiSigsForUser);
+    // }
     const recentMultiSigAddress = multiSigsForUser && multiSigsForUser[multiSigsForUser.length - 1];
     setCurrentMultiSigAddress(recentMultiSigAddress);
     setMultiSigs(multiSigsForUser);
@@ -337,7 +339,15 @@ function App(props) {
   const getUserWallets = async isUpdate => {
     let res = await axios.get(BACKEND_URL + `getWallets/${address}`);
     let data = res.data;
-    setUserWallets(data["userWallets"]);
+    let localWallets =
+      importedMultiSigs && targetNetwork.name in importedMultiSigs ? [...importedMultiSigs[targetNetwork.name]] : [];
+
+    let allWallets = [...localWallets, ...data["userWallets"]].flat();
+
+    // setUserWallets(data["userWallets"]);
+    setUserWallets(allWallets);
+
+    // console.log("n-importedMultiSigs[targetNetwork.name]: ", importedMultiSigs[targetNetwork.name]);
 
     // set and reset  ContractNameForEvent to load the ownerevents
     setContractNameForEvent(null);
@@ -346,7 +356,9 @@ function App(props) {
     }, 100);
 
     if (isUpdate) {
-      const lastMultiSigAddress = data["userWallets"][data["userWallets"].length - 1]?.walletAddress;
+      // const lastMultiSigAddress = data["userWallets"][data["userWallets"].length - 1]?.walletAddress;
+      const lastMultiSigAddress = allWallets[allWallets.length - 1]?.walletAddress;
+      console.log("lastMultiSigAddress: ", lastMultiSigAddress);
       setCurrentMultiSigAddress(lastMultiSigAddress);
       setContractNameForEvent(null);
       setIsCreateModalVisible(false);
@@ -397,6 +409,31 @@ function App(props) {
    * ---------------------*/
 
   /**----------------------
+   * on factory address change remove imported wallets from localstorage
+   * ---------------------*/
+
+  useEffect(() => {
+    let currentFactoryContractAddres =
+      deployedContracts[targetNetwork.chainId][targetNetwork.name]["contracts"]["MultiSigFactory"].address;
+
+    if (multiSigFactoryData === undefined) {
+      localStorage.removeItem("importedMultiSigs");
+      setMultiSigFactoryData({ ...multiSigFactoryData, [`${targetNetwork.name}`]: currentFactoryContractAddres });
+
+      return;
+    }
+
+    if (multiSigFactoryData !== undefined) {
+      let oldFactoryAddress = multiSigFactoryData[`${targetNetwork.name}`];
+      let isNewFactoryDeployed = currentFactoryContractAddres !== oldFactoryAddress;
+      if (isNewFactoryDeployed) {
+        localStorage.removeItem("importedMultiSigs");
+        setMultiSigFactoryData({ ...multiSigFactoryData, [`${targetNetwork.name}`]: currentFactoryContractAddres });
+      }
+    }
+  }, [userSigner]);
+
+  /**----------------------
    * set main account address once provider and signer loads
    * ---------------------*/
   useEffect(() => {
@@ -408,7 +445,7 @@ function App(props) {
    * ---------------------*/
 
   useEffect(() => {
-    if (address) {
+    if (address && userWallets) {
       updateUserWallets();
     }
   }, [userWallets && userWallets.length, address]);
@@ -593,6 +630,7 @@ function App(props) {
             multiSigWalletABI={multiSigWalletABI}
             localProvider={localProvider}
             poolServerUrl={BACKEND_URL}
+            getUserWallets={getUserWallets}
           />
         </div>
         <div className="m-2  w-28">
