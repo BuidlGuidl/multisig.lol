@@ -684,6 +684,7 @@ function App(props) {
             setIsCreateModalVisible={setIsCreateModalVisible}
             getUserWallets={getUserWallets}
             currentNetworkName={targetNetwork.name}
+            isFactoryDeployed={isFactoryDeployed}
           />
         </div>
 
@@ -699,6 +700,7 @@ function App(props) {
             localProvider={localProvider}
             poolServerUrl={BACKEND_URL}
             getUserWallets={getUserWallets}
+            isFactoryDeployed={isFactoryDeployed}
           />
         </div>
         <div className="m-2  w-28">

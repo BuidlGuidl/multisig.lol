@@ -18,6 +18,7 @@ export default function ImportMultiSigModal({
   localProvider,
   poolServerUrl,
   getUserWallets,
+  isFactoryDeployed,
 }) {
   const [importedMultiSigs, setImportedMultiSigs] = useLocalStorage("importedMultiSigs");
   const [isModalVisible, setIsModalVisible] = useState(false);
@@ -123,7 +124,7 @@ export default function ImportMultiSigModal({
 
   return (
     <>
-      <Button type="primary" ghost onClick={() => setIsModalVisible(true)}>
+      <Button type="primary" ghost onClick={() => setIsModalVisible(true)} disabled={isFactoryDeployed === undefined}>
         Import
       </Button>
       <Modal
