@@ -73,7 +73,8 @@ function App(props) {
   const networkOptions = [initialNetwork.name, "mainnet", "rinkeby"];
 
   const cachedNetwork = window.localStorage.getItem("network");
-  let targetNetwork = NETWORKS[cachedNetwork || "mainnet"];
+  // let targetNetwork = NETWORKS[cachedNetwork || "mainnet"];
+  let targetNetwork = NETWORKS[cachedNetwork || "localhost"];
 
   /**----------------------
    * local states
@@ -215,6 +216,8 @@ function App(props) {
     contractName,
     "signaturesRequired",
   );
+
+  console.log("n-signaturesRequiredContract: ", signaturesRequiredContract);
   const nonceContract = useContractReader(reDeployWallet === undefined ? readContracts : null, contractName, "nonce");
 
   /**----------------------
@@ -367,6 +370,55 @@ function App(props) {
     }
   };
 
+  const onChangeNetwork = async value => {
+    if (targetNetwork.chainId != NETWORKS[value].chainId) {
+      // window.localStorage.setItem("network", value);
+      // setTimeout(() => {
+      //   window.location.reload();
+      // }, 1);
+      let targetNetwork = NETWORKS[value];
+
+      const ethereum = window.ethereum;
+      const data = [
+        {
+          chainId: "0x" + targetNetwork.chainId.toString(16),
+          chainName: targetNetwork.name,
+          nativeCurrency: targetNetwork.nativeCurrency,
+          rpcUrls: [targetNetwork.rpcUrl],
+          blockExplorerUrls: [targetNetwork.blockExplorer],
+        },
+      ];
+      console.log("data", data);
+
+      let switchTx;
+      // https://docs.metamask.io/guide/rpc-api.html#other-rpc-methods
+      try {
+        switchTx = await ethereum.request({
+          method: "wallet_switchEthereumChain",
+          params: [{ chainId: data[0].chainId }],
+        });
+      } catch (switchError) {
+        // not checking specific error code, because maybe we're not using MetaMask
+        try {
+          switchTx = await ethereum.request({
+            method: "wallet_addEthereumChain",
+            params: data,
+          });
+        } catch (addError) {
+          // handle "add" error
+        }
+      }
+
+      window.localStorage.setItem("network", value);
+      setTimeout(() => {
+        window.location.reload();
+      }, 1);
+
+      if (switchTx) {
+      }
+    }
+  };
+
   /*
     if you want to hardcode a specific multisig for the frontend for everyone:
   useEffect(()=>{
@@ -411,22 +463,24 @@ function App(props) {
    * ---------------------*/
 
   useEffect(() => {
-    let currentFactoryContractAddres =
-      deployedContracts[targetNetwork.chainId][targetNetwork.name]["contracts"]["MultiSigFactory"].address;
+    if (deployedContracts[targetNetwork.chainId] && deployedContracts[targetNetwork.chainId][targetNetwork.name]) {
+      let currentFactoryContractAddres =
+        deployedContracts[targetNetwork.chainId][targetNetwork.name]["contracts"]["MultiSigFactory"].address;
 
-    if (multiSigFactoryData === undefined) {
-      localStorage.removeItem("importedMultiSigs");
-      setMultiSigFactoryData({ ...multiSigFactoryData, [`${targetNetwork.name}`]: currentFactoryContractAddres });
-
-      return;
-    }
-
-    if (multiSigFactoryData !== undefined) {
-      let oldFactoryAddress = multiSigFactoryData[`${targetNetwork.name}`];
-      let isNewFactoryDeployed = currentFactoryContractAddres !== oldFactoryAddress;
-      if (isNewFactoryDeployed) {
+      if (multiSigFactoryData === undefined) {
         localStorage.removeItem("importedMultiSigs");
         setMultiSigFactoryData({ ...multiSigFactoryData, [`${targetNetwork.name}`]: currentFactoryContractAddres });
+
+        return;
+      }
+
+      if (multiSigFactoryData !== undefined) {
+        let oldFactoryAddress = multiSigFactoryData[`${targetNetwork.name}`];
+        let isNewFactoryDeployed = currentFactoryContractAddres !== oldFactoryAddress;
+        if (isNewFactoryDeployed) {
+          localStorage.removeItem("importedMultiSigs");
+          setMultiSigFactoryData({ ...multiSigFactoryData, [`${targetNetwork.name}`]: currentFactoryContractAddres });
+        }
       }
     }
   }, [userSigner]);
@@ -535,14 +589,7 @@ function App(props) {
       className="w-full text-left"
       defaultValue={targetNetwork.name}
       // style={{ textAlign: "left", width: 170 }}
-      onChange={value => {
-        if (targetNetwork.chainId != NETWORKS[value].chainId) {
-          window.localStorage.setItem("network", value);
-          setTimeout(() => {
-            window.location.reload();
-          }, 1);
-        }
-      }}
+      onChange={onChangeNetwork}
     >
       {selectNetworkOptions}
     </Select>

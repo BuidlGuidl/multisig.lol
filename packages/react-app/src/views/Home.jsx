@@ -22,6 +22,8 @@ function Home({
 }) {
   const [walletName, setWalletName] = useState();
 
+  console.log("n-reDeployWallet: ", reDeployWallet);
+
   const getWalletName = async () => {
     if (readContracts[contractName] && reDeployWallet === undefined) {
       let walletName = await readContracts[contractName].name();
@@ -149,6 +151,12 @@ function Home({
 }
 const checkProps = (preProps, nextProps) => {
   let ownerEvents = nextProps.ownerEvents.filter(contractEvent => contractEvent.address === nextProps.contractAddress);
-  return ownerEvents.length === 0 && preProps.contractAddress === nextProps.contractAddress;
+  return (
+    ownerEvents.length === 0 &&
+    preProps.contractAddress === nextProps.contractAddress &&
+    preProps.reDeployWallet &&
+    nextProps.reDeployWallet
+  );
 };
 export default React.memo(Home, checkProps);
+// export default Home;
