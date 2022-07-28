@@ -55,6 +55,7 @@ export default function Account({
   logoutOfWeb3Modal,
   blockExplorer,
   isContract,
+  isFactoryDeployed,
 }) {
   const { currentTheme } = useThemeSwitcher();
 
@@ -125,6 +126,7 @@ export default function Account({
         shape="round"
         size="large"
         onClick={accountButton.action}
+        disabled={isFactoryDeployed === undefined}
       >
         {accountButton.name}
       </Button>

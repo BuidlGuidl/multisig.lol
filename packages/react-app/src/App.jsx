@@ -338,35 +338,37 @@ function App(props) {
   }, [setInjectedProvider]);
 
   const getUserWallets = async isUpdate => {
-    let res = await axios.get(BACKEND_URL + `getWallets/${address}`);
-    let data = res.data;
-    let localWallets =
-      importedMultiSigs && targetNetwork.name in importedMultiSigs ? [...importedMultiSigs[targetNetwork.name]] : [];
+    if (isFactoryDeployed !== undefined) {
+      let res = await axios.get(BACKEND_URL + `getWallets/${address}`);
+      let data = res.data;
+      let localWallets =
+        importedMultiSigs && targetNetwork.name in importedMultiSigs ? [...importedMultiSigs[targetNetwork.name]] : [];
 
-    let allWallets = [...localWallets, ...data["userWallets"]].flat();
+      let allWallets = [...localWallets, ...data["userWallets"]].flat();
 
-    // setUserWallets(data["userWallets"]);
-    setUserWallets(allWallets);
+      // setUserWallets(data["userWallets"]);
+      setUserWallets(allWallets);
 
-    // console.log("n-importedMultiSigs[targetNetwork.name]: ", importedMultiSigs[targetNetwork.name]);
+      // console.log("n-importedMultiSigs[targetNetwork.name]: ", importedMultiSigs[targetNetwork.name]);
 
-    // set and reset  ContractNameForEvent to load the ownerevents
-    setContractNameForEvent(null);
-    setTimeout(() => {
-      setContractNameForEvent("MultiSigWallet");
-    }, 100);
-
-    if (isUpdate) {
-      // const lastMultiSigAddress = data["userWallets"][data["userWallets"].length - 1]?.walletAddress;
-      const lastMultiSigAddress = allWallets[allWallets.length - 1]?.walletAddress;
-      console.log("lastMultiSigAddress: ", lastMultiSigAddress);
-      setCurrentMultiSigAddress(lastMultiSigAddress);
+      // set and reset  ContractNameForEvent to load the ownerevents
       setContractNameForEvent(null);
-      setIsCreateModalVisible(false);
-
       setTimeout(() => {
         setContractNameForEvent("MultiSigWallet");
       }, 100);
+
+      if (isUpdate) {
+        // const lastMultiSigAddress = data["userWallets"][data["userWallets"].length - 1]?.walletAddress;
+        const lastMultiSigAddress = allWallets[allWallets.length - 1]?.walletAddress;
+        console.log("lastMultiSigAddress: ", lastMultiSigAddress);
+        setCurrentMultiSigAddress(lastMultiSigAddress);
+        setContractNameForEvent(null);
+        setIsCreateModalVisible(false);
+
+        setTimeout(() => {
+          setContractNameForEvent("MultiSigWallet");
+        }, 100);
+      }
     }
   };
 
@@ -612,6 +614,9 @@ function App(props) {
     </Select>
   );
 
+  let isFactoryDeployed = deployedContracts[targetNetwork.chainId];
+  console.log("n-isFactoryDeployed: ", isFactoryDeployed);
+
   // top header bar
   const HeaderBar = (
     <>
@@ -639,6 +644,7 @@ function App(props) {
               loadWeb3Modal={loadWeb3Modal}
               logoutOfWeb3Modal={logoutOfWeb3Modal}
               blockExplorer={blockExplorer}
+              isFactoryDeployed={isFactoryDeployed}
             />
           </div>
           {yourLocalBalance.lte(ethers.BigNumber.from("0")) && (
@@ -822,6 +828,7 @@ function App(props) {
         writeContracts={writeContracts}
         yourLocalBalance={yourLocalBalance}
         reDeployWallet={reDeployWallet}
+        isFactoryDeployed={isFactoryDeployed}
       />
 
       <ThemeSwitch />

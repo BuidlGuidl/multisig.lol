@@ -35,28 +35,44 @@ const Routes = ({
   mainnetContracts,
   subgraphUri,
   reDeployWallet,
+  isFactoryDeployed,
 }) => {
   return (
     <>
       <Switch>
         <Route exact path="/">
           {!userHasMultiSigs ? (
-            <Row style={{ marginTop: 40 }}>
-              <Col span={12} offset={6}>
-                <Alert
-                  message={
-                    <>
-                      ✨{" "}
-                      <Button onClick={() => setIsCreateModalVisible(true)} type="link" style={{ padding: 0 }}>
-                        Create
-                      </Button>{" "}
-                      or select your Multi-Sig ✨
-                    </>
-                  }
-                  type="info"
-                />
-              </Col>
-            </Row>
+            <>
+              {isFactoryDeployed !== undefined && (
+                <Row style={{ marginTop: 40 }}>
+                  <Col span={12} offset={6}>
+                    <Alert
+                      message={
+                        <>
+                          ✨{" "}
+                          <Button onClick={() => setIsCreateModalVisible(true)} type="link" style={{ padding: 0 }}>
+                            Create
+                          </Button>{" "}
+                          or select your Multi-Sig ✨
+                        </>
+                      }
+                      type="info"
+                    />
+                  </Col>
+                </Row>
+              )}
+
+              {isFactoryDeployed === undefined && (
+                <Row style={{ marginTop: 40 }}>
+                  <Col span={12} offset={6}>
+                    <Alert
+                      message={<> Sorry multisig not awailable on this network 😥 ( please change the network) </>}
+                      type="error"
+                    />
+                  </Col>
+                </Row>
+              )}
+            </>
           ) : (
             <Home
               key={currentMultiSigAddress}
@@ -73,6 +89,7 @@ const Routes = ({
               signaturesRequired={signaturesRequired}
               poolServerUrl={BACKEND_URL}
               reDeployWallet={reDeployWallet}
+              isFactoryDeployed={isFactoryDeployed}
             />
           )}
         </Route>
