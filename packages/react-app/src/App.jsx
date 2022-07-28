@@ -73,8 +73,8 @@ function App(props) {
   const networkOptions = [initialNetwork.name, "mainnet", "rinkeby"];
 
   const cachedNetwork = window.localStorage.getItem("network");
-  let targetNetwork = NETWORKS[cachedNetwork || "mainnet"];
-  // let targetNetwork = NETWORKS[cachedNetwork || "localhost"];
+  // let targetNetwork = NETWORKS[cachedNetwork || "mainnet"];
+  let targetNetwork = NETWORKS[cachedNetwork || "localhost"];
 
   /**----------------------
    * local states
@@ -410,9 +410,9 @@ function App(props) {
       }
 
       window.localStorage.setItem("network", value);
-      setTimeout(() => {
-        window.location.reload();
-      }, 1);
+      // setTimeout(() => {
+      // window.location.reload();
+      // }, 1);
 
       if (switchTx) {
       }
@@ -457,6 +457,23 @@ function App(props) {
   /**----------------------
    * useEffect hooks
    * ---------------------*/
+  // -----------------
+  //   page reload on metamask account and network change
+  // -----------------
+  useEffect(() => {
+    window.ethereum?.on("accountsChanged", function () {
+      window.location.reload();
+    });
+    // detect Network account change
+    window.ethereum?.on("networkChanged", function () {
+      if (deployedContracts[targetNetwork.chainId] === undefined) {
+        console.log("NO FACTORY FOUND LOGING OUT !!!");
+        logoutOfWeb3Modal();
+      } else {
+        window.location.reload();
+      }
+    });
+  }, []);
 
   /**----------------------
    * on factory address change remove imported wallets from localstorage
