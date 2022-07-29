@@ -26,6 +26,8 @@ function CreateMultiSigModal({
   getUserWallets,
   setReDeployWallet,
   currentNetworkName,
+
+  isFactoryDeployed,
 }) {
   const [deployType, setDeployType] = useState("CREATE");
   const [pendingCreate, setPendingCreate] = useState(false);
@@ -282,7 +284,12 @@ function CreateMultiSigModal({
 
   return (
     <>
-      <Button type="primary" onClick={() => showCreateModal("CREATE")} className="mx-2">
+      <Button
+        type="primary"
+        onClick={() => showCreateModal("CREATE")}
+        className="mx-2"
+        disabled={isFactoryDeployed === undefined}
+      >
         Create
       </Button>
 

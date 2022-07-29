@@ -73,7 +73,8 @@ function App(props) {
   const networkOptions = [initialNetwork.name, "mainnet", "rinkeby"];
 
   const cachedNetwork = window.localStorage.getItem("network");
-  let targetNetwork = NETWORKS[cachedNetwork || "mainnet"];
+  // let targetNetwork = NETWORKS[cachedNetwork || "mainnet"];
+  let targetNetwork = NETWORKS[cachedNetwork || "localhost"];
 
   /**----------------------
    * local states
@@ -215,6 +216,8 @@ function App(props) {
     contractName,
     "signaturesRequired",
   );
+
+  console.log("n-signaturesRequiredContract: ", signaturesRequiredContract);
   const nonceContract = useContractReader(reDeployWallet === undefined ? readContracts : null, contractName, "nonce");
 
   /**----------------------
@@ -335,35 +338,86 @@ function App(props) {
   }, [setInjectedProvider]);
 
   const getUserWallets = async isUpdate => {
-    let res = await axios.get(BACKEND_URL + `getWallets/${address}`);
-    let data = res.data;
-    let localWallets =
-      importedMultiSigs && targetNetwork.name in importedMultiSigs ? [...importedMultiSigs[targetNetwork.name]] : [];
+    if (isFactoryDeployed !== undefined) {
+      let res = await axios.get(BACKEND_URL + `getWallets/${address}`);
+      let data = res.data;
+      let localWallets =
+        importedMultiSigs && targetNetwork.name in importedMultiSigs ? [...importedMultiSigs[targetNetwork.name]] : [];
 
-    let allWallets = [...localWallets, ...data["userWallets"]].flat();
+      let allWallets = [...localWallets, ...data["userWallets"]].flat();
 
-    // setUserWallets(data["userWallets"]);
-    setUserWallets(allWallets);
+      // setUserWallets(data["userWallets"]);
+      setUserWallets(allWallets);
 
-    // console.log("n-importedMultiSigs[targetNetwork.name]: ", importedMultiSigs[targetNetwork.name]);
+      // console.log("n-importedMultiSigs[targetNetwork.name]: ", importedMultiSigs[targetNetwork.name]);
 
-    // set and reset  ContractNameForEvent to load the ownerevents
-    setContractNameForEvent(null);
-    setTimeout(() => {
-      setContractNameForEvent("MultiSigWallet");
-    }, 100);
-
-    if (isUpdate) {
-      // const lastMultiSigAddress = data["userWallets"][data["userWallets"].length - 1]?.walletAddress;
-      const lastMultiSigAddress = allWallets[allWallets.length - 1]?.walletAddress;
-      console.log("lastMultiSigAddress: ", lastMultiSigAddress);
-      setCurrentMultiSigAddress(lastMultiSigAddress);
+      // set and reset  ContractNameForEvent to load the ownerevents
       setContractNameForEvent(null);
-      setIsCreateModalVisible(false);
-
       setTimeout(() => {
         setContractNameForEvent("MultiSigWallet");
       }, 100);
+
+      if (isUpdate) {
+        // const lastMultiSigAddress = data["userWallets"][data["userWallets"].length - 1]?.walletAddress;
+        const lastMultiSigAddress = allWallets[allWallets.length - 1]?.walletAddress;
+        console.log("lastMultiSigAddress: ", lastMultiSigAddress);
+        setCurrentMultiSigAddress(lastMultiSigAddress);
+        setContractNameForEvent(null);
+        setIsCreateModalVisible(false);
+
+        setTimeout(() => {
+          setContractNameForEvent("MultiSigWallet");
+        }, 100);
+      }
+    }
+  };
+
+  const onChangeNetwork = async value => {
+    if (targetNetwork.chainId != NETWORKS[value].chainId) {
+      // window.localStorage.setItem("network", value);
+      // setTimeout(() => {
+      //   window.location.reload();
+      // }, 1);
+      let targetNetwork = NETWORKS[value];
+
+      const ethereum = window.ethereum;
+      const data = [
+        {
+          chainId: "0x" + targetNetwork.chainId.toString(16),
+          chainName: targetNetwork.name,
+          nativeCurrency: targetNetwork.nativeCurrency,
+          rpcUrls: [targetNetwork.rpcUrl],
+          blockExplorerUrls: [targetNetwork.blockExplorer],
+        },
+      ];
+      console.log("data", data);
+
+      let switchTx;
+      // https://docs.metamask.io/guide/rpc-api.html#other-rpc-methods
+      try {
+        switchTx = await ethereum.request({
+          method: "wallet_switchEthereumChain",
+          params: [{ chainId: data[0].chainId }],
+        });
+      } catch (switchError) {
+        // not checking specific error code, because maybe we're not using MetaMask
+        try {
+          switchTx = await ethereum.request({
+            method: "wallet_addEthereumChain",
+            params: data,
+          });
+        } catch (addError) {
+          // handle "add" error
+        }
+      }
+
+      window.localStorage.setItem("network", value);
+      // setTimeout(() => {
+      // window.location.reload();
+      // }, 1);
+
+      if (switchTx) {
+      }
     }
   };
 
@@ -405,28 +459,47 @@ function App(props) {
   /**----------------------
    * useEffect hooks
    * ---------------------*/
+  // -----------------
+  //   page reload on metamask account and network change
+  // -----------------
+  useEffect(() => {
+    window.ethereum?.on("accountsChanged", function () {
+      window.location.reload();
+    });
+    // detect Network account change
+    window.ethereum?.on("networkChanged", function () {
+      if (deployedContracts[targetNetwork.chainId] === undefined) {
+        console.log("NO FACTORY FOUND LOGING OUT !!!");
+        logoutOfWeb3Modal();
+      } else {
+        window.location.reload();
+      }
+    });
+  }, []);
 
   /**----------------------
    * on factory address change remove imported wallets from localstorage
    * ---------------------*/
 
   useEffect(() => {
-    let currentFactoryContractAddres =
-      deployedContracts[targetNetwork.chainId][targetNetwork.name]["contracts"]["MultiSigFactory"].address;
+    if (deployedContracts[targetNetwork.chainId] && deployedContracts[targetNetwork.chainId][targetNetwork.name]) {
+      let currentFactoryContractAddres =
+        deployedContracts[targetNetwork.chainId][targetNetwork.name]["contracts"]["MultiSigFactory"].address;
 
-    if (multiSigFactoryData === undefined) {
-      localStorage.removeItem("importedMultiSigs");
-      setMultiSigFactoryData({ ...multiSigFactoryData, [`${targetNetwork.name}`]: currentFactoryContractAddres });
-
-      return;
-    }
-
-    if (multiSigFactoryData !== undefined) {
-      let oldFactoryAddress = multiSigFactoryData[`${targetNetwork.name}`];
-      let isNewFactoryDeployed = currentFactoryContractAddres !== oldFactoryAddress;
-      if (isNewFactoryDeployed) {
+      if (multiSigFactoryData === undefined) {
         localStorage.removeItem("importedMultiSigs");
         setMultiSigFactoryData({ ...multiSigFactoryData, [`${targetNetwork.name}`]: currentFactoryContractAddres });
+
+        return;
+      }
+
+      if (multiSigFactoryData !== undefined) {
+        let oldFactoryAddress = multiSigFactoryData[`${targetNetwork.name}`];
+        let isNewFactoryDeployed = currentFactoryContractAddres !== oldFactoryAddress;
+        if (isNewFactoryDeployed) {
+          localStorage.removeItem("importedMultiSigs");
+          setMultiSigFactoryData({ ...multiSigFactoryData, [`${targetNetwork.name}`]: currentFactoryContractAddres });
+        }
       }
     }
   }, [userSigner]);
@@ -535,18 +608,14 @@ function App(props) {
       className="w-full text-left"
       defaultValue={targetNetwork.name}
       // style={{ textAlign: "left", width: 170 }}
-      onChange={value => {
-        if (targetNetwork.chainId != NETWORKS[value].chainId) {
-          window.localStorage.setItem("network", value);
-          setTimeout(() => {
-            window.location.reload();
-          }, 1);
-        }
-      }}
+      onChange={onChangeNetwork}
     >
       {selectNetworkOptions}
     </Select>
   );
+
+  let isFactoryDeployed = deployedContracts[targetNetwork.chainId];
+  console.log("n-isFactoryDeployed: ", isFactoryDeployed);
 
   // top header bar
   const HeaderBar = (
@@ -575,6 +644,7 @@ function App(props) {
               loadWeb3Modal={loadWeb3Modal}
               logoutOfWeb3Modal={logoutOfWeb3Modal}
               blockExplorer={blockExplorer}
+              isFactoryDeployed={isFactoryDeployed}
             />
           </div>
           {yourLocalBalance.lte(ethers.BigNumber.from("0")) && (
@@ -614,6 +684,7 @@ function App(props) {
             setIsCreateModalVisible={setIsCreateModalVisible}
             getUserWallets={getUserWallets}
             currentNetworkName={targetNetwork.name}
+            isFactoryDeployed={isFactoryDeployed}
           />
         </div>
 
@@ -629,6 +700,7 @@ function App(props) {
             localProvider={localProvider}
             poolServerUrl={BACKEND_URL}
             getUserWallets={getUserWallets}
+            isFactoryDeployed={isFactoryDeployed}
           />
         </div>
         <div className="m-2  w-28">
@@ -758,6 +830,7 @@ function App(props) {
         writeContracts={writeContracts}
         yourLocalBalance={yourLocalBalance}
         reDeployWallet={reDeployWallet}
+        isFactoryDeployed={isFactoryDeployed}
       />
 
       <ThemeSwitch />
