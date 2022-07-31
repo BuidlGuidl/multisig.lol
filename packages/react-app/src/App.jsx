@@ -73,8 +73,7 @@ function App(props) {
   const networkOptions = [initialNetwork.name, "mainnet", "rinkeby"];
 
   const cachedNetwork = window.localStorage.getItem("network");
-  // let targetNetwork = NETWORKS[cachedNetwork || "mainnet"];
-  let targetNetwork = NETWORKS[cachedNetwork || "localhost"];
+  let targetNetwork = NETWORKS[cachedNetwork || "mainnet"];
 
   /**----------------------
    * local states

@@ -22,7 +22,7 @@ export const NETWORKS = {
     name: "mainnet",
     color: "#ff8b9e",
     chainId: 1,
-    rpcUrl: "https://rpc.scaffoldeth.io:48544",//`https://mainnet.infura.io/v3/${INFURA_ID}`,
+    rpcUrl: "https://eth-mainnet.g.alchemy.com/v2/o-vVF_-DyzQ4jc8vyIfpcLnWrNZTdkF1",//"https://rpc.scaffoldeth.io:48544",//`https://mainnet.infura.io/v3/${INFURA_ID}`,
     blockExplorer: "https://etherscan.io/",
   },
   gnosis: {
@@ -49,7 +49,8 @@ export const NETWORKS = {
     color: "#f01a37",
     chainId: 10,
     blockExplorer: "https://optimistic.etherscan.io/",
-    rpcUrl: `https://mainnet.optimism.io`,
+    rpcUrl: `https://opt-mainnet.g.alchemy.com/v2/rSAw45vZLgSbuRcykizMmDj4IO4AVohn`,
+    //rpcUrl: `https://mainnet.optimism.io`,
   },
   arbitrum: {
     name: "arbitrum",
