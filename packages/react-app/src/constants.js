@@ -55,10 +55,10 @@ export const NETWORKS = {
   arbitrum: {
     name: "arbitrum",
     color: "#50a0ea",
+    price: "uniswap",
     chainId: 42161,
-    blockExplorer: "https://explorer.arbitrum.io/#/",
-    rpcUrl: `https://arb1.arbitrum.io/rpc`,
-    gasPrice: 0,
+    blockExplorer: "https://arbiscan.io/",
+    rpcUrl: `https://arb-mainnet.g.alchemy.com/v2/tYM-Tr8c9dHV5a8AgvXnVmS9e-xvoxeM`,
   },
   kovan: {
     name: "kovan",
