@@ -282,6 +282,17 @@ function CreateMultiSigModal({
     }
   };
 
+  const onInputWalletName = async walletName => {
+    setWalletName(walletName);
+    let currentWalletName = walletName;
+    const id = ethers.utils.id(currentWalletName);
+    const hash = ethers.utils.keccak256(id);
+    const salt = hexZeroPad(hexlify(hash), 32);
+
+    let computed_wallet_address = await writeContracts[contractName].computedAddress(salt, currentWalletName);
+    setPreComputedAddress(computed_wallet_address);
+  };
+
   return (
     <>
       <Button
@@ -355,7 +366,8 @@ function CreateMultiSigModal({
         <div style={{ display: "flex", flexDirection: "column", gap: "1rem" }}>
           <Input
             placeholder="Enter wallet name"
-            onChange={event => setWalletName(event.target.value)}
+            // onChange={event => setWalletName(event.target.value)}
+            onChange={event => onInputWalletName(event.target.value)}
             // value={reDeployWallet !== undefined ? reDeployWallet["walletName"] : walletName}
             value={deployType === "RE_DEPLOY" ? (reDeployWallet ? reDeployWallet["walletName"] : "") : walletName}
             disabled={deployType === "RE_DEPLOY"}
@@ -364,6 +376,12 @@ function CreateMultiSigModal({
           />
           {isWalletExist && <Alert message="Wallet name already exist choose another name !!" type="error" showIcon />}
 
+          {preComputedAddress && (
+            <>
+              <div className="text-xs text-gray-500">Wallet address should be </div>
+              <Address address={preComputedAddress} />
+            </>
+          )}
           {owners.map((owner, index) => (
             <div key={index} style={{ display: "flex", gap: "1rem" }}>
               <div style={{ width: "90%" }}>
