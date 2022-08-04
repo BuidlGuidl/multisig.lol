@@ -285,7 +285,7 @@ function CreateMultiSigModal({
   const onInputWalletName = async walletName => {
     setWalletName(walletName);
     let currentWalletName = walletName;
-    const id = ethers.utils.id(currentWalletName);
+    const id = ethers.utils.id(String(address) + currentWalletName);
     const hash = ethers.utils.keccak256(id);
     const salt = hexZeroPad(hexlify(hash), 32);
 
