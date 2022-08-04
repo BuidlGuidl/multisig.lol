@@ -120,6 +120,12 @@ const WalletConnectInput = ({ chainId, address, loadWalletConnectData, mainnetPr
             // Required
             uri: walletConnectUri,
             // Required
+            clientMeta: {
+                  description: "Forkable multisig for prototyping.",
+                  url: "https://multisig.lol",
+                  icons: ["https://multisig.lol/multisiglol.png"],
+                  name: "👛 multisig.lol",
+                },
           } /*,
               {
                 // Optional
