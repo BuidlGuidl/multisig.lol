@@ -9,6 +9,13 @@ import { useLocalStorage } from "../hooks";
 import { parseExternalContractTransaction } from "../helpers";
 import TransactionDetailsModal from "./MultiSig/TransactionDetailsModal";
 
+let CLIENT_META = {
+  description: "Forkable multisig for prototyping.",
+  url: "https://multisig.lol",
+  icons: ["https://multisig.lol/multisiglol.png"],
+  name: "👛 multisig.lol",
+};
+
 const WalletConnectInput = ({ chainId, address, loadWalletConnectData, mainnetProvider, price }) => {
   // localstates
   const [data, setData] = useState();
@@ -46,6 +53,7 @@ const WalletConnectInput = ({ chainId, address, loadWalletConnectData, mainnetPr
         let walletConnectData = JSON.parse(walletConnect_wallet_cached);
         const connector = new WalletConnect({
           bridge: walletConnectData.bridge, // Required
+          clientMeta: CLIENT_META,
         });
 
         // if (!connector.connected) {
@@ -170,7 +178,7 @@ const WalletConnectInput = ({ chainId, address, loadWalletConnectData, mainnetPr
       // const WalletConnect = require("@walletconnect/client").default;
       console.log("n-walletConnectUri: LOADED ", walletConnectUri);
 
-      connector = new WalletConnect({ uri: walletConnectUri });
+      connector = new WalletConnect({ uri: walletConnectUri, clientMeta: CLIENT_META });
 
       // return connector;
     } catch (error) {
