@@ -50,7 +50,7 @@ export default function CreateTransaction({
   };
 
   const inputStyle = {
-    padding: 10,
+    padding: 0,
   };
 
   useEffect(() => {
@@ -156,7 +156,8 @@ export default function CreateTransaction({
               <Option key="removeSigner">Remove Signer</Option>
               <Option key="customCallData">Custom Call Data</Option>
               <Option key="wcCallData">
-                <img src="walletconnect-logo.svg" style={{ height: 20, width: 20 }} /> WalletConnect
+                {/* <img src="walletconnect-logo.svg" style={{ height: 20, width: 20 }} /> WalletConnect */}
+                WalletConnect
               </Option>
             </Select>
           </div>

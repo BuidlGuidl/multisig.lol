@@ -66,7 +66,6 @@ const providers = [
   `https://eth-mainnet.alchemyapi.io/v2/${ALCHEMY_KEY}`,
   "https://rpc.scaffoldeth.io:48544",
 ];
-
 function App(props) {
   // specify all the chains your app is available on. Eg: ['localhost', 'mainnet', ...otherNetworks ]
   // reference './constants.js' for other networks
@@ -96,6 +95,8 @@ function App(props) {
 
   const [importedMultiSigs] = useLocalStorage("importedMultiSigs");
   const [multiSigFactoryData, setMultiSigFactoryData] = useLocalStorage("multiSigFactoryData");
+
+  const [mainWalletConnectSession, setMainWalletConnectSession] = useLocalStorage("walletConnectSession_main");
 
   /**----------------------
    * initial configs
@@ -216,7 +217,7 @@ function App(props) {
     "signaturesRequired",
   );
 
-  console.log("n-signaturesRequiredContract: ", signaturesRequiredContract);
+  // console.log("n-signaturesRequiredContract: ", signaturesRequiredContract);
   const nonceContract = useContractReader(reDeployWallet === undefined ? readContracts : null, contractName, "nonce");
 
   /**----------------------
@@ -458,6 +459,23 @@ function App(props) {
   /**----------------------
    * useEffect hooks
    * ---------------------*/
+
+  /**----------------------
+   * load the main wallet connect configs if they are available
+   * ---------------------*/
+  useEffect(() => {
+    /**----------------------
+     * load default main WC session if it exists
+     * ---------------------*/
+    // let oldWalletConnect = localStorage.getItem("walletconnect");
+
+    if (mainWalletConnectSession !== undefined) {
+      localStorage.setItem("walletconnect", JSON.stringify(mainWalletConnectSession));
+    }
+    // return () => {
+    // };
+  }, []);
+
   // -----------------
   //   page reload on metamask account and network change
   // -----------------
@@ -614,7 +632,7 @@ function App(props) {
   );
 
   let isFactoryDeployed = deployedContracts[targetNetwork.chainId];
-  console.log("n-isFactoryDeployed: ", isFactoryDeployed);
+  // console.log("n-isFactoryDeployed: ", isFactoryDeployed);
 
   // top header bar
   const HeaderBar = (

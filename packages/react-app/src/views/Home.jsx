@@ -22,7 +22,7 @@ function Home({
 }) {
   const [walletName, setWalletName] = useState();
 
-  console.log("n-reDeployWallet: ", reDeployWallet);
+  // console.log("n-reDeployWallet: ", reDeployWallet);
 
   const getWalletName = async () => {
     if (readContracts[contractName] && reDeployWallet === undefined) {
