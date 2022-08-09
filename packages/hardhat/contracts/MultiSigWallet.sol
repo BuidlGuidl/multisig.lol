@@ -42,9 +42,10 @@ contract MultiSigWallet {
         _;
     }
 
-    modifier requireNonZeroSignatures(uint256 _signaturesRequired) {
-        require(_signaturesRequired > 0, "Must be non-zero sigs required");
+    modifier onlyValidSignaturesRequired() {
         _;
+        require(signaturesRequired > 0, "Must be non-zero signatures required");
+        require(owners.length >= signaturesRequired, "Must be at least the same amount of signers than signatures required");
     }
     modifier onlyFactory() {
         require(msg.sender == address(multiSigFactory));
@@ -85,7 +86,7 @@ contract MultiSigWallet {
         uint256 _chainId,
         address[] memory _owners,
         uint256 _signaturesRequired
-    ) public payable onlyFactory {
+    ) public payable onlyFactory onlyValidSignaturesRequired {
         signaturesRequired = _signaturesRequired;
         for (uint256 i = 0; i < _owners.length; i++) {
             address owner = _owners[i];
@@ -105,7 +106,7 @@ contract MultiSigWallet {
     function addSigner(address newSigner, uint256 newSignaturesRequired)
         public
         onlySelf
-        requireNonZeroSignatures(newSignaturesRequired)
+        onlyValidSignaturesRequired
     {
         require(newSigner != address(0), "addSigner: zero address");
         require(!isOwner[newSigner], "addSigner: owner not unique");
@@ -125,7 +126,7 @@ contract MultiSigWallet {
     function removeSigner(address oldSigner, uint256 newSignaturesRequired)
         public
         onlySelf
-        requireNonZeroSignatures(newSignaturesRequired)
+        onlyValidSignaturesRequired
     {
         require(isOwner[oldSigner], "removeSigner: not owner");
 
@@ -161,7 +162,7 @@ contract MultiSigWallet {
     function updateSignaturesRequired(uint256 newSignaturesRequired)
         public
         onlySelf
-        requireNonZeroSignatures(newSignaturesRequired)
+        onlyValidSignaturesRequired
     {
         signaturesRequired = newSignaturesRequired;
     }
