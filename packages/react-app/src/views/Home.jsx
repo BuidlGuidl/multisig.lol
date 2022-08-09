@@ -4,6 +4,7 @@ import QR from "qrcode.react";
 import { List, Button, Alert } from "antd";
 import { useState } from "react";
 import { useEffect } from "react";
+import { getFactoryVersion, Sleep } from "../constants";
 
 function Home({
   address,
@@ -25,12 +26,27 @@ function Home({
   // console.log("n-reDeployWallet: ", reDeployWallet);
 
   const getWalletName = async () => {
-    if (readContracts[contractName] && reDeployWallet === undefined) {
-      let walletName = await readContracts[contractName].name();
-      setWalletName(walletName);
+    // wait for 1 sec to get proper contract instance
+    await Sleep(1000);
+    let factoryVersion = await getFactoryVersion(readContracts[contractName]);
+    if (factoryVersion === 1) {
+      if (readContracts[contractName] && reDeployWallet === undefined) {
+        // console.log("n-factoryVersion: calling with this version ", factoryVersion);
+        // console.log("n-addres: address is ", readContracts[contractName].address);
+        let walletName = await readContracts[contractName].name();
+        setWalletName(walletName);
+      }
+    } else {
+      setWalletName("");
     }
   };
   useEffect(() => {
+    // setTimeout(() => {
+    //   if (readContracts[contractName] !== null) {
+    //     void getWalletName();
+    //   }
+    // }, 1000);
+
     void getWalletName();
   }, [readContracts[contractName]].address);
 

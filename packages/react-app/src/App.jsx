@@ -283,6 +283,7 @@ function App(props) {
   };
 
   const syncWalletsWithServer = async () => {
+    // let factoryVersion = await getFactoryVersion();
     let totalWalletCount = await readContracts["MultiSigFactory"]?.numberOfMultiSigs();
     totalWalletCount = totalWalletCount ? totalWalletCount.toNumber() : 0;
 
@@ -723,7 +724,8 @@ function App(props) {
         <div className="m-2  w-28">
           <Select
             className="w-full"
-            value={[currentMultiSigAddress]}
+            // value={[currentMultiSigAddress]}
+            value={currentMultiSigAddress}
             // style={{ width: 120, marginRight: 5 }}
             onChange={handleMultiSigChange}
           >

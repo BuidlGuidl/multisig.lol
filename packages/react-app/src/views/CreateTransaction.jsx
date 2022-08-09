@@ -50,7 +50,7 @@ export default function CreateTransaction({
   };
 
   const inputStyle = {
-    padding: 0,
+    padding: 10,
   };
 
   useEffect(() => {

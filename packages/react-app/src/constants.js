@@ -22,7 +22,7 @@ export const NETWORKS = {
     name: "mainnet",
     color: "#ff8b9e",
     chainId: 1,
-    rpcUrl: "https://eth-mainnet.g.alchemy.com/v2/o-vVF_-DyzQ4jc8vyIfpcLnWrNZTdkF1",//"https://rpc.scaffoldeth.io:48544",//`https://mainnet.infura.io/v3/${INFURA_ID}`,
+    rpcUrl: "https://eth-mainnet.g.alchemy.com/v2/o-vVF_-DyzQ4jc8vyIfpcLnWrNZTdkF1", //"https://rpc.scaffoldeth.io:48544",//`https://mainnet.infura.io/v3/${INFURA_ID}`,
     blockExplorer: "https://etherscan.io/",
   },
   gnosis: {
@@ -213,3 +213,22 @@ export const NETWORK = chainId => {
     }
   }
 };
+
+export const getFactoryVersion = async contract => {
+  try {
+    // get the factory version
+    const factoryVersion = await contract.factoryVersion();
+    return Number(factoryVersion.toString());
+  } catch (error) {
+    // console.log("n-error: ", error);
+    // if no factory version variable that mean its version zero
+    console.log("its older factory version !!");
+    return 0;
+  }
+};
+export const Sleep = time =>
+  new Promise((resolve, reject) =>
+    setTimeout(() => {
+      resolve(true);
+    }, time),
+  );

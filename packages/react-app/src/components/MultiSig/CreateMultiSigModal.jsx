@@ -154,6 +154,7 @@ function CreateMultiSigModal({
     setAmount("0");
     setSignaturesRequired(false);
     setIsWalletExist(false);
+    setPreComputedAddress("");
   };
 
   const handleSubmit = () => {
