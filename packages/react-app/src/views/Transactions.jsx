@@ -156,6 +156,7 @@ export default function Transactions({
                               [...item.signatures, signature],
                               newHash,
                             );
+
                             const res = await axios.post(poolServerUrl, {
                               ...item,
                               signatures: finalSigList,
@@ -180,11 +181,12 @@ export default function Transactions({
                           const [finalSigList, finalSigners] = await getSortedSigList(item.signatures, newHash);
 
                           console.log(
-                            "writeContracts: ",
+                            "n-writeContracts: ",
                             item.to,
                             parseEther("" + parseFloat(item.amount).toFixed(12)),
                             item.data,
                             finalSigList,
+                            item,
                           );
 
                           tx(
@@ -194,6 +196,46 @@ export default function Transactions({
                               item.data,
                               finalSigList,
                             ),
+                            async update => {
+                              if (update && (update.status === "confirmed" || update.status === 1)) {
+                                // console.log("n-item: ", item);
+                                const parsedData =
+                                  item.data != "0x"
+                                    ? readContracts[contractName].interface.parseTransaction(item)
+                                    : null;
+
+                                // console.log("n-parsedData: ", parsedData);
+
+                                // get all existing owner list
+                                let ownnersCount = await readContracts[contractName].numberOfOwners();
+
+                                /**----------------------
+                                 * update owners on api at add signer
+                                 * ---------------------*/
+
+                                if (["addSigner", "removeSigner"].includes(parsedData.name)) {
+                                  // let finalOwnerList = [parsedData.args.newSigner, ...item.signers];
+                                  let ownerAddress = address;
+                                  let contractAddress = readContracts[contractName].address;
+
+                                  let owners = [];
+                                  ownnersCount = ownnersCount.toString();
+
+                                  for (let index = 0; index < +ownnersCount; index++) {
+                                    let owner = await readContracts[contractName].owners(index);
+                                    owners.push(owner);
+                                  }
+
+                                  let reqData = { owners: owners };
+
+                                  const res = await axios.post(
+                                    poolServerUrl + `updateOwners/${ownerAddress}/${contractAddress}`,
+                                    reqData,
+                                  );
+                                  console.log("update owner response", res.data);
+                                }
+                              }
+                            },
                           );
                         }}
                       >
