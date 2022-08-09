@@ -282,19 +282,6 @@ function App(props) {
     }
   };
 
-  const getFactoryVersion = async contract => {
-    try {
-      // get the factory version
-      const factoryVersion = await contract.factoryVersion();
-      return Number(factoryVersion.toString());
-    } catch (error) {
-      console.log("n-error: ", error);
-      // if no factory version variable that mean its version zero
-      console.log("its older factory version !!");
-      return 0;
-    }
-  };
-
   const syncWalletsWithServer = async () => {
     // let factoryVersion = await getFactoryVersion();
     let totalWalletCount = await readContracts["MultiSigFactory"]?.numberOfMultiSigs();
