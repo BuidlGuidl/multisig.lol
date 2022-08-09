@@ -10,6 +10,7 @@ import "./MultiSigFactory.sol";
 contract MultiSigWallet {
     using ECDSA for bytes32;
     MultiSigFactory private multiSigFactory;
+    uint256 public factoryVersion = 1; // <---- set the factory version for backword compatiblity for future contract updates
 
     event Deposit(address indexed sender, uint256 amount, uint256 balance);
     event ExecuteTransaction(
@@ -151,7 +152,7 @@ contract MultiSigWallet {
             } else {
                 owners.pop();
                 for (uint256 j = i; j < ownersLength - 1; j++) {
-                    owners.push(poppedOwners[j+1]);// shout out to moltam89!! https://github.com/austintgriffith/maas/pull/2/commits/e981c5fa5b4d25a1f0946471b876f9a002a9a82b
+                    owners.push(poppedOwners[j + 1]); // shout out to moltam89!! https://github.com/austintgriffith/maas/pull/2/commits/e981c5fa5b4d25a1f0946471b876f9a002a9a82b
                 }
                 return;
             }

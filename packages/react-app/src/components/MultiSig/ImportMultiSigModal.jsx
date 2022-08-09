@@ -38,28 +38,54 @@ export default function ImportMultiSigModal({
     resetState();
     setIsModalVisible(false);
   };
+  const getFactoryVersion = async contract => {
+    try {
+      // get the factory version
+      const factoryVersion = await contract.factoryVersion();
+      return Number(factoryVersion.toString());
+    } catch (error) {
+      // console.log("n-error: ", error);
+      // if no factory version variable that mean its version zero
+      console.log("its older factory version !!");
+      return 0;
+    }
+  };
 
   const handleSubmit = async () => {
     try {
       setPendingImport(true);
+      console.log("address: ", address);
 
       const contract = new ethers.Contract(address, multiSigWalletABI, localProvider);
 
       let signaturesRequired = await contract.signaturesRequired();
       signaturesRequired = signaturesRequired.toString();
-      // let owners = await contract.owners();
-      let owners = [];
-      let walletName = await contract.name();
-      let walletAddress = contract.address;
 
-      let ownnersCount = await contract.numberOfOwners();
-      ownnersCount = ownnersCount.toString();
-      for (let index = 0; index < +ownnersCount; index++) {
-        let owner = await contract.owners(index);
-        owners.push(owner);
+      let factoryVersion = await getFactoryVersion(contract);
+      console.log("n-factoryVersion: ", factoryVersion);
+
+      // let signaturesRequired;
+      let owners = [];
+      let walletName;
+
+      if (factoryVersion === 1) {
+        walletName = await contract.name();
+
+        let ownnersCount = await contract.numberOfOwners();
+        ownnersCount = ownnersCount.toString();
+        for (let index = 0; index < +ownnersCount; index++) {
+          let owner = await contract.owners(index);
+          owners.push(owner);
+        }
       }
 
-      console.log("owners: ", owners);
+      let walletAddress = contract.address;
+
+      // FOR OLDER FACTORY BEFORE CREATE2 ADJUSTMENT (THERE IS NO WALLET NAME)
+      if (factoryVersion === 0) {
+        walletName = contract.address;
+      }
+
       // {
       //     "walletName": "test",
       //     "walletAddress": "0x92973c0DFb0676713A161471841e475b3c6ad087",
@@ -86,37 +112,18 @@ export default function ImportMultiSigModal({
         owners,
       };
 
-      console.log("n-importWalletData: ", importWalletData);
-
       let newImportedMultiSigs = importedMultiSigs || {};
       (newImportedMultiSigs[network] = newImportedMultiSigs[network] || []).push(importWalletData);
       newImportedMultiSigs[network] = [newImportedMultiSigs[network]];
-      console.log("n-newImportedMultiSigs[network]: ", newImportedMultiSigs[network]);
       setImportedMultiSigs(newImportedMultiSigs);
 
       await getUserWallets(true);
-
-      // if (network === targetNetwork.name) {
-      //   setMultiSigs([...new Set([...newImportedMultiSigs[network], ...multiSigs])]);
-      //   setCurrentMultiSigAddress(address);
-
-      //   let reqData = {
-      //     owners,
-      //     signaturesRequired,
-      //   };
-      //   const res = await axios.post(
-      //     poolServerUrl + `createWallet/${address}/${walletName}/${walletAddress}/${targetNetwork.chainId}`,
-      //     reqData,
-      //   );
-      //   let data = res.data;
-      //   console.log("import wallet res data: ", data);
-      // }
 
       resetState();
       setIsModalVisible(false);
       window.location.reload();
     } catch (e) {
-      console.log("Import error:", e);
+      console.log("n-Import error:", e);
       setError(true);
       setPendingImport(false);
     }

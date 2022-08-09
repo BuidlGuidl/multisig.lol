@@ -74,23 +74,27 @@ const Routes = ({
               )}
             </>
           ) : (
-            <Home
-              key={currentMultiSigAddress}
-              address={address}
-              contractAddress={currentMultiSigAddress}
-              localProvider={localProvider}
-              price={price}
-              mainnetProvider={mainnetProvider}
-              blockExplorer={blockExplorer}
-              executeTransactionEvents={executeTransactionEvents}
-              contractName={contractName}
-              readContracts={readContracts}
-              ownerEvents={ownerEvents}
-              signaturesRequired={signaturesRequired}
-              poolServerUrl={BACKEND_URL}
-              reDeployWallet={reDeployWallet}
-              isFactoryDeployed={isFactoryDeployed}
-            />
+            <>
+              {currentMultiSigAddress && (
+                <Home
+                  key={currentMultiSigAddress}
+                  address={address}
+                  contractAddress={currentMultiSigAddress}
+                  localProvider={localProvider}
+                  price={price}
+                  mainnetProvider={mainnetProvider}
+                  blockExplorer={blockExplorer}
+                  executeTransactionEvents={executeTransactionEvents}
+                  contractName={contractName}
+                  readContracts={readContracts}
+                  ownerEvents={ownerEvents}
+                  signaturesRequired={signaturesRequired}
+                  poolServerUrl={BACKEND_URL}
+                  reDeployWallet={reDeployWallet}
+                  isFactoryDeployed={isFactoryDeployed}
+                />
+              )}
+            </>
           )}
         </Route>
         <Route path="/create">
