@@ -3,10 +3,12 @@ import { CameraOutlined, QrcodeOutlined } from "@ant-design/icons";
 import WalletConnect from "@walletconnect/client";
 import QrReader from "react-qr-reader";
 import { useState, useEffect } from "react";
+import { ethers } from "ethers";
 
 import { useLocalStorage } from "../hooks";
 import { parseExternalContractTransaction } from "../helpers";
 import TransactionDetailsModal from "./MultiSig/TransactionDetailsModal";
+import MultiSigWalletAbi from "../configs/MultiSigWallet_ABI.json";
 
 let CLIENT_META = {
   description: "Forkable multisig for prototyping.",
@@ -44,7 +46,7 @@ const WalletConnectInput = ({ chainId, address, loadWalletConnectData, mainnetPr
   useEffect(() => {
     if (walletConnectUri && address) {
       let walletConnect_wallet_cached = localStorage.getItem("walletConnectSession_wallet");
-      console.log("n-walletConnect_wallet_cached: ", walletConnect_wallet_cached);
+      // console.log("n-walletConnect_wallet_cached: ", walletConnect_wallet_cached);
       if (Boolean(walletConnect_wallet_cached)) {
         // set old wallet connect data
         localStorage.setItem("walletconnect", walletConnect_wallet_cached);
@@ -130,7 +132,8 @@ const WalletConnectInput = ({ chainId, address, loadWalletConnectData, mainnetPr
   //
 
   useEffect(() => {
-    if (data && to) {
+    // if (data && to) {
+    if (to) {
       decodeFunctionData();
     }
   }, [data]);
@@ -254,15 +257,18 @@ const WalletConnectInput = ({ chainId, address, loadWalletConnectData, mainnetPr
 
   const parseCallRequest = payload => {
     const callData = payload.params[0];
+
     setValue(callData.value);
     setTo(callData.to);
-    setData(callData.data);
+    setData(callData.data ? callData.data : "0x");
   };
   //
 
   const decodeFunctionData = async () => {
     try {
+      // console.log("n-decodeFunctionData: ", to, data);
       const parsedTransactionData = await parseExternalContractTransaction(to, data);
+      // console.log("n-parsedTransactionData: ", parsedTransactionData);
       setParsedTransactionData(parsedTransactionData);
       setIsModalVisible(true);
     } catch (error) {
@@ -434,6 +440,9 @@ const WalletConnectInput = ({ chainId, address, loadWalletConnectData, mainnetPr
           showFooter={true}
           mainnetProvider={mainnetProvider}
           price={price}
+          to={to}
+          value={value}
+          type="Wallect Connect"
         />
       )}
     </>
