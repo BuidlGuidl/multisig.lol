@@ -321,7 +321,13 @@ function CreateMultiSigModal({
           <Button key="back" onClick={handleCancel}>
             Cancel
           </Button>,
-          <Button key="submit" type="primary" loading={pendingCreate} onClick={handleSubmit} disabled={isWalletExist}>
+          <Button
+            key="submit"
+            type="primary"
+            loading={pendingCreate}
+            onClick={handleSubmit}
+            disabled={isWalletExist || Boolean(walletName) === false || Boolean(signaturesRequired) === false}
+          >
             {/* {reDeployWallet === undefined ? "Create" : "Deploy"} */}
             {deployType === "CREATE" ? "Create" : "Deploy"}
           </Button>,

@@ -97,6 +97,7 @@ function App(props) {
   const [multiSigFactoryData, setMultiSigFactoryData] = useLocalStorage("multiSigFactoryData");
 
   const [mainWalletConnectSession, setMainWalletConnectSession] = useLocalStorage("walletConnectSession_main");
+  const [selectedWalletAddress, setSelectedWalletAddress] = useLocalStorage("selectedWalletAddress");
 
   /**----------------------
    * initial configs
@@ -227,6 +228,7 @@ function App(props) {
   const handleMultiSigChange = value => {
     setContractNameForEvent(null);
     setCurrentMultiSigAddress(value);
+    setSelectedWalletAddress(value);
   };
 
   async function getAddress() {
@@ -552,7 +554,9 @@ function App(props) {
    * ---------------------*/
 
   useEffect(() => {
-    createEthersContractWallet();
+    if (currentMultiSigAddress) {
+      createEthersContractWallet();
+    }
   }, [currentMultiSigAddress, readContracts, writeContracts, selectedChainId]);
 
   /**----------------------
@@ -606,6 +610,19 @@ function App(props) {
     }
   }, [address, updateServerWallets]);
 
+  /**----------------------
+   * set current selected sig address from localstorage
+   * ---------------------*/
+
+  useEffect(() => {
+    if (selectedWalletAddress && userWallets && userWallets.length > 0 && address) {
+      setCurrentMultiSigAddress(selectedWalletAddress);
+    }
+  }, [selectedWalletAddress, userWallets, address]);
+
+  /**----------------------
+   * --------- DYANAMIC VALUES
+   * ---------------------*/
   const faucetAvailable = localProvider && localProvider.connection && targetNetwork.name.indexOf("local") !== -1;
 
   const userHasMultiSigs = currentMultiSigAddress ? true : false;
