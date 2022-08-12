@@ -61,13 +61,13 @@ contract MultiSigWallet {
     }
 
     modifier onlyValidSignaturesRequired() {
+         _;
         if (signaturesRequired == 0) {
             revert INVALID_SIGNATURES_REQUIRED();
         }
         if (owners.length < signaturesRequired) {
             revert INVALID_OWNER_LENGTH();
         }
-        _;
     }
     modifier onlyFactory() {
         if (msg.sender != address(multiSigFactory)) {
@@ -112,7 +112,7 @@ contract MultiSigWallet {
         uint256 _signaturesRequired
     ) public payable onlyFactory onlyValidSignaturesRequired {
         signaturesRequired = _signaturesRequired;
-        for (uint256 i = 0; i < _owners.length; i++) {
+        for (uint256 i = 0; i < _owners.length;) {
             address owner = _owners[i];
             if (owner == address(0) || isOwner[owner]) {
                 revert INVALID_OWNER();
@@ -121,6 +121,9 @@ contract MultiSigWallet {
             owners.push(owner);
 
             emit Owner(owner, isOwner[owner]);
+            unchecked {
+                ++ i;
+            }
         }
 
         chainId = _chainId;
@@ -171,16 +174,22 @@ contract MultiSigWallet {
         isOwner[_oldSigner] = false;
         uint256 ownersLength = owners.length;
         address[] memory poppedOwners = new address[](owners.length);
-        for (uint256 i = ownersLength - 1; i >= 0; i--) {
+        for (uint256 i = ownersLength - 1; i >= 0; ) {
             if (owners[i] != _oldSigner) {
                 poppedOwners[i] = owners[i];
                 owners.pop();
             } else {
                 owners.pop();
-                for (uint256 j = i; j < ownersLength - 1; j++) {
+                for (uint256 j = i; j < ownersLength - 1; ) {
                     owners.push(poppedOwners[j + 1]); // shout out to moltam89!! https://github.com/austintgriffith/maas/pull/2/commits/e981c5fa5b4d25a1f0946471b876f9a002a9a82b
+                    unchecked {
+                        ++ j;
+                    }
                 }
                 return;
+            }
+            unchecked {
+                -- i;
             }
         }
     }
@@ -205,7 +214,7 @@ contract MultiSigWallet {
 
         uint256 validSignatures;
         address duplicateGuard;
-        for (uint256 i = 0; i < signatures.length; i++) {
+        for (uint256 i = 0; i < signatures.length;) {
             address recovered = recover(_hash, signatures[i]);
             if (recovered <= duplicateGuard) {
                 revert INVALID_SIGNATURES();
@@ -214,6 +223,9 @@ contract MultiSigWallet {
 
             if (isOwner[recovered]) {
                 validSignatures++;
+            }
+            unchecked {
+                ++ i;
             }
         }
 
