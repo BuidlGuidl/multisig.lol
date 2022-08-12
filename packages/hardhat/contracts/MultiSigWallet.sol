@@ -7,6 +7,19 @@ pragma experimental ABIEncoderV2;
 import "@openzeppelin/contracts/utils/cryptography/ECDSA.sol";
 import "./MultiSigFactory.sol";
 
+//custom errors
+error INVALID_OWNER_LENGTH();
+error INVALID_OWNER();
+error INVALID_SIGNER();
+error INVALID_SIGNATURES();
+error INVALID_SIGNATURES_REQUIRED();
+error INSUFFICIENT_VALID_SIGNATURES();
+error NOT_OWNER();
+error NOT_SELF();
+error NOT_FACTORY();
+error TX_FAILED();
+
+
 contract MultiSigWallet {
     using ECDSA for bytes32;
     MultiSigFactory private multiSigFactory;
@@ -34,22 +47,32 @@ contract MultiSigWallet {
     string public name;
 
     modifier onlyOwner() {
-        require(isOwner[msg.sender], "Not owner");
+        if(!isOwner[msg.sender]) {
+            revert NOT_OWNER();
+        }
         _;
     }
 
     modifier onlySelf() {
-        require(msg.sender == address(this), "Not Self");
+        if (msg.sender != address(this)) {
+            revert NOT_SELF();
+        }
         _;
     }
 
     modifier onlyValidSignaturesRequired() {
+        if (signaturesRequired == 0) {
+            revert INVALID_SIGNATURES_REQUIRED();
+        }
+        if (owners.length < signaturesRequired) {
+            revert INVALID_OWNER_LENGTH();
+        }
         _;
-        require(signaturesRequired > 0, "Must be non-zero signatures required");
-        require(owners.length >= signaturesRequired, "Must be at least the same amount of signers than signatures required");
     }
     modifier onlyFactory() {
-        require(msg.sender == address(multiSigFactory));
+        if (msg.sender != address(multiSigFactory)) {
+            revert NOT_FACTORY();
+        }
         _;
     }
 
@@ -91,10 +114,9 @@ contract MultiSigWallet {
         signaturesRequired = _signaturesRequired;
         for (uint256 i = 0; i < _owners.length; i++) {
             address owner = _owners[i];
-
-            require(owner != address(0), "constructor: zero address");
-            require(!isOwner[owner], "constructor: owner not unique");
-
+            if (owner == address(0) || isOwner[owner]) {
+                revert INVALID_OWNER();
+            }
             isOwner[owner] = true;
             owners.push(owner);
 
@@ -109,8 +131,9 @@ contract MultiSigWallet {
         onlySelf
         onlyValidSignaturesRequired
     {
-        require(newSigner != address(0), "addSigner: zero address");
-        require(!isOwner[newSigner], "addSigner: owner not unique");
+        if (newSigner == address(0) || isOwner[newSigner]) {
+            revert INVALID_SIGNER();
+        }
 
         isOwner[newSigner] = true;
         owners.push(newSigner);
@@ -129,7 +152,9 @@ contract MultiSigWallet {
         onlySelf
         onlyValidSignaturesRequired
     {
-        require(isOwner[oldSigner], "removeSigner: not owner");
+        if (!isOwner[oldSigner]) {
+            revert NOT_OWNER();
+        }
 
         _removeOwner(oldSigner);
         signaturesRequired = newSignaturesRequired;
@@ -182,10 +207,9 @@ contract MultiSigWallet {
         address duplicateGuard;
         for (uint256 i = 0; i < signatures.length; i++) {
             address recovered = recover(_hash, signatures[i]);
-            require(
-                recovered > duplicateGuard,
-                "executeTransaction: duplicate or unordered signatures"
-            );
+            if (recovered <= duplicateGuard) {
+                revert INVALID_SIGNATURES();
+            }
             duplicateGuard = recovered;
 
             if (isOwner[recovered]) {
@@ -193,13 +217,14 @@ contract MultiSigWallet {
             }
         }
 
-        require(
-            validSignatures >= signaturesRequired,
-            "executeTransaction: not enough valid signatures"
-        );
+        if (validSignatures < signaturesRequired) {
+            revert INSUFFICIENT_VALID_SIGNATURES();
+        }
 
         (bool success, bytes memory result) = to.call{value: value}(data);
-        require(success, "executeTransaction: tx failed");
+        if (!success) {
+            revert TX_FAILED();
+        }
 
         emit ExecuteTransaction(
             msg.sender,
