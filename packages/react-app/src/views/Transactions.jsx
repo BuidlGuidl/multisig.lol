@@ -198,13 +198,10 @@ export default function Transactions({
                             ),
                             async update => {
                               if (update && (update.status === "confirmed" || update.status === 1)) {
-                                // console.log("n-item: ", item);
                                 const parsedData =
                                   item.data != "0x"
                                     ? readContracts[contractName].interface.parseTransaction(item)
                                     : null;
-
-                                // console.log("n-parsedData: ", parsedData);
 
                                 // get all existing owner list
                                 let ownnersCount = await readContracts[contractName].numberOfOwners();
@@ -213,7 +210,7 @@ export default function Transactions({
                                  * update owners on api at add signer
                                  * ---------------------*/
 
-                                if (["addSigner", "removeSigner"].includes(parsedData.name)) {
+                                if (parsedData && ["addSigner", "removeSigner"].includes(parsedData.name)) {
                                   // let finalOwnerList = [parsedData.args.newSigner, ...item.signers];
                                   let ownerAddress = address;
                                   let contractAddress = readContracts[contractName].address;

@@ -134,6 +134,13 @@ function App(props) {
     if (injectedProvider && injectedProvider.provider && typeof injectedProvider.provider.disconnect == "function") {
       await injectedProvider.provider.disconnect();
     }
+
+    // ON LOGOUT REMOVING ALL WALLET CONNECT SESSIONS
+    localStorage.removeItem("walletconnect");
+    localStorage.removeItem("walletConnectSession_wallet");
+    localStorage.removeItem("walletConnectSession_main");
+    localStorage.removeItem("walletConnectUri_wallet");
+    localStorage.removeItem("isConnected_wallet");
     setTimeout(() => {
       window.location.reload();
     }, 1);
