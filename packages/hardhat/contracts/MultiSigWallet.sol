@@ -8,12 +8,12 @@ import "@openzeppelin/contracts/utils/cryptography/ECDSA.sol";
 import "./MultiSigFactory.sol";
 
 //custom errors
-error INVALID_OWNER_LENGTH();
+error DUPLICATE_OR_UNORDERED_SIGNATURES();
 error INVALID_OWNER();
 error INVALID_SIGNER();
-error INVALID_SIGNATURES();
 error INVALID_SIGNATURES_REQUIRED();
 error INSUFFICIENT_VALID_SIGNATURES();
+error NOT_ENOUGH_SIGNERS();
 error NOT_OWNER();
 error NOT_SELF();
 error NOT_FACTORY();
@@ -66,7 +66,7 @@ contract MultiSigWallet {
             revert INVALID_SIGNATURES_REQUIRED();
         }
         if (owners.length < signaturesRequired) {
-            revert INVALID_OWNER_LENGTH();
+            revert NOT_ENOUGH_SIGNERS();
         }
     }
     modifier onlyFactory() {
@@ -217,7 +217,7 @@ contract MultiSigWallet {
         for (uint256 i = 0; i < signatures.length;) {
             address recovered = recover(_hash, signatures[i]);
             if (recovered <= duplicateGuard) {
-                revert INVALID_SIGNATURES();
+                revert DUPLICATE_OR_UNORDERED_SIGNATURES();
             }
             duplicateGuard = recovered;
 
