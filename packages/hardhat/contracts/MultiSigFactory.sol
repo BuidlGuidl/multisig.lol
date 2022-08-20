@@ -68,10 +68,13 @@ contract MultiSigFactory {
         uint256 _chainId,
         address[] calldata _owners,
         uint256 _signaturesRequired,
-        bytes32 _salt,
         string calldata _name
     ) public payable {
         uint256 id = numberOfMultiSigs();
+
+        bytes32 _salt = keccak256(
+            abi.encodePacked(abi.encode(_name, address(msg.sender)))
+        );
 
         /**----------------------
          * create2 implementation
@@ -111,7 +114,7 @@ contract MultiSigFactory {
     /**----------------------
      * get a pre-computed address
      * ---------------------*/
-    function computedAddress(bytes32 _salt, string calldata _name)
+    function computedAddress(string calldata _name)
         public
         view
         returns (address)
@@ -121,6 +124,10 @@ contract MultiSigFactory {
                 type(MultiSigWallet).creationCode,
                 abi.encode(_name, address(this))
             )
+        );
+
+        bytes32 _salt = keccak256(
+            abi.encodePacked(abi.encode(_name, address(msg.sender)))
         );
         address computed_address = Create2.computeAddress(_salt, bytecodeHash);
 

@@ -167,9 +167,9 @@ function CreateMultiSigModal({
       }
       let currentWalletName = deployType === "CREATE" ? walletName : reDeployWallet["walletName"];
       // const id = ethers.utils.id(currentWalletName);
-      const id = ethers.utils.id(String(address) + currentWalletName);
-      const hash = ethers.utils.keccak256(id);
-      const salt = hexZeroPad(hexlify(hash), 32);
+      // const id = ethers.utils.id(String(address) + currentWalletName);
+      // const hash = ethers.utils.keccak256(id);
+      // const salt = hexZeroPad(hexlify(hash), 32);
 
       tx(
         // old create
@@ -177,7 +177,7 @@ function CreateMultiSigModal({
         //   value: ethers.utils.parseEther("" + parseFloat(amount).toFixed(12)),
         // }
         // create 2
-        writeContracts[contractName].create2(selectedChainId, owners, signaturesRequired, salt, currentWalletName, {
+        writeContracts[contractName].create2(selectedChainId, owners, signaturesRequired, currentWalletName, {
           value: ethers.utils.parseEther("" + parseFloat(amount).toFixed(12)),
         }),
         async update => {
@@ -205,7 +205,7 @@ function CreateMultiSigModal({
               // selectedChainId,
               // owners,
               // signaturesRequired,
-              salt,
+              // salt,
               currentWalletName,
             );
 
@@ -266,11 +266,11 @@ function CreateMultiSigModal({
 
   const checkWalletExist = async () => {
     let currentWalletName = deployType === "CREATE" ? walletName : reDeployWallet["walletName"];
-    const id = ethers.utils.id(String(address) + currentWalletName);
-    const hash = ethers.utils.keccak256(id);
-    const salt = hexZeroPad(hexlify(hash), 32);
+    // const id = ethers.utils.id(String(address) + currentWalletName);
+    // const hash = ethers.utils.keccak256(id);
+    // const salt = hexZeroPad(hexlify(hash), 32);
 
-    let computed_wallet_address = await writeContracts[contractName].computedAddress(salt, currentWalletName);
+    let computed_wallet_address = await writeContracts[contractName].computedAddress(currentWalletName);
 
     let isContractExists = await writeContracts[contractName].provider.getCode(computed_wallet_address);
 
@@ -286,11 +286,11 @@ function CreateMultiSigModal({
   const onInputWalletName = async walletName => {
     setWalletName(walletName);
     let currentWalletName = walletName;
-    const id = ethers.utils.id(String(address) + currentWalletName);
-    const hash = ethers.utils.keccak256(id);
-    const salt = hexZeroPad(hexlify(hash), 32);
+    // const id = ethers.utils.id(String(address) + currentWalletName);
+    // const hash = ethers.utils.keccak256(id);
+    // const salt = hexZeroPad(hexlify(hash), 32);
 
-    let computed_wallet_address = await writeContracts[contractName].computedAddress(salt, currentWalletName);
+    let computed_wallet_address = await writeContracts[contractName].computedAddress(currentWalletName);
     setPreComputedAddress(computed_wallet_address);
   };
 
@@ -332,15 +332,15 @@ function CreateMultiSigModal({
               loading={pendingCreate}
               onClick={async () => {
                 let currentWalletName = deployType === "CREATE" ? walletName : reDeployWallet["walletName"];
-                const id = ethers.utils.id(currentWalletName);
-                const hash = ethers.utils.keccak256(id);
-                const salt = hexZeroPad(hexlify(hash), 32);
+                // const id = ethers.utils.id(currentWalletName);
+                // const hash = ethers.utils.keccak256(id);
+                // const salt = hexZeroPad(hexlify(hash), 32);
 
                 let computed_wallet_address = await writeContracts[contractName].computedAddress(
                   // selectedChainId,
                   // owners,
                   // signaturesRequired,
-                  salt,
+                  // salt,
                   currentWalletName,
                 );
                 setPreComputedAddress(computed_wallet_address);
