@@ -7,6 +7,19 @@ pragma experimental ABIEncoderV2;
 import "@openzeppelin/contracts/utils/cryptography/ECDSA.sol";
 import "./MultiSigFactory.sol";
 
+//custom errors
+error DUPLICATE_OR_UNORDERED_SIGNATURES();
+error INVALID_OWNER();
+error INVALID_SIGNER();
+error INVALID_SIGNATURES_REQUIRED();
+error INSUFFICIENT_VALID_SIGNATURES();
+error NOT_ENOUGH_SIGNERS();
+error NOT_OWNER();
+error NOT_SELF();
+error NOT_FACTORY();
+error TX_FAILED();
+
+
 contract MultiSigWallet {
     using ECDSA for bytes32;
     MultiSigFactory private multiSigFactory;
@@ -34,22 +47,32 @@ contract MultiSigWallet {
     string public name;
 
     modifier onlyOwner() {
-        require(isOwner[msg.sender], "Not owner");
+        if(!isOwner[msg.sender]) {
+            revert NOT_OWNER();
+        }
         _;
     }
 
     modifier onlySelf() {
-        require(msg.sender == address(this), "Not Self");
+        if (msg.sender != address(this)) {
+            revert NOT_SELF();
+        }
         _;
     }
 
     modifier onlyValidSignaturesRequired() {
-        _;
-        require(signaturesRequired > 0, "Must be non-zero signatures required");
-        require(owners.length >= signaturesRequired, "Must be at least the same amount of signers than signatures required");
+         _;
+        if (signaturesRequired == 0) {
+            revert INVALID_SIGNATURES_REQUIRED();
+        }
+        if (owners.length < signaturesRequired) {
+            revert NOT_ENOUGH_SIGNERS();
+        }
     }
     modifier onlyFactory() {
-        require(msg.sender == address(multiSigFactory));
+        if (msg.sender != address(multiSigFactory)) {
+            revert NOT_FACTORY();
+        }
         _;
     }
 
@@ -89,16 +112,18 @@ contract MultiSigWallet {
         uint256 _signaturesRequired
     ) public payable onlyFactory onlyValidSignaturesRequired {
         signaturesRequired = _signaturesRequired;
-        for (uint256 i = 0; i < _owners.length; i++) {
+        for (uint256 i = 0; i < _owners.length;) {
             address owner = _owners[i];
-
-            require(owner != address(0), "constructor: zero address");
-            require(!isOwner[owner], "constructor: owner not unique");
-
+            if (owner == address(0) || isOwner[owner]) {
+                revert INVALID_OWNER();
+            }
             isOwner[owner] = true;
             owners.push(owner);
 
             emit Owner(owner, isOwner[owner]);
+            unchecked {
+                ++ i;
+            }
         }
 
         chainId = _chainId;
@@ -109,8 +134,9 @@ contract MultiSigWallet {
         onlySelf
         onlyValidSignaturesRequired
     {
-        require(newSigner != address(0), "addSigner: zero address");
-        require(!isOwner[newSigner], "addSigner: owner not unique");
+        if (newSigner == address(0) || isOwner[newSigner]) {
+            revert INVALID_SIGNER();
+        }
 
         isOwner[newSigner] = true;
         owners.push(newSigner);
@@ -129,7 +155,9 @@ contract MultiSigWallet {
         onlySelf
         onlyValidSignaturesRequired
     {
-        require(isOwner[oldSigner], "removeSigner: not owner");
+        if (!isOwner[oldSigner]) {
+            revert NOT_OWNER();
+        }
 
         _removeOwner(oldSigner);
         signaturesRequired = newSignaturesRequired;
@@ -146,16 +174,22 @@ contract MultiSigWallet {
         isOwner[_oldSigner] = false;
         uint256 ownersLength = owners.length;
         address[] memory poppedOwners = new address[](owners.length);
-        for (uint256 i = ownersLength - 1; i >= 0; i--) {
+        for (uint256 i = ownersLength - 1; i >= 0; ) {
             if (owners[i] != _oldSigner) {
                 poppedOwners[i] = owners[i];
                 owners.pop();
             } else {
                 owners.pop();
-                for (uint256 j = i; j < ownersLength - 1; j++) {
+                for (uint256 j = i; j < ownersLength - 1; ) {
                     owners.push(poppedOwners[j + 1]); // shout out to moltam89!! https://github.com/austintgriffith/maas/pull/2/commits/e981c5fa5b4d25a1f0946471b876f9a002a9a82b
+                    unchecked {
+                        ++ j;
+                    }
                 }
                 return;
+            }
+            unchecked {
+                -- i;
             }
         }
     }
@@ -180,26 +214,29 @@ contract MultiSigWallet {
 
         uint256 validSignatures;
         address duplicateGuard;
-        for (uint256 i = 0; i < signatures.length; i++) {
+        for (uint256 i = 0; i < signatures.length;) {
             address recovered = recover(_hash, signatures[i]);
-            require(
-                recovered > duplicateGuard,
-                "executeTransaction: duplicate or unordered signatures"
-            );
+            if (recovered <= duplicateGuard) {
+                revert DUPLICATE_OR_UNORDERED_SIGNATURES();
+            }
             duplicateGuard = recovered;
 
             if (isOwner[recovered]) {
                 validSignatures++;
             }
+            unchecked {
+                ++ i;
+            }
         }
 
-        require(
-            validSignatures >= signaturesRequired,
-            "executeTransaction: not enough valid signatures"
-        );
+        if (validSignatures < signaturesRequired) {
+            revert INSUFFICIENT_VALID_SIGNATURES();
+        }
 
         (bool success, bytes memory result) = to.call{value: value}(data);
-        require(success, "executeTransaction: tx failed");
+        if (!success) {
+            revert TX_FAILED();
+        }
 
         emit ExecuteTransaction(
             msg.sender,
