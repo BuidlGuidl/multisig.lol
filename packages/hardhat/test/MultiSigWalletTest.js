@@ -205,13 +205,13 @@ describe("MultiSigWallet Test", () => {
           MultiSigWallet.address, "0x0",
           getRemoveSignerCallData(removeSignerAddress, newSignaturesRequired), 
           await getSignaturesArray(removeSignerHash)))
-        .to.be.revertedWith("executeTransaction: tx failed");
+        .to.be.revertedWith("TX_FAILED()");
     });
 
     it("Transaction reverted: Invalid MultiSigWallet, more signatures required than signers", async () => {
       await expect(
           MultiSigFactory.create2(CHAIN_ID, [owner.address], 2, SALT, CONTRACT_NAME + "Some random string so the names won't collide?")
-        ).to.be.revertedWith("Must be at least the same amount of signers than signatures required");
+        ).to.be.revertedWith("NOT_ENOUGH_SIGNERS()");
     });
 
     it("Transaction reverted: Update Signatures Required to 2 - trying to lock all the funds in the wallet, becasuse there is only 1 signer", async () => {
@@ -229,7 +229,7 @@ describe("MultiSigWallet Test", () => {
 
       await expect(
           MultiSigWallet.executeTransaction(to, value, callData, [signature])
-        ).to.be.revertedWith("executeTransaction: tx failed");
+        ).to.be.revertedWith("TX_FAILED()");
     });
 
     it("Transferring 0.1 eth to addr1", async () => {

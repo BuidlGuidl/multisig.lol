@@ -6,6 +6,9 @@ import "@openzeppelin/contracts/utils/Create2.sol";
 
 import "./MultiSigWallet.sol";
 
+//custom errors
+error CALLER_NOT_REGISTERED();
+
 contract MultiSigFactory {
     MultiSigWallet[] public multiSigs;
     mapping(address => bool) existsMultiSig;
@@ -36,10 +39,9 @@ contract MultiSigFactory {
     constructor() {}
 
     modifier onlyRegistered() {
-        require(
-            existsMultiSig[msg.sender],
-            "caller not registered to use logger"
-        );
+        if (!existsMultiSig[msg.sender]) {
+            revert CALLER_NOT_REGISTERED();
+        }
         _;
     }
 
