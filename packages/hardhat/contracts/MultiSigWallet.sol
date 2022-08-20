@@ -22,7 +22,7 @@ error TX_FAILED();
 contract MultiSigWallet {
     using ECDSA for bytes32;
     MultiSigFactory private multiSigFactory;
-    uint256 public factoryVersion = 1; // <---- set the factory version for backword compatiblity for future contract updates
+    uint256 public constant factoryVersion = 1; // <---- set the factory version for backword compatiblity for future contract updates
 
     event Deposit(address indexed sender, uint256 amount, uint256 balance);
     event ExecuteTransaction(
@@ -82,7 +82,7 @@ contract MultiSigWallet {
 
     function init(
         uint256 _chainId,
-        address[] memory _owners,
+        address[] calldata _owners,
         uint256 _signaturesRequired
     ) public payable onlyFactory onlyValidSignaturesRequired {
         signaturesRequired = _signaturesRequired;
@@ -179,8 +179,8 @@ contract MultiSigWallet {
     function executeTransaction(
         address payable to,
         uint256 value,
-        bytes memory data,
-        bytes[] memory signatures
+        bytes calldata data,
+        bytes[] calldata signatures
     ) public onlyOwner returns (bytes memory) {
         bytes32 _hash = getTransactionHash(nonce, to, value, data);
 
@@ -228,7 +228,7 @@ contract MultiSigWallet {
         uint256 _nonce,
         address to,
         uint256 value,
-        bytes memory data
+        bytes calldata data
     ) public view returns (bytes32) {
         return
             keccak256(
@@ -243,7 +243,7 @@ contract MultiSigWallet {
             );
     }
 
-    function recover(bytes32 _hash, bytes memory _signature)
+    function recover(bytes32 _hash, bytes calldata _signature)
         public
         pure
         returns (address)

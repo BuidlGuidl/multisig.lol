@@ -37,7 +37,7 @@ contract MultiSigFactory {
 
     function emitOwners(
         address _contractAddress,
-        address[] memory _owners,
+        address[] calldata _owners,
         uint256 _signaturesRequired
     ) external onlyRegistered {
         emit Owners(_contractAddress, _owners, _signaturesRequired);
@@ -66,10 +66,10 @@ contract MultiSigFactory {
 
     function create2(
         uint256 _chainId,
-        address[] memory _owners,
+        address[] calldata _owners,
         uint256 _signaturesRequired,
         bytes32 _salt,
-        string memory _name
+        string calldata _name
     ) public payable {
         uint256 id = numberOfMultiSigs();
 
@@ -111,7 +111,7 @@ contract MultiSigFactory {
     /**----------------------
      * get a pre-computed address
      * ---------------------*/
-    function computedAddress(bytes32 _salt, string memory _name)
+    function computedAddress(bytes32 _salt, string calldata _name)
         public
         view
         returns (address)
