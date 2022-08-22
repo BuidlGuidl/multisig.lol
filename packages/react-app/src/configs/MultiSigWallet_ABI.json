@@ -17,6 +17,56 @@
       "type": "constructor"
     },
     {
+      "inputs": [],
+      "name": "DUPLICATE_OR_UNORDERED_SIGNATURES",
+      "type": "error"
+    },
+    {
+      "inputs": [],
+      "name": "INSUFFICIENT_VALID_SIGNATURES",
+      "type": "error"
+    },
+    {
+      "inputs": [],
+      "name": "INVALID_OWNER",
+      "type": "error"
+    },
+    {
+      "inputs": [],
+      "name": "INVALID_SIGNATURES_REQUIRED",
+      "type": "error"
+    },
+    {
+      "inputs": [],
+      "name": "INVALID_SIGNER",
+      "type": "error"
+    },
+    {
+      "inputs": [],
+      "name": "NOT_ENOUGH_SIGNERS",
+      "type": "error"
+    },
+    {
+      "inputs": [],
+      "name": "NOT_FACTORY",
+      "type": "error"
+    },
+    {
+      "inputs": [],
+      "name": "NOT_OWNER",
+      "type": "error"
+    },
+    {
+      "inputs": [],
+      "name": "NOT_SELF",
+      "type": "error"
+    },
+    {
+      "inputs": [],
+      "name": "TX_FAILED",
+      "type": "error"
+    },
+    {
       "anonymous": false,
       "inputs": [
         {

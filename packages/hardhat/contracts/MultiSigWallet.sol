@@ -19,11 +19,10 @@ error NOT_SELF();
 error NOT_FACTORY();
 error TX_FAILED();
 
-
 contract MultiSigWallet {
     using ECDSA for bytes32;
     MultiSigFactory private multiSigFactory;
-    uint256 public factoryVersion = 1; // <---- set the factory version for backword compatiblity for future contract updates
+    uint256 public constant factoryVersion = 1; // <---- set the factory version for backword compatiblity for future contract updates
 
     event Deposit(address indexed sender, uint256 amount, uint256 balance);
     event ExecuteTransaction(
@@ -47,7 +46,7 @@ contract MultiSigWallet {
     string public name;
 
     modifier onlyOwner() {
-        if(!isOwner[msg.sender]) {
+        if (!isOwner[msg.sender]) {
             revert NOT_OWNER();
         }
         _;
@@ -61,7 +60,7 @@ contract MultiSigWallet {
     }
 
     modifier onlyValidSignaturesRequired() {
-         _;
+        _;
         if (signaturesRequired == 0) {
             revert INVALID_SIGNATURES_REQUIRED();
         }
@@ -76,31 +75,6 @@ contract MultiSigWallet {
         _;
     }
 
-    // constructor(
-    //     uint256 _chainId,
-    //     address[] memory _owners,
-    //     uint256 _signaturesRequired,
-    //     address _factory,
-    //     string memory _name
-    // ) payable requireNonZeroSignatures(_signaturesRequired) {
-    //     multiSigFactory = MultiSigFactory(_factory);
-    //     signaturesRequired = _signaturesRequired;
-    //     for (uint256 i = 0; i < _owners.length; i++) {
-    //         address owner = _owners[i];
-
-    //         require(owner != address(0), "constructor: zero address");
-    //         require(!isOwner[owner], "constructor: owner not unique");
-
-    //         isOwner[owner] = true;
-    //         owners.push(owner);
-
-    //         emit Owner(owner, isOwner[owner]);
-    //     }
-
-    //     chainId = _chainId;
-    //     name = _name;
-    // }
-
     constructor(string memory _name, address _factory) payable {
         name = _name;
         multiSigFactory = MultiSigFactory(_factory);
@@ -108,11 +82,11 @@ contract MultiSigWallet {
 
     function init(
         uint256 _chainId,
-        address[] memory _owners,
+        address[] calldata _owners,
         uint256 _signaturesRequired
     ) public payable onlyFactory onlyValidSignaturesRequired {
         signaturesRequired = _signaturesRequired;
-        for (uint256 i = 0; i < _owners.length;) {
+        for (uint256 i = 0; i < _owners.length; ) {
             address owner = _owners[i];
             if (owner == address(0) || isOwner[owner]) {
                 revert INVALID_OWNER();
@@ -122,7 +96,7 @@ contract MultiSigWallet {
 
             emit Owner(owner, isOwner[owner]);
             unchecked {
-                ++ i;
+                ++i;
             }
         }
 
@@ -183,13 +157,13 @@ contract MultiSigWallet {
                 for (uint256 j = i; j < ownersLength - 1; ) {
                     owners.push(poppedOwners[j + 1]); // shout out to moltam89!! https://github.com/austintgriffith/maas/pull/2/commits/e981c5fa5b4d25a1f0946471b876f9a002a9a82b
                     unchecked {
-                        ++ j;
+                        ++j;
                     }
                 }
                 return;
             }
             unchecked {
-                -- i;
+                --i;
             }
         }
     }
@@ -205,8 +179,8 @@ contract MultiSigWallet {
     function executeTransaction(
         address payable to,
         uint256 value,
-        bytes memory data,
-        bytes[] memory signatures
+        bytes calldata data,
+        bytes[] calldata signatures
     ) public onlyOwner returns (bytes memory) {
         bytes32 _hash = getTransactionHash(nonce, to, value, data);
 
@@ -214,7 +188,7 @@ contract MultiSigWallet {
 
         uint256 validSignatures;
         address duplicateGuard;
-        for (uint256 i = 0; i < signatures.length;) {
+        for (uint256 i = 0; i < signatures.length; ) {
             address recovered = recover(_hash, signatures[i]);
             if (recovered <= duplicateGuard) {
                 revert DUPLICATE_OR_UNORDERED_SIGNATURES();
@@ -225,7 +199,7 @@ contract MultiSigWallet {
                 validSignatures++;
             }
             unchecked {
-                ++ i;
+                ++i;
             }
         }
 
@@ -254,7 +228,7 @@ contract MultiSigWallet {
         uint256 _nonce,
         address to,
         uint256 value,
-        bytes memory data
+        bytes calldata data
     ) public view returns (bytes32) {
         return
             keccak256(
@@ -269,7 +243,7 @@ contract MultiSigWallet {
             );
     }
 
-    function recover(bytes32 _hash, bytes memory _signature)
+    function recover(bytes32 _hash, bytes calldata _signature)
         public
         pure
         returns (address)
