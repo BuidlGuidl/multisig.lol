@@ -37,14 +37,15 @@ module.exports = async ({ getNamedAccounts, deployments, getChainId }) => {
   //   log: true,
   // });
 
-  console.log(
-    "MultiSig factory deployed at =>",
-    MultiSigFactoryDeployed.address
-  );
   // console.log(
   //   "MultiSig wallet deployed at => ",
   //   MultiSigWalletDeployed.address
   // );
+
+  console.log(
+    "MultiSig factory deployed at =>",
+    MultiSigFactoryDeployed.address
+  );
 
   // Getting a previously deployed contract
   // const multiSigFactory = await ethers.getContract("MultiSigFactory", deployer);
