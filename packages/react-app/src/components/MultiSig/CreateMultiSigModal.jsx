@@ -48,7 +48,7 @@ function CreateMultiSigModal({
     }
   }, [address]);
 
-  const showCreateModal = deployType => {
+  const showCreateModal = async deployType => {
     if (deployType === "CREATE") {
       setDeployType("CREATE");
       setOwners([...new Set([address])]);
@@ -62,9 +62,14 @@ function CreateMultiSigModal({
       let prevSignaturesRequired = reDeployWallet ? reDeployWallet["signaturesRequired"] : 0;
       let prevOwners = reDeployWallet ? reDeployWallet["owners"] : [];
 
+      let prevWalletName = reDeployWallet["walletName"];
+
+      let computed_wallet_address = await writeContracts[contractName].computedAddress(prevWalletName);
+
       setDeployType("RE_DEPLOY");
       setSignaturesRequired(prevSignaturesRequired);
       setOwners([...new Set([...prevOwners, address])]);
+      setPreComputedAddress(computed_wallet_address);
 
       setTimeout(() => {
         setIsCreateModalVisible(true);
@@ -321,42 +326,30 @@ function CreateMultiSigModal({
           <Button key="back" onClick={handleCancel}>
             Cancel
           </Button>,
-          <Button
-            key="submit"
-            type="primary"
-            loading={pendingCreate}
-            onClick={handleSubmit}
-            disabled={isWalletExist || Boolean(walletName) === false || Boolean(signaturesRequired) === false}
-          >
-            {/* {reDeployWallet === undefined ? "Create" : "Deploy"} */}
-            {deployType === "CREATE" ? "Create" : "Deploy"}
-          </Button>,
-          DEBUG && (
+
+          // on create
+          deployType === "CREATE" && (
             <Button
-              key="submit_computed"
+              key="submit"
               type="primary"
               loading={pendingCreate}
-              onClick={async () => {
-                let currentWalletName = deployType === "CREATE" ? walletName : reDeployWallet["walletName"];
-                // const id = ethers.utils.id(currentWalletName);
-                // const hash = ethers.utils.keccak256(id);
-                // const salt = hexZeroPad(hexlify(hash), 32);
-
-                let computed_wallet_address = await writeContracts[contractName].computedAddress(
-                  // selectedChainId,
-                  // owners,
-                  // signaturesRequired,
-                  // salt,
-                  currentWalletName,
-                );
-                setPreComputedAddress(computed_wallet_address);
-
-                let isContractExists = await writeContracts[contractName].provider.getCode(computed_wallet_address);
-                // console.log("n-isContractExists: ", isContractExists);
-                // console.log("n-writeContracts[contractName]: ", writeContracts[contractName]);
-              }}
+              onClick={handleSubmit}
+              disabled={isWalletExist || Boolean(walletName) === false || Boolean(signaturesRequired) === false}
             >
-              precompute address
+              Create
+            </Button>
+          ),
+
+          // on redeploy on new network
+          deployType === "RE_DEPLOY" && (
+            <Button
+              key="submit"
+              type="primary"
+              loading={pendingCreate}
+              onClick={handleSubmit}
+              disabled={Boolean(signaturesRequired) === false}
+            >
+              Deploy
             </Button>
           ),
         ]}
@@ -436,13 +429,6 @@ function CreateMultiSigModal({
               onChange={setAmount}
             />
           </div>
-          {DEBUG && (
-            <div className="flex  flex-col justify-center items-center">
-              <span className="text-xl">Precomputed Address</span>
-              <span className="text-lg"> chain id:{selectedChainId}</span>
-              <Address address={preComputedAddress} />
-            </div>
-          )}
         </div>
       </Modal>
     </>
