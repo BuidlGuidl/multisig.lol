@@ -3,7 +3,7 @@ import { Button, List, Spin } from "antd";
 import { usePoller } from "eth-hooks";
 import { ethers } from "ethers";
 import { useState } from "react";
-import { TransactionListItem } from "../components";
+import { TransactionListItem, TenderlySimulation } from "../components";
 import { useThemeSwitcher } from "react-css-theme-switcher";
 
 const axios = require("axios");
@@ -240,6 +240,7 @@ export default function Transactions({
                       </Button>
                     </div>
                   </div>
+                  <TenderlySimulation params={item} address={address} multiSigWallet={readContracts["MultiSigWallet"]}/>
                 </TransactionListItem>
               </div>
             );
