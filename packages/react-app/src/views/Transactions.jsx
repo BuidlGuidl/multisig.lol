@@ -240,7 +240,7 @@ export default function Transactions({
                       </Button>
                     </div>
                   </div>
-                  <TenderlySimulation params={item} address={address} multiSigWallet={readContracts["MultiSigWallet"]}/>
+                  <TenderlySimulation params={item} address={address} multiSigWallet={readContracts["MultiSigWallet"]} signaturesRequired={signaturesRequired} />
                 </TransactionListItem>
               </div>
             );
