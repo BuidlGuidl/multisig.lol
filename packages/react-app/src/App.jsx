@@ -270,7 +270,11 @@ function App(props) {
     let currentMultiSigChainIds = currentMultiSig?.chainIds;
 
     // on load contracts if current sig on  same chain id
-    if (currentMultiSigAddress && currentMultiSigChainIds.map(id => Number(id))?.includes(Number(selectedChainId))) {
+    if (
+      currentMultiSigAddress &&
+      currentMultiSigChainIds &&
+      currentMultiSigChainIds.map(id => Number(id))?.includes(Number(selectedChainId))
+    ) {
       readContracts.MultiSigWallet = new ethers.Contract(currentMultiSigAddress, multiSigWalletABI, localProvider);
       writeContracts.MultiSigWallet = new ethers.Contract(currentMultiSigAddress, multiSigWalletABI, userSigner);
       setContractNameForEvent("MultiSigWallet");
@@ -351,8 +355,12 @@ function App(props) {
     if (isFactoryDeployed !== undefined) {
       let res = await axios.get(BACKEND_URL + `getWallets/${address}`);
       let data = res.data;
+
+      console.log("n-importedMultiSigs: ", importedMultiSigs);
       let localWallets =
         importedMultiSigs && targetNetwork.name in importedMultiSigs ? [...importedMultiSigs[targetNetwork.name]] : [];
+
+      console.log("n-localWallets: ", localWallets);
 
       let allWallets = [...localWallets, ...data["userWallets"]].flat();
 
