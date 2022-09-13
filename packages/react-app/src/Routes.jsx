@@ -9,6 +9,7 @@ import { Home, Hints, Subgraph, CreateTransaction, Transactions } from "./views"
 /**----------------------
  * TODO:we can create a global context state and fetch all this props on individual components
  * ---------------------*/
+
 const Routes = ({
   contractName,
   contractAddress,
@@ -20,8 +21,8 @@ const Routes = ({
   nonce,
   signaturesRequired,
   blockExplorer,
-  executeTransactionEvents,
-  ownerEvents,
+  // executeTransactionEvents,
+  // ownerEvents,
   address,
   yourLocalBalance,
   tx,
@@ -36,6 +37,8 @@ const Routes = ({
   subgraphUri,
   reDeployWallet,
   isFactoryDeployed,
+  // allOwnerEvents,
+  contractNameForEvent,
 }) => {
   return (
     <>
@@ -75,7 +78,8 @@ const Routes = ({
             </>
           ) : (
             <>
-              {currentMultiSigAddress && (
+              {/* {currentMultiSigAddress && ( */}
+              {true && (
                 <Home
                   key={currentMultiSigAddress}
                   address={address}
@@ -84,14 +88,16 @@ const Routes = ({
                   price={price}
                   mainnetProvider={mainnetProvider}
                   blockExplorer={blockExplorer}
-                  executeTransactionEvents={executeTransactionEvents}
+                  // executeTransactionEvents={executeTransactionEvents}
                   contractName={contractName}
                   readContracts={readContracts}
-                  ownerEvents={ownerEvents}
+                  // ownerEvents={ownerEvents}
                   signaturesRequired={signaturesRequired}
-                  poolServerUrl={BACKEND_URL}
+                  // poolServerUrl={BACKEND_URL}
                   reDeployWallet={reDeployWallet}
                   isFactoryDeployed={isFactoryDeployed}
+                  currentMultiSigAddress={currentMultiSigAddress}
+                  contractNameForEvent={contractNameForEvent}
                 />
               )}
             </>

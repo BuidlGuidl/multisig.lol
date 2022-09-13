@@ -3,14 +3,14 @@ const fs = require("fs");
 
 const directoryName = "build";
 
-const BUCKETNAME = "multisig.lol"; // <<---- SET YOUR BUCKET NAME AND CREATE aws.json ** see below vvvvvvvvvv
+const BUCKETNAME = "YOUR_BUCKET_NAME_HERE"; // <<---- SET YOUR BUCKET NAME AND CREATE aws.json ** see below vvvvvvvvvv
 
-
+/*
 const invalidation = {
- awsDistributionId: "E3MT2OEGZAOJTZ",
+ awsDistributionId: "E224H0HK9AWILY",
  awsInvalidationPath: "/*"
 }
-
+*/
 
 if (!BUCKETNAME) {
   console.log("☢️   Enter a bucket name in packages/react-app/scripts/s3.js ");
@@ -84,7 +84,7 @@ s3.createBucket(bucketParams, function(err, data) {
         ///
         /// After the bucket is created, we upload to it:
         ///
-        s3FolderUpload(directoryName, credentials, options  , invalidation );
+        s3FolderUpload(directoryName, credentials, options /* , invalidation */);
 
       }
     });

@@ -11,14 +11,15 @@ export default function ImportMultiSigModal({
   mainnetProvider,
   targetNetwork,
   networkOptions,
-  multiSigs,
-  setMultiSigs,
-  setCurrentMultiSigAddress,
+  // multiSigs,
+  // setMultiSigs,
+  // setCurrentMultiSigAddress,
   multiSigWalletABI,
   localProvider,
-  poolServerUrl,
+  // poolServerUrl,
   getUserWallets,
   isFactoryDeployed,
+  setSelectedWalletAddress,
 }) {
   const [importedMultiSigs, setImportedMultiSigs] = useLocalStorage("importedMultiSigs");
   const [isModalVisible, setIsModalVisible] = useState(false);
@@ -103,6 +104,7 @@ export default function ImportMultiSigModal({
 
       resetState();
       setIsModalVisible(false);
+      setSelectedWalletAddress(walletAddress);
       window.location.reload();
     } catch (e) {
       console.log("n-Import error:", e);
