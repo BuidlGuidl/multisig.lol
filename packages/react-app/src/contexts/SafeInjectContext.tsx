@@ -1,8 +1,30 @@
 import React, { createContext, useContext, useState, useEffect, useRef, useCallback } from "react";
 import { providers, utils } from "ethers";
-import { useAppCommunicator, Methods } from "../helpers/communicator";
+import { useAppCommunicator } from "../helpers/communicator";
+import {
+  InterfaceMessageIds,
+  InterfaceMessageProps,
+  Methods,
+  MethodToResponse,
+  RequestId,
+  RPCPayload,
+  SignMessageParams,
+  SignTypedMessageParams,
+  Transaction,
+} from "../helpers/types";
 
-export const SafeInjectContext = createContext({
+type SafeInjectContextType = {
+  address: string | undefined;
+  appUrl: string | undefined;
+  rpcUrl: string | undefined;
+  iframeRef: React.RefObject<HTMLIFrameElement> | null;
+  transactions: Transaction[] | undefined;
+  setAddress: React.Dispatch<React.SetStateAction<string | undefined>>;
+  setAppUrl: React.Dispatch<React.SetStateAction<string | undefined>>;
+  setRpcUrl: React.Dispatch<React.SetStateAction<string | undefined>>;
+};
+
+export const SafeInjectContext = createContext<SafeInjectContextType>({
   address: undefined,
   appUrl: undefined,
   rpcUrl: undefined,
@@ -13,18 +35,18 @@ export const SafeInjectContext = createContext({
   setRpcUrl: () => {},
 });
 
-export const SafeInjectProvider = ({ children }) => {
-  const [address, setAddress] = useState();
-  const [appUrl, setAppUrl] = useState();
-  const [rpcUrl, setRpcUrl] = useState();
-  const [provider, setProvider] = useState();
-  const [transactions, setTransactions] = useState();
+export const SafeInjectProvider: React.FunctionComponent<{ children: React.ReactNode }> = ({ children }) => {
+  const [address, setAddress] = useState<string>();
+  const [appUrl, setAppUrl] = useState<string>();
+  const [rpcUrl, setRpcUrl] = useState<string>();
+  const [provider, setProvider] = useState<providers.StaticJsonRpcProvider>();
+  const [transactions, setTransactions] = useState<Transaction[]>();
 
-  const iframeRef = useRef(null);
+  const iframeRef = useRef<HTMLIFrameElement>(null);
   const communicator = useAppCommunicator(iframeRef);
 
   const sendMessageToIframe = useCallback(
-    function (message, requestId) {
+    function <T extends InterfaceMessageIds>(message: InterfaceMessageProps<T>, requestId?: RequestId) {
       const requestWithMessage = {
         ...message,
         requestId: requestId || Math.trunc(window.performance.now()),
@@ -32,7 +54,7 @@ export const SafeInjectProvider = ({ children }) => {
       };
 
       if (iframeRef) {
-        iframeRef.current?.contentWindow?.postMessage(requestWithMessage, appUrl);
+        iframeRef.current?.contentWindow?.postMessage(requestWithMessage, appUrl!);
       }
     },
     [iframeRef, appUrl],
@@ -47,25 +69,23 @@ export const SafeInjectProvider = ({ children }) => {
   useEffect(() => {
     if (!provider) return;
 
-    communicator?.on(Methods.getSafeInfo, async () => {
-      return {
-        safeAddress: address,
-        chainId: (await provider.getNetwork()).chainId,
-        owners: [],
-        threshold: 1,
-        isReadOnly: false,
-      };
-    });
+    communicator?.on(Methods.getSafeInfo, async () => ({
+      safeAddress: address,
+      chainId: (await provider.getNetwork()).chainId,
+      owners: [],
+      threshold: 1,
+      isReadOnly: false,
+    }));
 
     communicator?.on(Methods.getEnvironmentInfo, async () => ({
       origin: document.location.origin,
     }));
 
     communicator?.on(Methods.rpcCall, async msg => {
-      const params = msg.data.params;
+      const params = msg.data.params as RPCPayload;
 
       try {
-        const response = await provider.send(params.call, params.params);
+        const response = (await provider.send(params.call, params.params)) as MethodToResponse["rpcCall"];
         return response;
       } catch (err) {
         return err;
@@ -74,7 +94,7 @@ export const SafeInjectProvider = ({ children }) => {
 
     communicator?.on(Methods.sendTransactions, msg => {
       // @ts-expect-error explore ways to fix this
-      const transactions = msg.data.params.txs.map(({ to, ...rest }) => ({
+      const transactions = (msg.data.params.txs as Transaction[]).map(({ to, ...rest }) => ({
         to: utils.getAddress(to), // checksummed
         ...rest,
       }));
@@ -83,13 +103,13 @@ export const SafeInjectProvider = ({ children }) => {
     });
 
     communicator?.on(Methods.signMessage, async msg => {
-      const { message } = msg.data.params;
+      const { message } = msg.data.params as SignMessageParams;
 
       // openSignMessageModal(message, msg.data.id, Methods.signMessage)
     });
 
     communicator?.on(Methods.signTypedMessage, async msg => {
-      const { typedData } = msg.data.params;
+      const { typedData } = msg.data.params as SignTypedMessageParams;
 
       // openSignMessageModal(typedData, msg.data.id, Methods.signTypedMessage)
     });

@@ -3,15 +3,15 @@ export const getSDKVersion = () => {
 };
 
 // i.e. 0-255 -> '00'-'ff'
-const dec2hex = dec => dec.toString(16).padStart(2, "0");
+const dec2hex = (dec: number): string => dec.toString(16).padStart(2, "0");
 
-const generateId = len => {
+const generateId = (len: number): string => {
   const arr = new Uint8Array((len || 40) / 2);
   window.crypto.getRandomValues(arr);
   return Array.from(arr, dec2hex).join("");
 };
 
-export const generateRequestId = () => {
+export const generateRequestId = (): string => {
   if (typeof window !== "undefined") {
     return generateId(10);
   }

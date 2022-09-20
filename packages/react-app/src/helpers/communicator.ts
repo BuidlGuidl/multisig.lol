@@ -1,37 +1,43 @@
-import { useEffect, useState } from "react";
+import { MutableRefObject, useEffect, useState } from "react";
 import { MessageFormatter } from "./messageFormatter";
+import {
+  SDKMessageEvent,
+  MethodToResponse,
+  Methods,
+  ErrorResponse,
+  RequestId,
+} from "./types";
 import { getSDKVersion } from "./utils";
 
-const Methods = {
-  sendTransaction: "sendTransactions",
-  rpcCal: "rpcCall",
-  getChainInf: "getChainInfo",
-  getSafeInf: "getSafeInfo",
-  getTxBySafeTxHas: "getTxBySafeTxHash",
-  getSafeBalance: "getSafeBalances",
-  signMessag: "signMessage",
-  signTypedMessag: "signTypedMessage",
-  getEnvironmentInf: "getEnvironmentInfo",
-  requestAddressBoo: "requestAddressBook",
-  wallet_getPermission: "wallet_getPermissions",
-  wallet_requestPermission: "wallet_requestPermissions",
-};
+type MessageHandler = (
+  msg: SDKMessageEvent
+) =>
+  | void
+  | MethodToResponse[Methods]
+  | ErrorResponse
+  | Promise<MethodToResponse[Methods] | ErrorResponse | void>;
+
+export enum LegacyMethods {
+  getEnvInfo = "getEnvInfo",
+}
+
+type SDKMethods = Methods | LegacyMethods;
 
 class AppCommunicator {
-  iframeRef;
-  handlers = new Map();
+  private iframeRef: MutableRefObject<HTMLIFrameElement | null>;
+  private handlers = new Map<SDKMethods, MessageHandler>();
 
-  constructor(iframeRef) {
+  constructor(iframeRef: MutableRefObject<HTMLIFrameElement | null>) {
     this.iframeRef = iframeRef;
 
     window.addEventListener("message", this.handleIncomingMessage);
   }
 
-  on = (method, handler) => {
+  on = (method: SDKMethods, handler: MessageHandler): void => {
     this.handlers.set(method, handler);
   };
 
-  isValidMessage = msg => {
+  private isValidMessage = (msg: SDKMessageEvent): boolean => {
     if (msg.data.hasOwnProperty("isCookieEnabled")) {
       return true;
     }
@@ -42,20 +48,24 @@ class AppCommunicator {
     return sentFromIframe && knownMethod;
   };
 
-  canHandleMessage = msg => {
+  private canHandleMessage = (msg: SDKMessageEvent): boolean => {
     return Boolean(this.handlers.get(msg.data.method));
   };
 
-  send = (data, requestId, error = false) => {
+  send = (data: unknown, requestId: RequestId, error = false): void => {
     const sdkVersion = getSDKVersion();
     const msg = error
-      ? MessageFormatter.makeErrorResponse(requestId, data, sdkVersion)
+      ? MessageFormatter.makeErrorResponse(
+          requestId,
+          data as string,
+          sdkVersion
+        )
       : MessageFormatter.makeResponse(requestId, data, sdkVersion);
     // console.log("send", { msg });
     this.iframeRef.current?.contentWindow?.postMessage(msg, "*");
   };
 
-  handleIncomingMessage = async msg => {
+  handleIncomingMessage = async (msg: SDKMessageEvent): Promise<void> => {
     const validMessage = this.isValidMessage(msg);
     const hasHandler = this.canHandleMessage(msg);
 
@@ -71,27 +81,33 @@ class AppCommunicator {
         if (typeof response !== "undefined") {
           this.send(response, msg.data.id);
         }
-      } catch (err) {
+      } catch (err: any) {
         this.send(err.message, msg.data.id, true);
       }
     }
   };
 
-  clear = () => {
+  clear = (): void => {
     window.removeEventListener("message", this.handleIncomingMessage);
   };
 }
 
-const useAppCommunicator = iframeRef => {
-  const [communicator, setCommunicator] = useState(undefined);
+const useAppCommunicator = (
+  iframeRef: MutableRefObject<HTMLIFrameElement | null>
+): AppCommunicator | undefined => {
+  const [communicator, setCommunicator] = useState<AppCommunicator | undefined>(
+    undefined
+  );
   useEffect(() => {
-    let communicatorInstance;
-    const initCommunicator = iframeRef => {
+    let communicatorInstance: AppCommunicator;
+    const initCommunicator = (
+      iframeRef: MutableRefObject<HTMLIFrameElement>
+    ) => {
       communicatorInstance = new AppCommunicator(iframeRef);
       setCommunicator(communicatorInstance);
     };
 
-    initCommunicator(iframeRef);
+    initCommunicator(iframeRef as MutableRefObject<HTMLIFrameElement>);
 
     return () => {
       communicatorInstance?.clear();
@@ -101,4 +117,4 @@ const useAppCommunicator = iframeRef => {
   return communicator;
 };
 
-export { useAppCommunicator, Methods };
+export { useAppCommunicator };
