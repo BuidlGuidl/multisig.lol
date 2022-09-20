@@ -2,7 +2,7 @@ import React, { useEffect, useState, useRef } from "react";
 import { useHistory } from "react-router-dom";
 import { Button, Input, Select, InputNumber, Space, Tooltip, Alert } from "antd";
 import { CodeOutlined } from "@ant-design/icons";
-import { AddressInput, EtherInput, WalletConnectInput } from "../components";
+import { AddressInput, EtherInput, WalletConnectInput, IFrame } from "../components";
 import TransactionDetailsModal from "../components/MultiSig/TransactionDetailsModal";
 import { parseExternalContractTransaction } from "../helpers";
 import { useLocalStorage } from "../hooks";
@@ -159,10 +159,13 @@ export default function CreateTransaction({
     <div className="flex justify-center flex-col items-center">
       <div
         // style={{ border: "1px solid #cccccc", padding: 16, width: 400, margin: "auto", marginTop: 64 }}
-        className="flex justify-center border-2 m-5 w-96 rounded-2xl shadow-md"
+        className="flex justify-center border-2 m-5 rounded-2xl shadow-md"
+        style={{
+          minWidth: "24rem",
+        }}
       >
-        <div style={{ margin: 8 }}>
-          <div style={{ margin: 8, padding: 8 }}>
+        <div className="flex flex-col items-center" style={{ margin: 8 }}>
+          <div style={{ margin: 8, padding: 8, maxWidth: "15rem" }}>
             <Select value={methodName} style={{ width: "100%" }} onChange={setMethodName}>
               <Option key="transferFunds">Send ETH</Option>
               <Option key="addSigner">Add Signer</Option>
@@ -172,9 +175,10 @@ export default function CreateTransaction({
                 {/* <img src="walletconnect-logo.svg" style={{ height: 20, width: 20 }} /> WalletConnect */}
                 WalletConnect
               </Option>
+              <Option key="iframeCallData">IFrame</Option>
             </Select>
           </div>
-          {methodName == "wcCallData" ? (
+          {methodName === "wcCallData" ? (
             <div style={inputStyle}>
               <WalletConnectInput
                 chainId={localProvider?._network.chainId}
@@ -184,6 +188,8 @@ export default function CreateTransaction({
                 price={price}
               />
             </div>
+          ) : methodName === "iframeCallData" ? (
+            <IFrame contractAddress={contractAddress} />
           ) : (
             <>
               <div style={inputStyle}>

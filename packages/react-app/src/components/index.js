@@ -25,6 +25,7 @@ export { default as MultiAddressInput } from "./MultiAddressInput";
 export { default as TenderlySimulation } from "./TenderlySimulation";
 export { default as TokenSelect } from "./TokenSelect";
 export { default as WalletConnectInput } from "./WalletConnectInput";
+export { default as IFrame } from "./IFrame";
 
 export { default as TransactionListItem } from "./MultiSig/TransactionListItem";
 export { default as Owners } from "./MultiSig/Owners";
