@@ -90,7 +90,7 @@ function NetworkDisplay({
     }
   }
 
-  console.log({ networkDisplay });
+  // console.log({ networkDisplay });
 
   return networkDisplay;
 }

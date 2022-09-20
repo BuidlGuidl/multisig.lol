@@ -8,6 +8,7 @@ require("@tenderly/hardhat-tenderly");
 
 require("hardhat-deploy");
 require("hardhat-gas-reporter");
+require("hardhat-abi-exporter");
 
 require("@nomiclabs/hardhat-ethers");
 require("@nomiclabs/hardhat-etherscan");
@@ -66,10 +67,10 @@ module.exports = {
   networks: {
     localhost: {
       url: "http://localhost:8545",
-      /*
+      /*      
         notice no mnemonic here? it will just use account 0 of the hardhat node to deploy
         (you can put in a mnemonic here to set the deployer locally)
-
+      
       */
     },
     rinkeby: {
@@ -108,8 +109,8 @@ module.exports = {
         mnemonic: mnemonic(),
       },
     },
-    gnosis: {
-      url: "https://rpc.gnosischain.com",
+    xdai: {
+      url: "https://rpc.xdaichain.com/",
       gasPrice: 1000000000,
       accounts: {
         mnemonic: mnemonic(),
@@ -132,7 +133,7 @@ module.exports = {
     polygon: {
       url: "https://polygon-rpc.com",
       // url: "https://speedy-nodes-nyc.moralis.io/XXXXXXXXXXXXXXXXXXXx/polygon/mainnet", // <---- YOUR MORALIS ID! (not limited to infura)
-      gasPrice: 61000000000,
+      gasPrice: 3200000000,
       accounts: {
         mnemonic: mnemonic(),
       },
@@ -140,48 +141,16 @@ module.exports = {
     mumbai: {
       url: "https://rpc-mumbai.maticvigil.com",
       // url: "https://speedy-nodes-nyc.moralis.io/XXXXXXXXXXXXXXXXXXXXXXX/polygon/mumbai", // <---- YOUR MORALIS ID! (not limited to infura)
-      gasPrice: 60000000000,
+      gasPrice: 3200000000,
       accounts: {
         mnemonic: mnemonic(),
       },
     },
-    rinkebyArbitrum: {
-      url: "https://rinkeby.arbitrum.io/rpc",
-      gasPrice: 0,
+    matic: {
+      url: "https://rpc-mainnet.maticvigil.com/",
+      gasPrice: 1000000000,
       accounts: {
         mnemonic: mnemonic(),
-      },
-      companionNetworks: {
-        l1: "rinkeby",
-      },
-    },
-    localArbitrum: {
-      url: "http://localhost:8547",
-      gasPrice: 0,
-      accounts: {
-        mnemonic: mnemonic(),
-      },
-      companionNetworks: {
-        l1: "localArbitrumL1",
-      },
-    },
-    arbitrum: {
-      url: "https://arb1.arbitrum.io/rpc",
-      accounts: {
-        mnemonic: mnemonic(),
-      },
-      companionNetworks: {
-        l1: "mainnet",
-      },
-    },
-    localArbitrumL1: {
-      url: "http://localhost:7545",
-      gasPrice: 0,
-      accounts: {
-        mnemonic: mnemonic(),
-      },
-      companionNetworks: {
-        l2: "localArbitrum",
       },
     },
     optimism: {
@@ -261,6 +230,62 @@ module.exports = {
         mnemonic: mnemonic(),
       },
     },
+    moonbeam: {
+      url: 'https://rpc.api.moonbeam.network',
+      chainId: 1284,
+      accounts: {
+        mnemonic: mnemonic(),
+      },
+    },
+    moonriver: {
+      url: 'https://rpc.api.moonriver.moonbeam.network',
+      chainId: 1285,
+      accounts: {
+        mnemonic: mnemonic(),
+      },
+    },
+    moonbaseAlpha: {
+      url: 'https://rpc.api.moonbase.moonbeam.network',
+      chainId: 1287,
+      accounts: {
+        mnemonic: mnemonic(),
+      },
+    },
+    moonbeamDevNode: {
+      url: 'http://127.0.0.1:9933',
+      chainId: 1281,
+      accounts: {
+        mnemonic: mnemonic(),
+      },
+    },
+    godwoken: {
+      url: 'https://godwoken-testnet-v1.ckbapp.dev',
+      chainId: 71401,
+      accounts: {
+        mnemonic: mnemonic(),
+      },
+    },
+    arbitrum: {
+      url: 'https://arb1.arbitrum.io/rpc',
+      chainId: 42161,
+      accounts: {
+        mnemonic: mnemonic(),
+      },
+    },
+    rinkebyArbitrum: {
+      url: 'https://rinkeby.arbitrum.io/rpc',
+      chainId: 421611,
+      accounts: {
+        mnemonic: mnemonic(),
+      },
+    },
+    devnetArbitrum: {
+      url: 'https://nitro-devnet.arbitrum.io/rpc',
+      chainId: 421612,
+      accounts: {
+        mnemonic: mnemonic(),
+      },
+    },
   },
   solidity: {
     compilers: [
@@ -293,7 +318,19 @@ module.exports = {
     },
   },
   etherscan: {
-    apiKey: "DNXJA8RX2Q3VZ4URQIWP7Z68CJXQZSC6AW",
+    apiKey: {
+      mainnet: "DNXJA8RX2Q3VZ4URQIWP7Z68CJXQZSC6AW",
+      // add other network's API key here
+    },
+  },
+  abiExporter: {
+    path: "../react-app/src/contracts/ABI",
+    runOnCompile: true,
+    clear: true,
+    flat: true,
+    only: [],
+    spacing: 2,
+    pretty: false,
   },
 };
 

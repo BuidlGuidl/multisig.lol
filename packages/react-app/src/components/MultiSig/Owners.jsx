@@ -2,7 +2,10 @@ import React, { useEffect } from "react";
 import { Select, List, Spin, Collapse } from "antd";
 import axios from "axios";
 
+import { useEventListener } from "eth-hooks/events/";
+
 import { Address } from "..";
+import { useState } from "react";
 
 const { Panel } = Collapse;
 
@@ -10,14 +13,29 @@ const { Panel } = Collapse;
 // poolServerUrl={poolServerUrl}
 // contractAddress={contractAddress}
 function Owners({
-  ownerEvents,
+  // ownerEvents,
   signaturesRequired,
   mainnetProvider,
   blockExplorer,
-  address,
-  poolServerUrl,
-  contractAddress,
+  // address,
+  // poolServerUrl,
+  // contractAddress,
+  localProvider,
+  currentMultiSigAddress,
+  reDeployWallet,
+  contractNameForEvent,
+  readContracts,
 }) {
+  const [ownerEvents, setOwnerEvents] = useState([]);
+
+  const allOwnerEvents = useEventListener(
+    currentMultiSigAddress && reDeployWallet === undefined ? readContracts : null,
+    contractNameForEvent,
+    "Owner",
+    localProvider,
+    1,
+  );
+
   const owners = new Set();
   const prevOwners = new Set();
   ownerEvents.forEach(ownerEvent => {
@@ -29,20 +47,26 @@ function Owners({
       owners.delete(ownerEvent.args.owner);
     }
   });
-  const updateOwners = async owners => {
-    let reqData = {
-      owners: [...owners],
-    };
-    const res = await axios.post(poolServerUrl + `updateOwners/${address}/${contractAddress}`, reqData);
-    console.log("update owner response", res.data);
-  };
+  // const updateOwners = async owners => {
+  //   let reqData = {
+  //     owners: [...owners],
+  //   };
+  //   const res = await axios.post(poolServerUrl + `updateOwners/${address}/${contractAddress}`, reqData);
+  //   console.log("update owner response", res.data);
+  // };
+
+  // useEffect(() => {
+  //   if (signaturesRequired && owners.size > 0) {
+  //     //  disabled for updating owners at backend as it is automatically updated
+  //     // updateOwners(owners);
+  //   }
+  // }, [owners.size, signaturesRequired]);
 
   useEffect(() => {
-    if (signaturesRequired && owners.size > 0) {
-      //  disabled for updating owners at backend as it is automatically updated
-      // updateOwners(owners);
+    if (allOwnerEvents.length > 0) {
+      setOwnerEvents(allOwnerEvents.filter(contractEvent => contractEvent.address === currentMultiSigAddress));
     }
-  }, [owners.size, signaturesRequired]);
+  }, [allOwnerEvents.length]);
 
   return (
     <div>

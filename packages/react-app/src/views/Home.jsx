@@ -4,6 +4,7 @@ import QR from "qrcode.react";
 import { List, Button, Alert } from "antd";
 import { useState } from "react";
 import { useEffect } from "react";
+import { useEventListener } from "eth-hooks/events/";
 import { getFactoryVersion, Sleep } from "../constants";
 
 function Home({
@@ -13,17 +14,36 @@ function Home({
   price,
   mainnetProvider,
   blockExplorer,
-  executeTransactionEvents,
+  // executeTransactionEvents,
   contractName,
   readContracts,
-  ownerEvents,
+  // ownerEvents,
   signaturesRequired,
   reDeployWallet,
-  poolServerUrl,
+  // poolServerUrl,
+  currentMultiSigAddress,
+  contractNameForEvent,
 }) {
+  const allExecuteTransactionEvents = useEventListener(
+    currentMultiSigAddress && reDeployWallet === undefined ? readContracts : null,
+    contractNameForEvent,
+    "ExecuteTransaction",
+    localProvider,
+    1,
+  );
+
+  const [executeTransactionEvents, setExecuteTransactionEvents] = useState();
   const [walletName, setWalletName] = useState();
 
-  // console.log("n-reDeployWallet: ", reDeployWallet);
+  const updateExecutedEvents = () => {
+    const filteredEvents = allExecuteTransactionEvents.filter(
+      contractEvent => contractEvent.address === currentMultiSigAddress,
+    );
+    // const nonceNum = typeof nonce === "number" ? nonce : nonce?.toNumber();
+    // if (nonceNum === filteredEvents.length) {
+    setExecuteTransactionEvents(filteredEvents.reverse());
+    // }
+  };
 
   const getWalletName = async () => {
     // wait for 1 sec to get proper contract instance
@@ -49,6 +69,10 @@ function Home({
 
     void getWalletName();
   }, [readContracts[contractName]].address);
+
+  useEffect(() => {
+    updateExecutedEvents();
+  }, [allExecuteTransactionEvents, currentMultiSigAddress]);
 
   return (
     <>
@@ -81,11 +105,11 @@ function Home({
             <div className="px-20">
               <QR
                 value={contractAddress ? contractAddress.toString() : ""}
-                size="180"
+                size={180}
                 level="H"
                 includeMargin
                 renderAs="svg"
-                imageSettings={{ excavate: false }}
+                imageSettings={{ excavate: false, src: "", height: 0, width: 0 }}
               />
             </div>
 
@@ -109,13 +133,18 @@ function Home({
             className="w-full px-2 mt-4  md:mt-0 md:flex-1 md:w-96 "
           >
             <Owners
-              ownerEvents={ownerEvents}
+              // ownerEvents={ownerEvents}
               signaturesRequired={signaturesRequired}
               mainnetProvider={mainnetProvider}
               blockExplorer={blockExplorer}
-              address={address}
-              poolServerUrl={poolServerUrl}
-              contractAddress={contractAddress}
+              // address={address}
+              // poolServerUrl={poolServerUrl}
+              // contractAddress={contractAddress}
+              localProvider={localProvider}
+              currentMultiSigAddress={currentMultiSigAddress}
+              reDeployWallet={reDeployWallet}
+              contractNameForEvent={contractNameForEvent}
+              readContracts={readContracts}
             />
           </div>
         </div>
@@ -146,14 +175,18 @@ function Home({
                 renderItem={item => {
                   return (
                     <div className="border-2 rounded-3xl shadow-md mt-4 ">
-                      <TransactionListItem
-                        item={Object.create(item)}
-                        mainnetProvider={mainnetProvider}
-                        blockExplorer={blockExplorer}
-                        price={price}
-                        readContracts={readContracts}
-                        contractName={contractName}
-                      />
+                      {"MultiSigWallet" in readContracts && (
+                        <>
+                          <TransactionListItem
+                            item={Object.create(item)}
+                            mainnetProvider={mainnetProvider}
+                            blockExplorer={blockExplorer}
+                            price={price}
+                            readContracts={readContracts}
+                            contractName={contractName}
+                          />
+                        </>
+                      )}
                     </div>
                   );
                 }}
@@ -166,13 +199,9 @@ function Home({
   );
 }
 const checkProps = (preProps, nextProps) => {
-  let ownerEvents = nextProps.ownerEvents.filter(contractEvent => contractEvent.address === nextProps.contractAddress);
-  return (
-    ownerEvents.length === 0 &&
-    preProps.contractAddress === nextProps.contractAddress &&
-    preProps.reDeployWallet &&
-    nextProps.reDeployWallet
-  );
+  // let ownerEvents = nextProps.ownerEvents.filter(contractEvent => contractEvent.address === nextProps.contractAddress);
+  return preProps.contractAddress === nextProps.contractAddress && preProps.reDeployWallet && nextProps.reDeployWallet;
 };
+
 export default React.memo(Home, checkProps);
 // export default Home;

@@ -3,7 +3,7 @@ import { ethers } from "ethers";
 const axios = require("axios");
 
 export default async function parseExternalContractTransaction(contractAddress, txData) {
-  console.log("n-PARSE", contractAddress, txData);
+  // console.log("n-PARSE", contractAddress, txData);
   try {
     let response = await axios.get("https://api.etherscan.io/api", {
       params: {
@@ -16,7 +16,7 @@ export default async function parseExternalContractTransaction(contractAddress, 
 
     const getParsedTransaction = async () => {
       const abi = response?.data?.result;
-      console.log("n-abi: ", abi);
+      // console.log("n-abi: ", abi);
       if (abi && txData && txData !== "") {
         const iface = new ethers.utils.Interface(JSON.parse(abi));
         return iface.parseTransaction({ data: txData });

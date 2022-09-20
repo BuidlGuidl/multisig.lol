@@ -22,7 +22,7 @@ export default function useStaticJsonRPC(urlArray) {
       // todo: show notification error about provider issues
       console.log(error);
     }
-  }, [urlArray]);
+  }, [JSON.stringify(urlArray)]);
 
   useEffect(() => {
     handleProviders();
