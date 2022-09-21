@@ -13,7 +13,7 @@ export default function Header(props) {
           👛 multisig.lol
         </Title>
         <a href="https://github.com/austintgriffith/maas" target="_blank">
-          warning: this is a rough prototype only for testnet use (view code)
+          warning: prototype for testnet use (view code)
         </a>
       </div>
       {props.children}
