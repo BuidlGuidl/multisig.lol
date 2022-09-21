@@ -13,12 +13,11 @@ export default function TransactionDetailsModal({
   showFooter = false,
   to = false,
   value = false,
-  type = false,
+  type = "",
 }) {
   return (
     <Modal
-      // title="Transaction Details"
-      title={type ? "Wallect Connect Transaction Details" : "Transaction Details"}
+      title={`${type} Transaction Details`}
       visible={visible}
       onCancel={handleCancel}
       destroyOnClose

@@ -17,7 +17,7 @@ let CLIENT_META = {
   name: "👛 multisig.lol",
 };
 
-const WalletConnectInput = ({ chainId, address, loadWalletConnectData, mainnetProvider, price }) => {
+const WalletConnectInput = ({ chainId, address, loadTransactionData, mainnetProvider, price }) => {
   // localstates
   const [data, setData] = useState();
   const [to, setTo] = useState();
@@ -313,7 +313,7 @@ const WalletConnectInput = ({ chainId, address, loadWalletConnectData, mainnetPr
   const hideModal = () => setIsModalVisible(false);
 
   const handleOk = () => {
-    loadWalletConnectData({
+    loadTransactionData({
       data,
       to,
       value,
