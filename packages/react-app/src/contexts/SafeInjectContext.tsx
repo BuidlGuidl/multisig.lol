@@ -18,7 +18,7 @@ type SafeInjectContextType = {
   appUrl: string | undefined;
   rpcUrl: string | undefined;
   iframeRef: React.RefObject<HTMLIFrameElement> | null;
-  transactions: Transaction[] | undefined;
+  newTx: Transaction | undefined;
   setAddress: React.Dispatch<React.SetStateAction<string | undefined>>;
   setAppUrl: React.Dispatch<React.SetStateAction<string | undefined>>;
   setRpcUrl: React.Dispatch<React.SetStateAction<string | undefined>>;
@@ -29,7 +29,7 @@ export const SafeInjectContext = createContext<SafeInjectContextType>({
   appUrl: undefined,
   rpcUrl: undefined,
   iframeRef: null,
-  transactions: undefined,
+  newTx: undefined,
   setAddress: () => {},
   setAppUrl: () => {},
   setRpcUrl: () => {},
@@ -40,7 +40,7 @@ export const SafeInjectProvider: React.FunctionComponent<{ children: React.React
   const [appUrl, setAppUrl] = useState<string>();
   const [rpcUrl, setRpcUrl] = useState<string>();
   const [provider, setProvider] = useState<providers.StaticJsonRpcProvider>();
-  const [transactions, setTransactions] = useState<Transaction[]>();
+  const [latestTx, setLatestTx] = useState<Transaction>();
 
   const iframeRef = useRef<HTMLIFrameElement>(null);
   const communicator = useAppCommunicator(iframeRef);
@@ -98,7 +98,7 @@ export const SafeInjectProvider: React.FunctionComponent<{ children: React.React
         to: utils.getAddress(to), // checksummed
         ...rest,
       }));
-      setTransactions(transactions);
+      setLatestTx(transactions[0]);
       // openConfirmationModal(transactions, msg.data.params.params, msg.data.id)
     });
 
@@ -122,7 +122,7 @@ export const SafeInjectProvider: React.FunctionComponent<{ children: React.React
         appUrl,
         rpcUrl,
         iframeRef,
-        transactions,
+        newTx: latestTx,
         setAddress,
         setAppUrl,
         setRpcUrl,

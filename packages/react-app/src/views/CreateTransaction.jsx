@@ -34,7 +34,7 @@ export default function CreateTransaction({
   const [parsedCustomCallData, setParsedCustomCallData] = useState(null);
   const [isModalVisible, setIsModalVisible] = useState(false);
   const [loading, setLoading] = useState(false);
-  const [isWalletConnectTransaction, setIsWalletConnectTransaction] = useState(false);
+  const [shouldCreateTransaction, setShouldCreateTransaction] = useState(false);
   const [isOwner, setIsOwner] = useState();
 
   const [hasEdited, setHasEdited] = useState(); //we want the signaturesRequired to update from the contract _until_ they edit it
@@ -62,17 +62,17 @@ export default function CreateTransaction({
     getParsedTransaction();
   }, [customCallData]);
 
-  const loadWalletConnectData = ({ to, value, data }) => {
+  const loadTransactionData = ({ to, value, data }) => {
     setTo(to);
     value ? setAmount(ethers.utils.formatEther(value)) : setAmount("0");
     setCustomCallData(data);
-    setIsWalletConnectTransaction(true);
+    setShouldCreateTransaction(true);
   };
 
   useEffect(() => {
-    isWalletConnectTransaction && createTransaction();
-    setIsWalletConnectTransaction(false);
-  }, [isWalletConnectTransaction]);
+    shouldCreateTransaction && createTransaction();
+    setShouldCreateTransaction(false);
+  }, [shouldCreateTransaction]);
 
   const createTransaction = async () => {
     console.log("n-createTransaction: ");
@@ -87,7 +87,12 @@ export default function CreateTransaction({
 
         let callData;
         let executeToAddress;
-        if (methodName == "transferFunds" || methodName == "customCallData" || methodName == "wcCallData") {
+        if (
+          methodName == "transferFunds" ||
+          methodName == "customCallData" ||
+          methodName == "wcCallData" ||
+          methodName === "iframeCallData"
+        ) {
           callData = methodName == "transferFunds" ? "0x" : customCallData;
           executeToAddress = to;
         } else {
@@ -183,13 +188,18 @@ export default function CreateTransaction({
               <WalletConnectInput
                 chainId={localProvider?._network.chainId}
                 address={contractAddress}
-                loadWalletConnectData={loadWalletConnectData}
+                loadTransactionData={loadTransactionData}
                 mainnetProvider={mainnetProvider}
                 price={price}
               />
             </div>
           ) : methodName === "iframeCallData" ? (
-            <IFrame contractAddress={contractAddress} />
+            <IFrame
+              address={contractAddress}
+              loadTransactionData={loadTransactionData}
+              mainnetProvider={mainnetProvider}
+              price={price}
+            />
           ) : (
             <>
               <div style={inputStyle}>
