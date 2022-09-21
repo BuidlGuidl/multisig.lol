@@ -13,9 +13,7 @@ export default function IFrame({ address, loadTransactionData, mainnetProvider, 
 
   const [isIFrameLoading, setIsIFrameLoading] = useState(false);
   const [inputAppUrl, setInputAppUrl] = useState();
-  const [to, setTo] = useState();
-  const [data, setData] = useState();
-  const [value, setValue] = useState();
+  const [tx, setTx] = useState();
   const [parsedTransactionData, setParsedTransactionData] = useState();
   const [isModalVisible, setIsModalVisible] = useState(false);
 
@@ -26,22 +24,19 @@ export default function IFrame({ address, loadTransactionData, mainnetProvider, 
 
   useEffect(() => {
     if (newTx) {
-      setTo(newTx.to);
-      setData(newTx.data);
-      setValue(newTx.value);
+      setTx(newTx);
     }
   }, [newTx]);
 
   useEffect(() => {
-    // if (data && to) {
-    if (to) {
+    if (tx) {
       decodeFunctionData();
     }
-  }, [data]);
+  }, [tx]);
 
   const decodeFunctionData = async () => {
     try {
-      const parsedTransactionData = await parseExternalContractTransaction(newTx.to, newTx.data);
+      const parsedTransactionData = await parseExternalContractTransaction(tx.to, tx.data);
       // console.log("n-parsedTransactionData: ", parsedTransactionData);
       setParsedTransactionData(parsedTransactionData);
       setIsModalVisible(true);
@@ -55,9 +50,9 @@ export default function IFrame({ address, loadTransactionData, mainnetProvider, 
 
   const handleOk = () => {
     loadTransactionData({
-      to,
-      value,
-      data,
+      to: tx.to,
+      value: tx.value,
+      data: tx.data,
     });
   };
 
@@ -108,8 +103,8 @@ export default function IFrame({ address, loadTransactionData, mainnetProvider, 
           showFooter={true}
           mainnetProvider={mainnetProvider}
           price={price}
-          to={to}
-          value={value}
+          to={tx.to}
+          value={tx.value}
           type="IFrame"
         />
       )}

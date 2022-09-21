@@ -13,12 +13,16 @@ import {
   Transaction,
 } from "../helpers/types";
 
+interface TransactionWithId extends Transaction {
+  id: number;
+}
+
 type SafeInjectContextType = {
   address: string | undefined;
   appUrl: string | undefined;
   rpcUrl: string | undefined;
   iframeRef: React.RefObject<HTMLIFrameElement> | null;
-  newTx: Transaction | undefined;
+  newTx: TransactionWithId | undefined;
   setAddress: React.Dispatch<React.SetStateAction<string | undefined>>;
   setAppUrl: React.Dispatch<React.SetStateAction<string | undefined>>;
   setRpcUrl: React.Dispatch<React.SetStateAction<string | undefined>>;
@@ -40,7 +44,7 @@ export const SafeInjectProvider: React.FunctionComponent<{ children: React.React
   const [appUrl, setAppUrl] = useState<string>();
   const [rpcUrl, setRpcUrl] = useState<string>();
   const [provider, setProvider] = useState<providers.StaticJsonRpcProvider>();
-  const [latestTx, setLatestTx] = useState<Transaction>();
+  const [newTx, setNewTx] = useState<TransactionWithId>();
 
   const iframeRef = useRef<HTMLIFrameElement>(null);
   const communicator = useAppCommunicator(iframeRef);
@@ -98,7 +102,10 @@ export const SafeInjectProvider: React.FunctionComponent<{ children: React.React
         to: utils.getAddress(to), // checksummed
         ...rest,
       }));
-      setLatestTx(transactions[0]);
+      setNewTx({
+        id: parseInt(msg.data.id.toString()),
+        ...transactions[0],
+      });
       // openConfirmationModal(transactions, msg.data.params.params, msg.data.id)
     });
 
@@ -122,7 +129,7 @@ export const SafeInjectProvider: React.FunctionComponent<{ children: React.React
         appUrl,
         rpcUrl,
         iframeRef,
-        newTx: latestTx,
+        newTx,
         setAddress,
         setAppUrl,
         setRpcUrl,
