@@ -170,7 +170,7 @@ export default function CreateTransaction({
         }}
       >
         <div className="flex flex-col items-center" style={{ margin: 8 }}>
-          <div style={{ margin: 8, padding: 8, maxWidth: "15rem" }}>
+          <div style={{ margin: 8, padding: 8, width: "10rem", maxWidth: "15rem" }}>
             <Select value={methodName} style={{ width: "100%" }} onChange={setMethodName}>
               <Option key="transferFunds">Send ETH</Option>
               <Option key="addSigner">Add Signer</Option>
