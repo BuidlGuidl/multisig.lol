@@ -9,7 +9,7 @@ export default function IFrame({ address, loadTransactionData, mainnetProvider, 
   const cachedNetwork = window.localStorage.getItem("network");
   let targetNetwork = NETWORKS[cachedNetwork || "mainnet"];
 
-  const { setAddress, appUrl, setAppUrl, setRpcUrl, iframeRef, newTx } = useSafeInject();
+  const { setAddress, appUrl, setAppUrl, setRpcUrl, iframeRef, newTx, setNewTx } = useSafeInject();
 
   const [isIFrameLoading, setIsIFrameLoading] = useState(false);
   const [inputAppUrl, setInputAppUrl] = useState();
@@ -37,7 +37,6 @@ export default function IFrame({ address, loadTransactionData, mainnetProvider, 
   const decodeFunctionData = async () => {
     try {
       const parsedTransactionData = await parseExternalContractTransaction(tx.to, tx.data);
-      // console.log("n-parsedTransactionData: ", parsedTransactionData);
       setParsedTransactionData(parsedTransactionData);
       setIsModalVisible(true);
     } catch (error) {
@@ -54,6 +53,7 @@ export default function IFrame({ address, loadTransactionData, mainnetProvider, 
       value: tx.value,
       data: tx.data,
     });
+    setNewTx(false);
   };
 
   const buttons = [
