@@ -1,5 +1,5 @@
 import { useState, useEffect } from "react";
-import { Input, Button, Spin } from "antd";
+import { Input, Button, Spin, Row, Col } from "antd";
 import { useSafeInject } from "../contexts/SafeInjectContext";
 import TransactionDetailsModal from "./MultiSig/TransactionDetailsModal";
 import { NETWORKS } from "../constants";
@@ -56,11 +56,94 @@ export default function IFrame({ address, loadTransactionData, mainnetProvider, 
     });
   };
 
+  const buttons = [
+
+
+
+    {
+      name:"ens",
+      url:"https://app.ens.domains"
+    },
+    {
+      name:"uniswap",
+      url:"https://app.uniswap.org"
+    },
+    {
+      name:"0xsplits",
+      url:"https://app.0xsplits.xyz"
+    },
+    {
+      name:"aave",
+      url:"https://app.aave.com"
+    },
+    {
+      name:"snapshot",
+      url:"https://snapshot.org"
+    },
+
+    {
+      name:"instadapp",
+      url:"https://defi.instadapp.io"
+    },
+
+    {
+      name:"hop",
+      url:"https://app.hop.exchange"
+    },
+
+    {
+      name:"balancer",
+      url:"https://app.balancer.fi"
+    },
+
+    {
+      name:"pooltogether",
+      url:"https://cloudflare-ipfs.com/ipfs/QmTa21pi77hiT1sLCGy5BeVwcyzExUSp2z7byxZukye8hr"
+    },
+
+    {
+      name:"juicebox",
+      url:"https://www.juicebox.money"
+    },
+
+    {
+      name:"rocketpool",
+      url:"https://stake.rocketpool.net/gnosis"
+    },
+
+    {
+      name:"zerion",
+      url:"https://app.zerion.io"
+    },
+
+
+
+
+
+  ]
+
+  let renderButtons = []
+  for(let b in buttons){
+    renderButtons.push(
+      <Col className="gutter-row" span={6}><Button onClick={()=>{
+        setAppUrl(buttons[b].url);
+        setIsIFrameLoading(true);
+      }}>{buttons[b].name}</Button></Col>
+    )
+  }
+
   return (
     <div className="flex flex-col items-center">
+
+      <Row gutter={{ xs: 8, sm: 16, md: 24, lg: 32 }}>
+        {renderButtons}
+      </Row>
+
+
       <Input
-        placeholder="dapp URL"
+        placeholder="custom dapp URL"
         style={{
+          marginTop:32,
           minWidth: "18rem",
           maxWidth: "20rem",
         }}
@@ -85,8 +168,8 @@ export default function IFrame({ address, loadTransactionData, mainnetProvider, 
         <iframe
           title="app"
           src={appUrl}
-          width="1000rem"
-          height="500rem"
+          width="1200rem"
+          height="900rem"
           style={{
             marginTop: "1rem",
           }}

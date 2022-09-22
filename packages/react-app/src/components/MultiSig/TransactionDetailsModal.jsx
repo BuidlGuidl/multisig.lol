@@ -73,6 +73,15 @@ export default function TransactionDetailsModal({
                 </div>
               );
             } else if (element.type === "uint256") {
+
+              //first try toNumber
+              let numberDisplay = ""
+              try{
+                numberDisplay = ""+txnInfo.args[index].toNumber()
+              }catch(e){
+                numberDisplay = ""+txnInfo.args[index].toString()
+              }
+
               return (
                 <p key={element.name}>
                   {element.name === "value" ? (
@@ -82,7 +91,7 @@ export default function TransactionDetailsModal({
                     </>
                   ) : (
                     <>
-                      <b>{element.name} : </b> {txnInfo.args[index] && txnInfo.args[index].toNumber()}
+                      <b>{element.name} : </b> {txnInfo.args[index] && numberDisplay}
                     </>
                   )}
                 </p>
