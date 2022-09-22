@@ -17,7 +17,7 @@ export default function TransactionDetailsModal({
 }) {
   return (
     <Modal
-      title={`${type} Transaction Details`}
+      title={`${ type } Transaction Details`}
       visible={visible}
       onCancel={handleCancel}
       destroyOnClose
@@ -27,13 +27,13 @@ export default function TransactionDetailsModal({
       footer={
         showFooter
           ? [
-              <Button key="cancel" onClick={handleCancel}>
-                Cancel
-              </Button>,
-              <Button key="ok" type="primary" onClick={handleOk}>
-                Propose
-              </Button>,
-            ]
+            <Button key="cancel" onClick={handleCancel}>
+              Cancel
+            </Button>,
+            <Button key="ok" type="primary" onClick={handleOk}>
+              Propose
+            </Button>,
+          ]
           : null
       }
     >

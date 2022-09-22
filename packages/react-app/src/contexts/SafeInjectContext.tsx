@@ -26,6 +26,7 @@ type SafeInjectContextType = {
   setAddress: React.Dispatch<React.SetStateAction<string | undefined>>;
   setAppUrl: React.Dispatch<React.SetStateAction<string | undefined>>;
   setRpcUrl: React.Dispatch<React.SetStateAction<string | undefined>>;
+  setNewTx: React.Dispatch<React.SetStateAction<any>>;
 };
 
 export const SafeInjectContext = createContext<SafeInjectContextType>({
@@ -37,6 +38,7 @@ export const SafeInjectContext = createContext<SafeInjectContextType>({
   setAddress: () => {},
   setAppUrl: () => {},
   setRpcUrl: () => {},
+  setNewTx: () => {},
 });
 
 export const SafeInjectProvider: React.FunctionComponent<{ children: React.ReactNode }> = ({ children }) => {
@@ -130,6 +132,7 @@ export const SafeInjectProvider: React.FunctionComponent<{ children: React.React
         rpcUrl,
         iframeRef,
         newTx,
+        setNewTx,
         setAddress,
         setAppUrl,
         setRpcUrl,
