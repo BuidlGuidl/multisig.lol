@@ -182,7 +182,7 @@ function CreateMultiSigModal({
         //   value: ethers.utils.parseEther("" + parseFloat(amount).toFixed(12)),
         // }
         // create 2
-        writeContracts[contractName].create2(selectedChainId, owners, signaturesRequired, currentWalletName, {
+        writeContracts[contractName].create2(owners, signaturesRequired, currentWalletName, {
           value: ethers.utils.parseEther("" + parseFloat(amount).toFixed(12)),
         }),
         async update => {
