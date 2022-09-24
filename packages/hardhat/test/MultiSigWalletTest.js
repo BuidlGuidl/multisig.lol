@@ -20,7 +20,6 @@ describe("MultiSigWallet Test", () => {
     MultiSigFactory = await MultiSigFactoryContractFactory.deploy();
 
     await MultiSigFactory.create2(
-      CHAIN_ID,
       [owner.address],
       signatureRequired,
       CONTRACT_NAME
@@ -281,7 +280,6 @@ describe("MultiSigWallet Test", () => {
     it("Transaction reverted: Invalid MultiSigWallet, more signatures required than signers", async () => {
       await expect(
         MultiSigFactory.create2(
-          CHAIN_ID,
           [owner.address],
           2,
           CONTRACT_NAME + "Some random string so the names won't collide?"
