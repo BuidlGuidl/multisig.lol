@@ -190,7 +190,6 @@ export default function IFrame({ address, loadTransactionData, mainnetProvider, 
                 ))}
             </Row>
           </div>
-          <Row gutter={{ xs: 8, sm: 16, md: 24, lg: 32 }}></Row>
         </div>
       </Modal>
       <Input
