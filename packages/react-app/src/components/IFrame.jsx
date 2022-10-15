@@ -1,5 +1,6 @@
 import { useState, useEffect } from "react";
-import { Input, Button, Spin, Row, Col } from "antd";
+import { Input, Button, Spin, Row, Col, Modal } from "antd";
+import axios from "axios";
 import { useSafeInject } from "../contexts/SafeInjectContext";
 import TransactionDetailsModal from "./MultiSig/TransactionDetailsModal";
 import { NETWORKS } from "../constants";
@@ -16,11 +17,46 @@ export default function IFrame({ address, loadTransactionData, mainnetProvider, 
   const [tx, setTx] = useState();
   const [parsedTransactionData, setParsedTransactionData] = useState();
   const [isModalVisible, setIsModalVisible] = useState(false);
+  const [isSafeDappsOpen, setIsSafeDappsOpen] = useState(false);
+  const [safeDapps, setSafeDapps] = useState({});
+  const [searchSafeDapp, setSearchSafeDapp] = useState();
+  const [filteredSafeDapps, setFilteredSafeDapps] = useState();
 
   useEffect(() => {
     setAddress(address);
     setRpcUrl(targetNetwork.rpcUrl);
   }, []);
+
+  useEffect(() => {
+    const fetchSafeDapps = async chainId => {
+      const response = await axios.get(`https://safe-client.gnosis.io/v1/chains/${chainId}/safe-apps`);
+      setSafeDapps(dapps => ({
+        ...dapps,
+        [chainId]: response.data.filter(d => ![29, 11].includes(d.id)), // Filter out Transaction Builder and WalletConnect
+      }));
+    };
+
+    if (isSafeDappsOpen && !safeDapps[targetNetwork.chainId]) {
+      fetchSafeDapps(targetNetwork.chainId);
+    }
+  }, [isSafeDappsOpen, safeDapps, targetNetwork]);
+
+  useEffect(() => {
+    if (safeDapps[targetNetwork.chainId]) {
+      setFilteredSafeDapps(
+        safeDapps[targetNetwork.chainId].filter(dapp => {
+          if (!searchSafeDapp) return true;
+
+          return (
+            dapp.name.toLowerCase().indexOf(searchSafeDapp.toLocaleLowerCase()) !== -1 ||
+            dapp.url.toLowerCase().indexOf(searchSafeDapp.toLocaleLowerCase()) !== -1
+          );
+        }),
+      );
+    } else {
+      setFilteredSafeDapps(undefined);
+    }
+  }, [safeDapps, targetNetwork, searchSafeDapp]);
 
   useEffect(() => {
     if (newTx) {
@@ -56,94 +92,110 @@ export default function IFrame({ address, loadTransactionData, mainnetProvider, 
     setNewTx(false);
   };
 
-  const buttons = [
-
-
-
-    {
-      name:"ens",
-      url:"https://app.ens.domains"
-    },
-    {
-      name:"uniswap",
-      url:"https://app.uniswap.org"
-    },
-    {
-      name:"0xsplits",
-      url:"https://app.0xsplits.xyz"
-    },
-    {
-      name:"aave",
-      url:"https://app.aave.com"
-    },
-    {
-      name:"snapshot",
-      url:"https://snapshot.org"
-    },
-
-    {
-      name:"instadapp",
-      url:"https://defi.instadapp.io"
-    },
-
-    {
-      name:"hop",
-      url:"https://app.hop.exchange"
-    },
-
-    {
-      name:"balancer",
-      url:"https://app.balancer.fi"
-    },
-
-    {
-      name:"pooltogether",
-      url:"https://cloudflare-ipfs.com/ipfs/QmTa21pi77hiT1sLCGy5BeVwcyzExUSp2z7byxZukye8hr"
-    },
-
-    {
-      name:"juicebox",
-      url:"https://www.juicebox.money"
-    },
-
-    {
-      name:"rocketpool",
-      url:"https://stake.rocketpool.net/gnosis"
-    },
-
-    {
-      name:"zerion",
-      url:"https://app.zerion.io"
-    },
-
-
-
-
-
-  ]
-
-  let renderButtons = []
-  for(let b in buttons){
-    renderButtons.push(
-      <Col className="gutter-row" span={6}><Button onClick={()=>{
-        setAppUrl(buttons[b].url);
-        setIsIFrameLoading(true);
-      }}>{buttons[b].name}</Button></Col>
-    )
-  }
-
   return (
     <div className="flex flex-col items-center">
-
-      <Row gutter={{ xs: 8, sm: 16, md: 24, lg: 32 }}>
-        {renderButtons}
-      </Row>
-
-
+      <Button onClick={() => setIsSafeDappsOpen(true)}>Select from supported dapps</Button>
+      <Modal
+        title="Select a dapp"
+        visible={isSafeDappsOpen}
+        onCancel={() => setIsSafeDappsOpen(false)}
+        footer={null}
+        destroyOnClose
+        closable
+        maskClosable
+      >
+        <div
+          style={{
+            minHeight: "30rem",
+            maxHeight: "30rem",
+            overflow: "scroll",
+            overflowX: "auto",
+            overflowY: "auto",
+          }}
+        >
+          {!safeDapps ||
+            (!safeDapps[targetNetwork.chainId] && (
+              <div>
+                <Spin />
+              </div>
+            ))}
+          <div
+            style={{
+              paddingBottom: "2rem",
+              paddingLeft: "2rem",
+              paddingRight: "2rem",
+            }}
+          >
+            {safeDapps && safeDapps[targetNetwork.chainId] && (
+              <div
+                style={{
+                  paddingBottom: "1.5rem",
+                }}
+              >
+                <Input
+                  placeholder="search 🔎"
+                  style={{ maxWidth: "30rem" }}
+                  value={searchSafeDapp}
+                  onChange={e => setSearchSafeDapp(e.target.value)}
+                />
+              </div>
+            )}
+            <Row gutter={[16, 16]}>
+              {filteredSafeDapps &&
+                filteredSafeDapps.map((dapp, i) => (
+                  <Col
+                    key={i}
+                    className="gutter-row"
+                    span={8}
+                    style={{
+                      maxWidth: "140px",
+                    }}
+                  >
+                    <Button
+                      style={{
+                        display: "flex",
+                        flexDirection: "column",
+                        alignItems: "center",
+                        padding: "1rem",
+                        height: "100%",
+                        width: "100%",
+                        borderRadius: "10px",
+                      }}
+                      onClick={() => {
+                        setAppUrl(dapp.url);
+                        setInputAppUrl(dapp.url);
+                        setIsSafeDappsOpen(false);
+                      }}
+                    >
+                      <img
+                        src={dapp.iconUrl}
+                        alt={dapp.name}
+                        style={{
+                          width: "2rem",
+                          borderRadius: "full",
+                        }}
+                      />
+                      <div
+                        style={{
+                          marginTop: "0.5rem",
+                          textAlign: "center",
+                          width: "6rem",
+                          overflow: "hidden",
+                        }}
+                      >
+                        {dapp.name}
+                      </div>
+                    </Button>
+                  </Col>
+                ))}
+            </Row>
+          </div>
+        </div>
+      </Modal>
       <Input
         placeholder="custom dapp URL"
         style={{
-          marginTop:32,
+          marginTop: 16,
           minWidth: "18rem",
           maxWidth: "20rem",
         }}
