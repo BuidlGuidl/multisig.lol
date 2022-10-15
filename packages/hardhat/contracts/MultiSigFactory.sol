@@ -65,7 +65,6 @@ contract MultiSigFactory {
     }
 
     function create2(
-        uint256 _chainId,
         address[] calldata _owners,
         uint256 _signaturesRequired,
         string calldata _name
@@ -95,7 +94,7 @@ contract MultiSigFactory {
         /**----------------------
          * init remaining values
          * ---------------------*/
-        multiSig.init(_chainId, _owners, _signaturesRequired);
+        multiSig.init(_owners, _signaturesRequired);
 
         multiSigs.push(multiSig);
         existsMultiSig[address(multiSig_address)] = true;
