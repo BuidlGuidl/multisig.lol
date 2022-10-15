@@ -86,7 +86,10 @@ contract MultiSigWallet {
         uint256 _signaturesRequired
     ) public payable onlyFactory onlyValidSignaturesRequired {
         signaturesRequired = _signaturesRequired;
-        for (uint256 i = 0; i < _owners.length; ) {
+
+        // get a local reference of the length to save gas
+        uint256  ownerLength = _owners.length;
+        for (uint256 i = 0; i < ownerLength; ) {
             address owner = _owners[i];
             if (owner == address(0) || isOwner[owner]) {
                 revert INVALID_OWNER();
@@ -189,7 +192,9 @@ contract MultiSigWallet {
 
         uint256 validSignatures;
         address duplicateGuard;
-        for (uint256 i = 0; i < signatures.length; ) {
+        // get a local reference of the length to save gas
+        uint256  signatureLength = signatures.length;
+        for (uint256 i = 0; i < signatureLength; ) {
             address recovered = recover(_hash, signatures[i]);
             if (recovered <= duplicateGuard) {
                 revert DUPLICATE_OR_UNORDERED_SIGNATURES();
