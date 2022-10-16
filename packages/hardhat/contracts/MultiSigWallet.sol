@@ -85,7 +85,10 @@ contract MultiSigWallet {
         uint256 _signaturesRequired
     ) public payable onlyFactory onlyValidSignaturesRequired {
         signaturesRequired = _signaturesRequired;
-        for (uint256 i = 0; i < _owners.length; ) {
+
+        // get a local reference of the length to save gas
+        uint256  ownerLength = _owners.length;
+        for (uint256 i = 0; i < ownerLength; ) {
             address owner = _owners[i];
             if (owner == address(0) || isOwner[owner]) {
                 revert INVALID_OWNER();
@@ -146,23 +149,24 @@ contract MultiSigWallet {
     function _removeOwner(address _oldSigner) private {
         isOwner[_oldSigner] = false;
         uint256 ownersLength = owners.length;
-        address[] memory poppedOwners = new address[](owners.length);
-        for (uint256 i = ownersLength - 1; i >= 0; ) {
-            if (owners[i] != _oldSigner) {
-                poppedOwners[i] = owners[i];
-                owners.pop();
-            } else {
-                owners.pop();
-                for (uint256 j = i; j < ownersLength - 1; ) {
-                    owners.push(poppedOwners[j + 1]); // shout out to moltam89!! https://github.com/austintgriffith/maas/pull/2/commits/e981c5fa5b4d25a1f0946471b876f9a002a9a82b
-                    unchecked {
-                        ++j;
-                    }
+        address lastElement = owners[ownersLength - 1];
+        // check if the last element of the array is the owner t be removed
+        if (lastElement == _oldSigner) {
+            owners.pop();
+            return;
+        } else {
+            // if not then iterate through the array and swap the owner to be removed with the last element in the array
+            for (uint256 i = ownersLength - 2; i >= 0; ) {
+                if (owners[i] == _oldSigner) {
+                    address temp = owners[i];
+                    owners[i] = lastElement;
+                    lastElement = temp;
+                    owners.pop();
+                    return;
                 }
-                return;
-            }
-            unchecked {
-                --i;
+                unchecked {
+                    --i;
+                }
             }
         }
     }
@@ -187,7 +191,9 @@ contract MultiSigWallet {
 
         uint256 validSignatures;
         address duplicateGuard;
-        for (uint256 i = 0; i < signatures.length; ) {
+        // get a local reference of the length to save gas
+        uint256  signatureLength = signatures.length;
+        for (uint256 i = 0; i < signatureLength; ) {
             address recovered = recover(_hash, signatures[i]);
             if (recovered <= duplicateGuard) {
                 revert DUPLICATE_OR_UNORDERED_SIGNATURES();
