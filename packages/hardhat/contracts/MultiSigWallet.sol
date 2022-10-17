@@ -22,7 +22,9 @@ error TX_FAILED();
 contract MultiSigWallet {
     using ECDSA for bytes32;
     MultiSigFactory private immutable multiSigFactory;
+    uint256 public immutable chainId;
     uint256 public constant factoryVersion = 1; // <---- set the factory version for backword compatiblity for future contract updates
+
 
     event Deposit(address indexed sender, uint256 amount, uint256 balance);
     event ExecuteTransaction(
@@ -42,7 +44,6 @@ contract MultiSigWallet {
 
     uint256 public signaturesRequired;
     uint256 public nonce;
-    uint256 public chainId;
     string public name;
 
     modifier onlyOwner() {
@@ -78,6 +79,7 @@ contract MultiSigWallet {
     constructor(string memory _name, address _factory) payable {
         name = _name;
         multiSigFactory = MultiSigFactory(_factory);
+        chainId = block.chainid;
     }
 
     function init(
@@ -101,8 +103,6 @@ contract MultiSigWallet {
                 ++i;
             }
         }
-
-        chainId = block.chainid;
     }
 
     function addSigner(address newSigner, uint256 newSignaturesRequired)
