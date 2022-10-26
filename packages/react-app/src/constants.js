@@ -92,6 +92,13 @@ export const NETWORKS = {
     blockExplorer: "https://goerli.etherscan.io/",
     rpcUrl: `https://goerli.infura.io/v3/${INFURA_ID}`,
   },
+  canto: {
+    name: "canto",
+    chainId: 7700,
+    blockExplorer: "https://evm.explorer.canto.io/",
+    rpcUrl: "https://jsonrpc.canto.nodestake.top/",
+  },
+
   mumbai: {
     name: "mumbai",
     color: "#92D9FA",

@@ -180,14 +180,14 @@ export default function Transactions({
 
                           const [finalSigList, finalSigners] = await getSortedSigList(item.signatures, newHash);
 
-                          console.log(
-                            "n-writeContracts: ",
-                            item.to,
-                            parseEther("" + parseFloat(item.amount).toFixed(12)),
-                            item.data,
-                            finalSigList,
-                            item,
-                          );
+                          // console.log(
+                          //   "n-writeContracts: ",
+                          //   item.to,
+                          //   parseEther("" + parseFloat(item.amount).toFixed(12)),
+                          //   item.data,
+                          //   finalSigList,
+                          //   item,
+                          // );
 
                           tx(
                             writeContracts[contractName].executeTransaction(
@@ -240,7 +240,12 @@ export default function Transactions({
                       </Button>
                     </div>
                   </div>
-                  <TenderlySimulation params={item} address={address} multiSigWallet={readContracts["MultiSigWallet"]} signaturesRequired={signaturesRequired} />
+                  <TenderlySimulation
+                    params={item}
+                    address={address}
+                    multiSigWallet={readContracts["MultiSigWallet"]}
+                    signaturesRequired={signaturesRequired}
+                  />
                 </TransactionListItem>
               </div>
             );
