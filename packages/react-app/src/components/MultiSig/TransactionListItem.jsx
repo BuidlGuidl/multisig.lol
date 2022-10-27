@@ -20,6 +20,8 @@ export default function TransactionListItem({
   children,
 }) {
   //console.log("coming in item:", item);
+  const transactionHash = item?.transactionHash;
+
   item = item.args ? item.args : item;
 
   const [isModalVisible, setIsModalVisible] = useState(false);
@@ -170,14 +172,18 @@ export default function TransactionListItem({
         price={price}
       />
       {
-        // <List.Item key={item.hash} style={{ position: "relative", display: "flex", flexWrap: "wrap", width: 800 }}>
-        <List.Item style={{ border: 0 }} key={item.hash} className="b--red m-5 ">
+        <List.Item style={{ border: 0 }} key={transactionHash && transactionHash} className="m-5 ">
           <>
-            <a href={blockExplorer + "tx/" + item.hash} target="_blank">
+            <a
+              href={blockExplorer + "tx/" + transactionHash}
+              disabled={transactionHash === undefined}
+              target="_blank"
+              rel="noreferrer"
+            >
               <b style={{ padding: 16 }}>#{typeof item.nonce === "number" ? item.nonce : item.nonce.toNumber()}</b>
             </a>
             {txDisplay()}
-            <Blockie size={4} scale={8} address={item.hash} />
+            <Blockie size={4} scale={8} address={transactionHash === undefined ? item.hash : transactionHash} />
           </>
         </List.Item>
       }

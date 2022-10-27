@@ -6,7 +6,7 @@ import TransactionDetailsModal from "./MultiSig/TransactionDetailsModal";
 import { NETWORKS } from "../constants";
 import { parseExternalContractTransaction } from "../helpers";
 
-export default function IFrame({ address, loadTransactionData, mainnetProvider, price }) {
+export default function IFrame({ address, loadTransactionData, mainnetProvider, price, isTxLoaded }) {
   const cachedNetwork = window.localStorage.getItem("network");
   let targetNetwork = NETWORKS[cachedNetwork || "mainnet"];
 
@@ -21,6 +21,7 @@ export default function IFrame({ address, loadTransactionData, mainnetProvider, 
   const [safeDapps, setSafeDapps] = useState({});
   const [searchSafeDapp, setSearchSafeDapp] = useState();
   const [filteredSafeDapps, setFilteredSafeDapps] = useState();
+  const [refresh, setRefresh] = useState(false);
 
   useEffect(() => {
     setAddress(address);
@@ -70,6 +71,18 @@ export default function IFrame({ address, loadTransactionData, mainnetProvider, 
     }
   }, [tx]);
 
+  useEffect(() => {
+    if (tx) {
+      decodeFunctionData();
+    }
+  }, [tx]);
+
+  useEffect(() => {
+    if (isTxLoaded) {
+      hideModal();
+    }
+  }, [isTxLoaded]);
+
   const decodeFunctionData = async () => {
     try {
       const parsedTransactionData = await parseExternalContractTransaction(tx.to, tx.data);
@@ -82,12 +95,14 @@ export default function IFrame({ address, loadTransactionData, mainnetProvider, 
   };
 
   const hideModal = () => setIsModalVisible(false);
+  const onRefresh = () => setRefresh(!refresh);
 
   const handleOk = () => {
     loadTransactionData({
       to: tx.to,
       value: tx.value,
       data: tx.data,
+      isIframe: true,
     });
     setNewTx(false);
   };
@@ -217,17 +232,23 @@ export default function IFrame({ address, loadTransactionData, mainnetProvider, 
         {isIFrameLoading ? <Spin /> : "Load"}
       </Button>
       {appUrl && (
-        <iframe
-          title="app"
-          src={appUrl}
-          width="1200rem"
-          height="900rem"
-          style={{
-            marginTop: "1rem",
-          }}
-          ref={iframeRef}
-          onLoad={() => setIsIFrameLoading(false)}
-        />
+        <div className="flex flex-col items-end">
+          <Button className="mt-2" onClick={onRefresh}>
+            refresh
+          </Button>
+          <iframe
+            key={refresh}
+            title="app"
+            src={appUrl}
+            width="1200rem"
+            height="900rem"
+            style={{
+              marginTop: "1rem",
+            }}
+            ref={iframeRef}
+            onLoad={() => setIsIFrameLoading(false)}
+          />
+        </div>
       )}
       {isModalVisible && (
         <TransactionDetailsModal
