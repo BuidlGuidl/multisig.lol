@@ -36,6 +36,8 @@ export default function CreateTransaction({
   const [loading, setLoading] = useState(false);
   const [shouldCreateTransaction, setShouldCreateTransaction] = useState(false);
   const [isOwner, setIsOwner] = useState();
+  const [isIframe, setIsIframe] = useState(false);
+  const [isTxLoaded, setIsTxLoaded] = useState(false);
 
   const [hasEdited, setHasEdited] = useState(); //we want the signaturesRequired to update from the contract _until_ they edit it
 
@@ -62,11 +64,14 @@ export default function CreateTransaction({
     getParsedTransaction();
   }, [customCallData]);
 
-  const loadTransactionData = ({ to, value, data }) => {
+  const loadTransactionData = ({ to, value, data, isIframe = false }) => {
     setTo(to);
     value ? setAmount(ethers.utils.formatEther(value)) : setAmount("0");
     setCustomCallData(data);
     setShouldCreateTransaction(true);
+    if (isIframe) {
+      setIsIframe(true);
+    }
   };
 
   useEffect(() => {
@@ -75,22 +80,19 @@ export default function CreateTransaction({
   }, [shouldCreateTransaction]);
 
   const createTransaction = async () => {
-    console.log("n-createTransaction: ");
     try {
       //a little security in the frontend just because
       if (newSignaturesRequired < 1) {
         alert("signatures required must be >= 1");
       } else {
         setLoading(true);
-        console.log("n-on else block");
-        console.log("n-methodName: ", methodName);
 
         let callData;
         let executeToAddress;
         if (
-          methodName == "transferFunds" ||
-          methodName == "customCallData" ||
-          methodName == "wcCallData" ||
+          methodName === "transferFunds" ||
+          methodName === "customCallData" ||
+          methodName === "wcCallData" ||
           methodName === "iframeCallData"
         ) {
           callData = methodName == "transferFunds" ? "0x" : customCallData;
@@ -102,10 +104,6 @@ export default function CreateTransaction({
           ]);
           executeToAddress = contractAddress;
         }
-        console.log("n-callData: ", callData);
-        console.log("n-executeToAddress: ", executeToAddress);
-        console.log("n-nonce.toNumber(): ", nonce.toNumber());
-
         const newHash = await readContracts[contractName].getTransactionHash(
           nonce.toNumber(),
           executeToAddress,
@@ -113,23 +111,12 @@ export default function CreateTransaction({
           callData,
         );
 
-        console.log("n-readContracts: ", readContracts);
-        console.log("n-newHash: ", newHash);
-        console.log("n-userSigner: ", userSigner);
-
         const signature = await userSigner?.signMessage(ethers.utils.arrayify(newHash));
-        console.log("signature: ", signature);
-        console.log("n-signature: ", signature);
 
         const recover = await readContracts[contractName].recover(newHash, signature);
-        console.log("recover: ", recover);
-        console.log("n-recover: ", recover);
 
         const isOwner = await readContracts[contractName].isOwner(recover);
-        console.log("n-isOwner: ", isOwner);
         setIsOwner(isOwner);
-
-        console.log("isOwner: ", isOwner);
 
         if (isOwner) {
           const res = await axios.post(poolServerUrl, {
@@ -144,11 +131,24 @@ export default function CreateTransaction({
             signers: [recover],
           });
 
-          console.log("RESULT", res.data);
-          setTimeout(() => {
-            history.push("/pool");
-            setLoading(false);
-          }, 1000);
+          if (isIframe) {
+            setLoading(prev => false);
+            setIsTxLoaded(prev => true);
+            setTimeout(() => {
+              let hostURL = window.location.origin;
+              window.open(`${hostURL}/pool`, "_blank");
+
+              setIsTxLoaded(prev => false);
+              return;
+            }, 1000);
+          }
+
+          if (isIframe === false) {
+            setTimeout(() => {
+              history.push("/pool");
+              setLoading(false);
+            }, 1000);
+          }
         } else {
           console.log("ERROR, NOT OWNER.");
           setLoading(false);
@@ -199,6 +199,7 @@ export default function CreateTransaction({
               loadTransactionData={loadTransactionData}
               mainnetProvider={mainnetProvider}
               price={price}
+              isTxLoaded={isTxLoaded}
             />
           ) : (
             <>

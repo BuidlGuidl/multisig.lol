@@ -180,15 +180,6 @@ export default function Transactions({
 
                           const [finalSigList, finalSigners] = await getSortedSigList(item.signatures, newHash);
 
-                          console.log(
-                            "n-writeContracts: ",
-                            item.to,
-                            parseEther("" + parseFloat(item.amount).toFixed(12)),
-                            item.data,
-                            finalSigList,
-                            item,
-                          );
-
                           tx(
                             writeContracts[contractName].executeTransaction(
                               item.to,
@@ -198,38 +189,35 @@ export default function Transactions({
                             ),
                             async update => {
                               if (update && (update.status === "confirmed" || update.status === 1)) {
-                                const parsedData =
-                                  item.data != "0x"
-                                    ? readContracts[contractName].interface.parseTransaction(item)
-                                    : null;
-
-                                // get all existing owner list
-                                let ownnersCount = await readContracts[contractName].numberOfOwners();
-
-                                /**----------------------
-                                 * update owners on api at add signer
-                                 * ---------------------*/
-
-                                if (parsedData && ["addSigner", "removeSigner"].includes(parsedData.name)) {
-                                  // let finalOwnerList = [parsedData.args.newSigner, ...item.signers];
-                                  let ownerAddress = address;
-                                  let contractAddress = readContracts[contractName].address;
-
-                                  let owners = [];
-                                  ownnersCount = ownnersCount.toString();
-
-                                  for (let index = 0; index < +ownnersCount; index++) {
-                                    let owner = await readContracts[contractName].owners(index);
-                                    owners.push(owner);
+                                try {
+                                  const parsedData =
+                                    item.data !== "0x"
+                                      ? readContracts[contractName].interface.parseTransaction(item)
+                                      : null;
+                                  // get all existing owner list
+                                  let ownnersCount = await readContracts[contractName].numberOfOwners();
+                                  /**----------------------
+                                   * update owners on api at add signer
+                                   * ---------------------*/
+                                  if (parsedData && ["addSigner", "removeSigner"].includes(parsedData.name)) {
+                                    // let finalOwnerList = [parsedData.args.newSigner, ...item.signers];
+                                    let ownerAddress = address;
+                                    let contractAddress = readContracts[contractName].address;
+                                    let owners = [];
+                                    ownnersCount = ownnersCount.toString();
+                                    for (let index = 0; index < +ownnersCount; index++) {
+                                      let owner = await readContracts[contractName].owners(index);
+                                      owners.push(owner);
+                                    }
+                                    let reqData = { owners: owners };
+                                    const res = await axios.post(
+                                      poolServerUrl + `updateOwners/${ownerAddress}/${contractAddress}`,
+                                      reqData,
+                                    );
+                                    console.log("update owner response", res.data);
                                   }
-
-                                  let reqData = { owners: owners };
-
-                                  const res = await axios.post(
-                                    poolServerUrl + `updateOwners/${ownerAddress}/${contractAddress}`,
-                                    reqData,
-                                  );
-                                  console.log("update owner response", res.data);
+                                } catch (error) {
+                                  console.log(`🔴 Error`, error);
                                 }
                               }
                             },
@@ -240,7 +228,12 @@ export default function Transactions({
                       </Button>
                     </div>
                   </div>
-                  <TenderlySimulation params={item} address={address} multiSigWallet={readContracts["MultiSigWallet"]} signaturesRequired={signaturesRequired} />
+                  <TenderlySimulation
+                    params={item}
+                    address={address}
+                    multiSigWallet={readContracts["MultiSigWallet"]}
+                    signaturesRequired={signaturesRequired}
+                  />
                 </TransactionListItem>
               </div>
             );
