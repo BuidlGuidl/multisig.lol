@@ -54,6 +54,7 @@ export default function EtherInput(props) {
   const price = props.price;
 
   function getBalance(_mode) {
+    setValue(floatBalance);
     if (_mode === "USD") {
       displayBalance = (floatBalance * price).toFixed(2);
     } else {
@@ -75,6 +76,9 @@ export default function EtherInput(props) {
       onClick={() => {
         setDisplay(getBalance(mode));
         setDisplayMax(true);
+        if (typeof props.onChange === "function") {
+          props.onChange(floatBalance);
+        }
       }}
     >
       max
