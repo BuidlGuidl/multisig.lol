@@ -289,6 +289,7 @@ export default function Wallet(props) {
             value={amount}
             contractAddress={selectedAddress}
             provider={props.provider}
+            gasPrice={props.gasPrice}
             onChange={value => {
               setAmount(value);
             }}
