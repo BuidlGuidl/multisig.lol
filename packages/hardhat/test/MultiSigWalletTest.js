@@ -3,7 +3,7 @@ const { expect } = require("chai");
 
 describe("MultiSigWallet Test", () => {
   const CHAIN_ID = 1; // I guess this number doesn't really matter
-  let signatureRequired = 1; // Starting with something straithforward
+  let signatureRequired = 1; // Starting with something straightforward
 
   let TestERC20Token;
   const TEST_ERC20_TOKEN_TOTAL_SUPPLY = "100";
@@ -251,7 +251,7 @@ describe("MultiSigWallet Test", () => {
 
       await addr2ConnectedMultiSigWallet.executeTransaction(
         MultiSigWallet.address, "0x0",
-        getAddSignerCallData(newSignerAddress, newSignaturesRequired), 
+        getAddSignerCallData(newSignerAddress, newSignaturesRequired),
         await getSignaturesArray(hash));
 
       expect(await MultiSigWallet.isOwner(newSignerAddress)).to.equal(true);

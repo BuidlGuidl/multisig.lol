@@ -98,7 +98,7 @@ contract MultiSigWallet {
             isOwner[owner] = true;
             owners.push(owner);
 
-            emit Owner(owner, isOwner[owner]);
+            emit Owner(owner, true);
             unchecked {
                 ++i;
             }
@@ -118,7 +118,7 @@ contract MultiSigWallet {
         owners.push(newSigner);
         signaturesRequired = newSignaturesRequired;
 
-        emit Owner(newSigner, isOwner[newSigner]);
+        emit Owner(newSigner, true);
         multiSigFactory.emitOwners(
             address(this),
             owners,
@@ -138,7 +138,7 @@ contract MultiSigWallet {
         _removeOwner(oldSigner);
         signaturesRequired = newSignaturesRequired;
 
-        emit Owner(oldSigner, isOwner[oldSigner]);
+        emit Owner(oldSigner, false);
         multiSigFactory.emitOwners(
             address(this),
             owners,
@@ -185,9 +185,10 @@ contract MultiSigWallet {
         bytes calldata data,
         bytes[] calldata signatures
     ) public onlyOwner returns (bytes memory) {
-        bytes32 _hash = getTransactionHash(nonce, to, value, data);
+        uint256 _nonce = nonce;
+        bytes32 _hash = getTransactionHash(_nonce, to, value, data);
 
-        nonce++;
+        nonce = _nonce+1;
 
         uint256 validSignatures;
         address duplicateGuard;
@@ -222,7 +223,7 @@ contract MultiSigWallet {
             to,
             value,
             data,
-            nonce - 1,
+            _nonce,
             _hash,
             result
         );
