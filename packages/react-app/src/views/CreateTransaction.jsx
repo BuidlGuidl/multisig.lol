@@ -250,7 +250,14 @@ export default function CreateTransaction({
                   </>
                 )}
                 {(methodName == "transferFunds" || methodName == "customCallData") && (
-                  <EtherInput price={price} mode="USD" value={amount} onChange={setAmount} />
+                  <EtherInput
+                  price={price}
+                  mode="USD"
+                  value={amount}
+                  contractAddress={contractAddress}
+                  onChange={setAmount}
+                  provider={localProvider}
+                />
                 )}
               </div>
               <Space style={{ marginTop: 32 }}>
