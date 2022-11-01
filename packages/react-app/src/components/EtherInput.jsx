@@ -53,6 +53,9 @@ export default function EtherInput(props) {
     const etherBalance = utils.formatEther(usingBalance);
     parseFloat(etherBalance).toFixed(2);
     floatBalance = parseFloat(etherBalance - gasCost);
+    if (floatBalance < 0) {
+      floatBalance = 0;
+    }
   }
 
   let displayBalance = floatBalance.toFixed(4);
