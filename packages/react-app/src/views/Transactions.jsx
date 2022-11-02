@@ -1,5 +1,5 @@
 import { parseEther } from "@ethersproject/units";
-import { Button, List, Spin } from "antd";
+import { Button, List, Spin, Checkbox } from "antd";
 import { usePoller } from "eth-hooks";
 import { ethers } from "ethers";
 import { useState } from "react";
@@ -27,6 +27,7 @@ export default function Transactions({
   blockExplorer,
 }) {
   const [transactions, setTransactions] = useState();
+  const [selectedTx, setSelectedTx] = useState(new Map());
   const { currentTheme } = useThemeSwitcher();
 
   usePoller(() => {
@@ -35,11 +36,11 @@ export default function Transactions({
         poolServerUrl + readContracts[contractName].address + "_" + localProvider._network.chainId,
       );
 
-      console.log("backend stuff res", res.data);
+      // console.log("backend stuff res", res.data);
 
       const newTransactions = [];
       for (const i in res.data) {
-        console.log("backend stuff res.data[i]", res.data[i]);
+        // console.log("backend stuff res.data[i]", res.data[i]);
         const thisNonce = ethers.BigNumber.from(res.data[i].nonce);
         if (thisNonce && nonce && thisNonce.gte(nonce)) {
           const validSignatures = [];
@@ -56,7 +57,7 @@ export default function Transactions({
         }
       }
 
-      console.log("backend stuff newTransactions", newTransactions);
+      // console.log("backend stuff newTransactions", newTransactions);
 
       setTransactions(newTransactions);
     };
@@ -108,7 +109,7 @@ export default function Transactions({
         <List
           // bordered
           dataSource={transactions}
-          renderItem={item => {
+          renderItem={(item, index) => {
             const hasSigned = item.signers.indexOf(address) >= 0;
             const hasEnoughSignatures = item.signatures.length <= signaturesRequired.toNumber();
 
@@ -226,6 +227,33 @@ export default function Transactions({
                       >
                         Exec
                       </Button>
+                      <Checkbox
+                        onChange={
+                          async (e) => {
+                            if (e.target.checked) {
+                              const newHash = await readContracts[contractName].getTransactionHash(
+                                item.nonce,
+                                item.to,
+                                parseEther("" + parseFloat(item.amount).toFixed(12)),
+                                item.data,
+                              );
+
+                              const [finalSigList, finalSigners] = await getSortedSigList(item.signatures, newHash);
+                              selectedTx.set(index, {
+                                  to: item.to,
+                                  value: parseEther("" + parseFloat(item.amount).toFixed(12)),
+                                  data: item.data,
+                                  finalSigList: finalSigList
+                                });
+                              setSelectedTx(selectedTx);
+                            } else {
+                              selectedTx.delete(index);
+                              setSelectedTx(selectedTx);
+                            }
+                              console.log(selectedTx);
+                          }
+                        }
+                      />
                     </div>
                   </div>
                   <TenderlySimulation
@@ -239,6 +267,33 @@ export default function Transactions({
             );
           }}
         />
+      <Button
+        type="secondary"
+        onClick={async () => {
+          var tos = [];
+          var values = [];
+          var data = [];
+          var sigs = [];
+          for (let i=0; i<selectedTx.keys(); i++) {
+            if (i in selectedTx) {
+              tos.push(selectedTx[i].to);
+              values.push(selectedTx[i].value);
+              data.push(selectedTx[i].data);
+              sigs.push(selectedTx[i].finalSigList);
+            }
+          }
+          tx(
+            writeContracts[contractName].executeBatch(
+              tos,
+              values,
+              data,
+              sigs,
+            )
+          )
+        }}
+      >
+      Exec selected
+      </Button>
       </div>
     </div>
   );

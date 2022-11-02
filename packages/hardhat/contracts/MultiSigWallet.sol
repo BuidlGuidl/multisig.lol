@@ -179,6 +179,20 @@ contract MultiSigWallet {
         signaturesRequired = newSignaturesRequired;
     }
 
+    function executeBatch(
+        address[] calldata to,
+        uint256[] calldata value,
+        bytes[] calldata data,
+        bytes[][] calldata signatures
+    ) public onlyOwner returns (bytes[] memory) {
+        uint256 toLength = to.length;
+        bytes[] memory results = new bytes[](toLength);
+        for(uint256 i=0;i<toLength;i++){
+            results[i] = executeTransaction(payable(to[i]), value[i], data[i], signatures[i]);
+        }
+        return results;
+    }
+
     function executeTransaction(
         address payable to,
         uint256 value,
