@@ -274,14 +274,19 @@ export default function Transactions({
           var values = [];
           var data = [];
           var sigs = [];
-          for (let i=0; i<selectedTx.keys(); i++) {
-            if (i in selectedTx) {
-              tos.push(selectedTx[i].to);
-              values.push(selectedTx[i].value);
-              data.push(selectedTx[i].data);
-              sigs.push(selectedTx[i].finalSigList);
+
+          for (let i=0; i<selectedTx.size; i++) {
+            if (selectedTx.has(i)) {
+              tos.push(selectedTx.get(i).to);
+              values.push(selectedTx.get(i).value);
+              data.push(selectedTx.get(i).data);
+              sigs.push(selectedTx.get(i).finalSigList);
             }
           }
+          console.log(tos);
+          console.log(values);
+          console.log(data);
+          console.log(sigs);
           tx(
             writeContracts[contractName].executeBatch(
               tos,
