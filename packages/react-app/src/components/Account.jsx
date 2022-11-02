@@ -56,6 +56,7 @@ export default function Account({
   blockExplorer,
   isContract,
   isFactoryDeployed,
+  gasPrice
 }) {
   const { currentTheme } = useThemeSwitcher();
 
@@ -93,6 +94,7 @@ export default function Account({
           color={currentTheme === "light" ? "#1890ff" : "#2caad9"}
           size={"1.4rem"}
           padding={"0px"}
+          gasPrice={gasPrice}
         />
         <div
           // style={

@@ -43,10 +43,19 @@ export default function EtherInput(props) {
   let floatBalance = parseFloat("0.00");
   let usingBalance = balance;
 
+  let gasCost = 0;
+
   if (usingBalance) {
+    if(props.gasPrice){
+      gasCost =  parseInt(props.gasPrice, 10) * 150000 / 10 ** 18;
+    }
+
     const etherBalance = utils.formatEther(usingBalance);
     parseFloat(etherBalance).toFixed(2);
-    floatBalance = parseFloat(etherBalance);
+    floatBalance = parseFloat(etherBalance - gasCost);
+    if (floatBalance < 0) {
+      floatBalance = 0;
+    }
   }
 
   let displayBalance = floatBalance.toFixed(4);
@@ -54,6 +63,7 @@ export default function EtherInput(props) {
   const price = props.price;
 
   function getBalance(_mode) {
+    setValue(floatBalance);
     if (_mode === "USD") {
       displayBalance = (floatBalance * price).toFixed(2);
     } else {
@@ -75,6 +85,9 @@ export default function EtherInput(props) {
       onClick={() => {
         setDisplay(getBalance(mode));
         setDisplayMax(true);
+        if (typeof props.onChange === "function") {
+          props.onChange(floatBalance);
+        }
       }}
     >
       max
