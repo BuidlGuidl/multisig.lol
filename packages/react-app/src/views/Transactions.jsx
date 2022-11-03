@@ -36,11 +36,11 @@ export default function Transactions({
         poolServerUrl + readContracts[contractName].address + "_" + localProvider._network.chainId,
       );
 
-      // console.log("backend stuff res", res.data);
+      console.log("backend stuff res", res.data);
 
       const newTransactions = [];
       for (const i in res.data) {
-        // console.log("backend stuff res.data[i]", res.data[i]);
+        console.log("backend stuff res.data[i]", res.data[i]);
         const thisNonce = ethers.BigNumber.from(res.data[i].nonce);
         if (thisNonce && nonce && thisNonce.gte(nonce)) {
           const validSignatures = [];
@@ -57,7 +57,7 @@ export default function Transactions({
         }
       }
 
-      // console.log("backend stuff newTransactions", newTransactions);
+      console.log("backend stuff newTransactions", newTransactions);
 
       setTransactions(newTransactions);
     };
@@ -158,6 +158,11 @@ export default function Transactions({
                               newHash,
                             );
 
+                            let obj = selectedTx.get(index);
+                            obj.finalSigList = finalSigList;
+                            selectedTx.set(index, obj);
+                            setSelectedTx(selectedTx);
+
                             const res = await axios.post(poolServerUrl, {
                               ...item,
                               signatures: finalSigList,
@@ -250,7 +255,6 @@ export default function Transactions({
                               selectedTx.delete(index);
                               setSelectedTx(selectedTx);
                             }
-                              console.log(selectedTx);
                           }
                         }
                       />
@@ -283,10 +287,6 @@ export default function Transactions({
               sigs.push(selectedTx.get(i).finalSigList);
             }
           }
-          console.log(tos);
-          console.log(values);
-          console.log(data);
-          console.log(sigs);
           tx(
             writeContracts[contractName].executeBatch(
               tos,
