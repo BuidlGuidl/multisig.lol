@@ -52,6 +52,8 @@ export default function Transactions({
             }
           }
 
+          res.data[i].nonce = thisNonce;
+
           const update = { ...res.data[i], validSignatures };
           newTransactions.push(update);
         }

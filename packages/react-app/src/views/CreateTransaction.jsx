@@ -1,4 +1,4 @@
-import React, { useEffect, useState, useRef } from "react";
+import React, { useEffect, useLayoutEffect, useState, useRef } from "react";
 import { useHistory } from "react-router-dom";
 import { Button, Input, Select, InputNumber, Space, Tooltip, Alert } from "antd";
 import { CodeOutlined } from "@ant-design/icons";
@@ -25,7 +25,6 @@ export default function CreateTransaction({
   signaturesRequired,
 }) {
   const history = useHistory();
-
   const [methodName, setMethodName] = useLocalStorage("methodName", "transferFunds");
   const [newSignaturesRequired, setNewSignaturesRequired] = useState(signaturesRequired);
   const [amount, setAmount] = useState("0");
@@ -47,6 +46,10 @@ export default function CreateTransaction({
       setNewSignaturesRequired(signaturesRequired);
     }
   }, [signaturesRequired]);
+
+  useLayoutEffect(() => {
+    setCustomNonce(nonce);
+  }, [nonce]);
 
   const showModal = () => {
     setIsModalVisible(true);
@@ -123,7 +126,7 @@ export default function CreateTransaction({
           const res = await axios.post(poolServerUrl, {
             chainId: localProvider._network.chainId,
             address: readContracts[contractName]?.address,
-            nonce: nonce.toNumber(),
+            nonce: customNonce,
             to: executeToAddress,
             amount,
             data: callData,
@@ -263,9 +266,12 @@ export default function CreateTransaction({
               </div>
               <InputNumber
                 style={{ width: "100%" }}
-                placeholder="Custom nonce"
-                defaultValue={nonce.toNumber()}
+                placeholder="Leave blank for current nonce"
+                defaultValue={nonce}
                 onChange={value => {
+                  if (value == null) {
+                    value = nonce;
+                  }
                   setCustomNonce(value);
                 }}
               />
