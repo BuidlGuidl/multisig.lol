@@ -40,6 +40,7 @@ export default function CreateTransaction({
   const [isTxLoaded, setIsTxLoaded] = useState(false);
 
   const [hasEdited, setHasEdited] = useState(); //we want the signaturesRequired to update from the contract _until_ they edit it
+  const [customNonce, setCustomNonce] = useState(nonce);
 
   useEffect(() => {
     if (!hasEdited) {
@@ -105,7 +106,7 @@ export default function CreateTransaction({
           executeToAddress = contractAddress;
         }
         const newHash = await readContracts[contractName].getTransactionHash(
-          nonce.toNumber(),
+          customNonce,
           executeToAddress,
           parseEther("" + parseFloat(amount).toFixed(12)),
           callData,
@@ -260,6 +261,14 @@ export default function CreateTransaction({
                 />
                 )}
               </div>
+              <InputNumber
+                style={{ width: "100%" }}
+                placeholder="Custom nonce"
+                defaultValue={nonce.toNumber()}
+                onChange={value => {
+                  setCustomNonce(value);
+                }}
+              />
               <Space style={{ marginTop: 32 }}>
                 <Button loading={loading} onClick={createTransaction} type="primary">
                   Propose
