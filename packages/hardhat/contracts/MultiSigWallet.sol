@@ -22,7 +22,9 @@ error TX_FAILED();
 contract MultiSigWallet {
     using ECDSA for bytes32;
     MultiSigFactory private immutable multiSigFactory;
+    uint256 public immutable chainId;
     uint256 public constant factoryVersion = 1; // <---- set the factory version for backword compatiblity for future contract updates
+
 
     event Deposit(address indexed sender, uint256 amount, uint256 balance);
     event ExecuteTransaction(
@@ -42,7 +44,6 @@ contract MultiSigWallet {
 
     uint256 public signaturesRequired;
     uint256 public nonce;
-    uint256 public chainId;
     string public name;
 
     modifier onlyOwner() {
@@ -78,6 +79,7 @@ contract MultiSigWallet {
     constructor(string memory _name, address _factory) payable {
         name = _name;
         multiSigFactory = MultiSigFactory(_factory);
+        chainId = block.chainid;
     }
 
     function init(
@@ -85,7 +87,10 @@ contract MultiSigWallet {
         uint256 _signaturesRequired
     ) public payable onlyFactory onlyValidSignaturesRequired {
         signaturesRequired = _signaturesRequired;
-        for (uint256 i = 0; i < _owners.length; ) {
+
+        // get a local reference of the length to save gas
+        uint256  ownerLength = _owners.length;
+        for (uint256 i = 0; i < ownerLength; ) {
             address owner = _owners[i];
             if (owner == address(0) || isOwner[owner]) {
                 revert INVALID_OWNER();
@@ -93,13 +98,11 @@ contract MultiSigWallet {
             isOwner[owner] = true;
             owners.push(owner);
 
-            emit Owner(owner, isOwner[owner]);
+            emit Owner(owner, true);
             unchecked {
                 ++i;
             }
         }
-
-        chainId = block.chainid;
     }
 
     function addSigner(address newSigner, uint256 newSignaturesRequired)
@@ -115,7 +118,7 @@ contract MultiSigWallet {
         owners.push(newSigner);
         signaturesRequired = newSignaturesRequired;
 
-        emit Owner(newSigner, isOwner[newSigner]);
+        emit Owner(newSigner, true);
         multiSigFactory.emitOwners(
             address(this),
             owners,
@@ -135,7 +138,7 @@ contract MultiSigWallet {
         _removeOwner(oldSigner);
         signaturesRequired = newSignaturesRequired;
 
-        emit Owner(oldSigner, isOwner[oldSigner]);
+        emit Owner(oldSigner, false);
         multiSigFactory.emitOwners(
             address(this),
             owners,
@@ -146,23 +149,24 @@ contract MultiSigWallet {
     function _removeOwner(address _oldSigner) private {
         isOwner[_oldSigner] = false;
         uint256 ownersLength = owners.length;
-        address[] memory poppedOwners = new address[](owners.length);
-        for (uint256 i = ownersLength - 1; i >= 0; ) {
-            if (owners[i] != _oldSigner) {
-                poppedOwners[i] = owners[i];
-                owners.pop();
-            } else {
-                owners.pop();
-                for (uint256 j = i; j < ownersLength - 1; ) {
-                    owners.push(poppedOwners[j + 1]); // shout out to moltam89!! https://github.com/austintgriffith/maas/pull/2/commits/e981c5fa5b4d25a1f0946471b876f9a002a9a82b
-                    unchecked {
-                        ++j;
-                    }
+        address lastElement = owners[ownersLength - 1];
+        // check if the last element of the array is the owner t be removed
+        if (lastElement == _oldSigner) {
+            owners.pop();
+            return;
+        } else {
+            // if not then iterate through the array and swap the owner to be removed with the last element in the array
+            for (uint256 i = ownersLength - 2; i >= 0; ) {
+                if (owners[i] == _oldSigner) {
+                    address temp = owners[i];
+                    owners[i] = lastElement;
+                    lastElement = temp;
+                    owners.pop();
+                    return;
                 }
-                return;
-            }
-            unchecked {
-                --i;
+                unchecked {
+                    --i;
+                }
             }
         }
     }
@@ -181,13 +185,16 @@ contract MultiSigWallet {
         bytes calldata data,
         bytes[] calldata signatures
     ) public onlyOwner returns (bytes memory) {
-        bytes32 _hash = getTransactionHash(nonce, to, value, data);
+        uint256 _nonce = nonce;
+        bytes32 _hash = getTransactionHash(_nonce, to, value, data);
 
-        nonce++;
+        nonce = _nonce+1;
 
         uint256 validSignatures;
         address duplicateGuard;
-        for (uint256 i = 0; i < signatures.length; ) {
+        // get a local reference of the length to save gas
+        uint256  signatureLength = signatures.length;
+        for (uint256 i = 0; i < signatureLength; ) {
             address recovered = recover(_hash, signatures[i]);
             if (recovered <= duplicateGuard) {
                 revert DUPLICATE_OR_UNORDERED_SIGNATURES();
@@ -216,7 +223,7 @@ contract MultiSigWallet {
             to,
             value,
             data,
-            nonce - 1,
+            _nonce,
             _hash,
             result
         );
