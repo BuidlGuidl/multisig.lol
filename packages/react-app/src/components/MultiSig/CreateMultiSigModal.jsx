@@ -9,8 +9,6 @@ import { AddressInput, EtherInput, Address } from "..";
 import CreateModalSentOverlay from "./CreateModalSentOverlay";
 import { useLocalStorage } from "../../hooks";
 
-const DEBUG = false;
-
 function CreateMultiSigModal({
   price,
   selectedChainId,
@@ -26,7 +24,6 @@ function CreateMultiSigModal({
   getUserWallets,
   setReDeployWallet,
   currentNetworkName,
-
   isFactoryDeployed,
 }) {
   const [deployType, setDeployType] = useState("CREATE");
@@ -46,10 +43,20 @@ function CreateMultiSigModal({
   const [isWalletExist, setIsWalletExist] = useState(false);
 
   useEffect(() => {
-    if (address && owners && owners.length > 0) {
-      // setOwners([...new Set([...owners, address])]);
+    if (isCreateModalVisible === false) {
+      return;
     }
-  }, [address, owners, setOwners]);
+    if (isCreateModalVisible && address && owners && owners.length > 0) {
+      owners[0] = address;
+      setOwners([...new Set([...owners])]);
+      return;
+    }
+
+    if (isCreateModalVisible && address && owners && owners.length === 0) {
+      setOwners([...new Set([address])]);
+      return;
+    }
+  }, [address, isCreateModalVisible]);
 
   const showCreateModal = async deployType => {
     if (deployType === "CREATE") {
