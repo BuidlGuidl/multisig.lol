@@ -559,6 +559,7 @@ function App(props) {
               logoutOfWeb3Modal={logoutOfWeb3Modal}
               blockExplorer={blockExplorer}
               isFactoryDeployed={isFactoryDeployed}
+              gasPrice={gasPrice}
             />
           </div>
           {yourLocalBalance.lte(ethers.BigNumber.from("0")) && (

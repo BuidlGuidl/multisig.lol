@@ -67,10 +67,10 @@ module.exports = {
   networks: {
     localhost: {
       url: "http://localhost:8545",
-      /*      
+      /*
         notice no mnemonic here? it will just use account 0 of the hardhat node to deploy
         (you can put in a mnemonic here to set the deployer locally)
-      
+
       */
     },
     rinkeby: {
@@ -116,6 +116,24 @@ module.exports = {
         mnemonic: mnemonic(),
       },
     },
+    gnosis: {
+      url: "https://rpc.gnosischain.com",
+      accounts: {
+        mnemonic: mnemonic(),
+      },
+    },
+    canto: {
+      url: "https://canto.slingshot.finance",
+      accounts: {
+        mnemonic: mnemonic(),
+      },
+    },
+    sepolia: {
+      url: "https://rpc.sepolia.org",
+      accounts: {
+        mnemonic: mnemonic(),
+      },
+    },
     fantom: {
       url: "https://rpcapi.fantom.network",
       gasPrice: 1000000000,
@@ -133,7 +151,6 @@ module.exports = {
     polygon: {
       url: "https://polygon-rpc.com",
       // url: "https://speedy-nodes-nyc.moralis.io/XXXXXXXXXXXXXXXXXXXx/polygon/mainnet", // <---- YOUR MORALIS ID! (not limited to infura)
-      gasPrice: 3200000000,
       accounts: {
         mnemonic: mnemonic(),
       },
