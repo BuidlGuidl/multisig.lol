@@ -180,12 +180,25 @@ export default function Transactions({
 
                           const [finalSigList, finalSigners] = await getSortedSigList(item.signatures, newHash);
 
+                          // get estimate gas for a execute tx
+                          let estimateGasLimit = await writeContracts[contractName].estimateGas.executeTransaction(
+                            item.to,
+                            parseEther("" + parseFloat(item.amount).toFixed(12)),
+                            item.data,
+                            finalSigList,
+                          );
+                          estimateGasLimit = await estimateGasLimit.toNumber();
+
+                          // add extra 50k gas
+                          const finalGaslimit = estimateGasLimit + 50000;
+
                           tx(
                             writeContracts[contractName].executeTransaction(
                               item.to,
                               parseEther("" + parseFloat(item.amount).toFixed(12)),
                               item.data,
                               finalSigList,
+                              { gasLimit: finalGaslimit },
                             ),
                             async update => {
                               if (update && (update.status === "confirmed" || update.status === 1)) {
