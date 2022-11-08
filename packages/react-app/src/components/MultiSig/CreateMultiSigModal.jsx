@@ -3,11 +3,11 @@ import { Button, Modal, InputNumber, Alert } from "antd";
 import { PlusOutlined, DeleteOutlined } from "@ant-design/icons";
 import { ethers } from "ethers";
 import { Input } from "antd";
-import { hexZeroPad, hexlify } from "@ethersproject/bytes";
 import axios from "axios";
 
 import { AddressInput, EtherInput, Address } from "..";
 import CreateModalSentOverlay from "./CreateModalSentOverlay";
+import { useLocalStorage } from "../../hooks";
 
 const DEBUG = false;
 
@@ -35,23 +35,25 @@ function CreateMultiSigModal({
   const [txError, setTxError] = useState(false);
   const [txSuccess, setTxSuccess] = useState(false);
 
-  const [signaturesRequired, setSignaturesRequired] = useState(undefined);
+  // const [signaturesRequired, setSignaturesRequired] = useState(undefined);
+  const [signaturesRequired, setSignaturesRequired] = useLocalStorage("signaturesRequired", undefined);
   const [amount, setAmount] = useState("0");
-  const [owners, setOwners] = useState([""]);
-  const [walletName, setWalletName] = useState("");
+  // const [owners, setOwners] = useState([""]);
+  const [owners, setOwners] = useLocalStorage("owners", []);
+  // const [walletName, setWalletName] = useState("");
+  const [walletName, setWalletName] = useLocalStorage("walletName");
   const [preComputedAddress, setPreComputedAddress] = useState("");
   const [isWalletExist, setIsWalletExist] = useState(false);
 
   useEffect(() => {
-    if (address) {
-      setOwners([...new Set([address])]);
+    if (address && owners && owners.length > 0) {
+      // setOwners([...new Set([...owners, address])]);
     }
-  }, [address]);
+  }, [address, owners, setOwners]);
 
   const showCreateModal = async deployType => {
     if (deployType === "CREATE") {
       setDeployType("CREATE");
-      setOwners([...new Set([address])]);
       setTimeout(() => {
         setIsCreateModalVisible(true);
       }, 100);
@@ -78,10 +80,10 @@ function CreateMultiSigModal({
   };
 
   const handleCancel = () => {
-    setWalletName("");
+    // setWalletName("");
     setIsCreateModalVisible(false);
-    getUserWallets();
-    setIsWalletExist(false);
+    // getUserWallets();
+    // setIsWalletExist(false);
   };
 
   const addOwnerField = () => {
@@ -171,16 +173,8 @@ function CreateMultiSigModal({
         throw "Field validation failed.";
       }
       let currentWalletName = deployType === "CREATE" ? walletName : reDeployWallet["walletName"];
-      // const id = ethers.utils.id(currentWalletName);
-      // const id = ethers.utils.id(String(address) + currentWalletName);
-      // const hash = ethers.utils.keccak256(id);
-      // const salt = hexZeroPad(hexlify(hash), 32);
 
       tx(
-        // old create
-        // writeContracts[contractName].create(selectedChainId, owners, signaturesRequired, {
-        //   value: ethers.utils.parseEther("" + parseFloat(amount).toFixed(12)),
-        // }
         // create 2
         writeContracts[contractName].create2(owners, signaturesRequired, currentWalletName, {
           value: ethers.utils.parseEther("" + parseFloat(amount).toFixed(12)),
@@ -199,20 +193,8 @@ function CreateMultiSigModal({
 
           if (update && (update.status === "confirmed" || update.status === 1)) {
             console.log("tx update confirmed!");
-            // setPendingCreate(false);
-            // setTxSuccess(true);
-            // setTimeout(() => {
-            //   setIsCreateModalVisible(false);
-            //   resetState();
-            // }, 2500);
 
-            let computed_wallet_address = await writeContracts[contractName].computedAddress(
-              // selectedChainId,
-              // owners,
-              // signaturesRequired,
-              // salt,
-              currentWalletName,
-            );
+            let computed_wallet_address = await writeContracts[contractName].computedAddress(currentWalletName);
 
             let walletAddress = deployType === "CREATE" ? computed_wallet_address : reDeployWallet["walletAddress"];
 
@@ -233,17 +215,10 @@ function CreateMultiSigModal({
 
               setPendingCreate(false);
               setTxSuccess(true);
-              // setTimeout(() => {
-              //   setIsCreateModalVisible(false);
-              // resetState();
-              // }, 2500);
-
-              // window.location.reload();
               resetState();
             }
 
             if (deployType === "RE_DEPLOY") {
-              // const res = await axios.get(poolServerUrl + `updateChainId/${address}/${walletAddress}/${selectedChainId}`);
               const res = await axios.get(
                 poolServerUrl + `updateChainId/${address}/${walletAddress}/${selectedChainId}`,
               );
@@ -271,9 +246,6 @@ function CreateMultiSigModal({
 
   const checkWalletExist = async () => {
     let currentWalletName = deployType === "CREATE" ? walletName : reDeployWallet["walletName"];
-    // const id = ethers.utils.id(String(address) + currentWalletName);
-    // const hash = ethers.utils.keccak256(id);
-    // const salt = hexZeroPad(hexlify(hash), 32);
 
     let computed_wallet_address = await writeContracts[contractName].computedAddress(currentWalletName);
 
@@ -291,9 +263,6 @@ function CreateMultiSigModal({
   const onInputWalletName = async walletName => {
     setWalletName(walletName);
     let currentWalletName = walletName;
-    // const id = ethers.utils.id(String(address) + currentWalletName);
-    // const hash = ethers.utils.keccak256(id);
-    // const salt = hexZeroPad(hexlify(hash), 32);
 
     let computed_wallet_address = await writeContracts[contractName].computedAddress(currentWalletName);
     setPreComputedAddress(computed_wallet_address);

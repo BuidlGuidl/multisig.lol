@@ -2,6 +2,15 @@ import { ethers } from "ethers";
 
 const axios = require("axios");
 
+function isJsonString(str) {
+  try {
+    JSON.parse(str);
+  } catch (e) {
+    return false;
+  }
+  return true;
+}
+
 export default async function parseExternalContractTransaction(contractAddress, txData) {
   // console.log("n-PARSE", contractAddress, txData);
   try {
@@ -16,8 +25,8 @@ export default async function parseExternalContractTransaction(contractAddress, 
 
     const getParsedTransaction = async () => {
       const abi = response?.data?.result;
-      // console.log("n-abi: ", abi);
-      if (abi && txData && txData !== "") {
+
+      if (abi && txData && txData !== "" && isJsonString(abi)) {
         const iface = new ethers.utils.Interface(JSON.parse(abi));
         return iface.parseTransaction({ data: txData });
       }
