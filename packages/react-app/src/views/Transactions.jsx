@@ -187,7 +187,7 @@ export default function Transactions({
                             item.data,
                             finalSigList,
                           );
-                          estimateGasLimit = estimateGasLimit.toNumber();
+                          estimateGasLimit = await estimateGasLimit.toNumber();
 
                           // add extra 50k gas
                           const finalGaslimit = estimateGasLimit + 50000;
