@@ -24,25 +24,33 @@ function Home({
   currentMultiSigAddress,
   contractNameForEvent,
 }) {
-  const allExecuteTransactionEvents = useEventListener(
-    currentMultiSigAddress && reDeployWallet === undefined ? readContracts : null,
-    contractNameForEvent,
-    "ExecuteTransaction",
-    localProvider,
-    1,
-  );
+  const contract = readContracts[contractName];
+
+  // const allExecuteTransactionEvents = useEventListener(
+  //   currentMultiSigAddress && reDeployWallet === undefined ? readContracts : null,
+  //   contractNameForEvent,
+  //   "ExecuteTransaction",
+  //   localProvider,
+  //   1,
+  // );
 
   const [executeTransactionEvents, setExecuteTransactionEvents] = useState();
   const [walletName, setWalletName] = useState();
 
-  const updateExecutedEvents = () => {
-    const filteredEvents = allExecuteTransactionEvents.filter(
-      contractEvent => contractEvent.address === currentMultiSigAddress,
-    );
-    // const nonceNum = typeof nonce === "number" ? nonce : nonce?.toNumber();
-    // if (nonceNum === filteredEvents.length) {
-    setExecuteTransactionEvents(filteredEvents.reverse());
-    // }
+  const updateExecutedEvents = async () => {
+    // old event listner logic
+    // const filteredEvents = allExecuteTransactionEvents.filter(
+    //   contractEvent => contractEvent.address === currentMultiSigAddress,
+    // );
+    // // const nonceNum = typeof nonce === "number" ? nonce : nonce?.toNumber();
+    // // if (nonceNum === filteredEvents.length) {
+    // setExecuteTransactionEvents(filteredEvents.reverse());
+    // // }
+
+    const filter = readContracts[contractName].filters.ExecuteTransaction();
+    const events = await readContracts[contractName].queryFilter(filter);
+    console.log(`n-🔴 => updateExecutedEvents => events`, events);
+    setExecuteTransactionEvents(events.reverse());
   };
 
   const getWalletName = async () => {
@@ -71,11 +79,29 @@ function Home({
   }, [readContracts[contractName]].address);
 
   useEffect(() => {
-    updateExecutedEvents();
-  }, [allExecuteTransactionEvents, currentMultiSigAddress]);
+    if (readContracts[contractName]) {
+      updateExecutedEvents();
+    }
+  }, [
+    // allExecuteTransactionEvents,
+    currentMultiSigAddress,
+    readContracts[contractName],
+  ]);
+
+  const onGetLogs = async () => {
+    console.log(`n-🔴 => onGetLogs => onGetLogs`);
+    const filter = readContracts[contractName].filters.ExecuteTransaction();
+    console.log(`n-🔴 => onGetLogs => filter`, filter);
+    const events = await readContracts[contractName].queryFilter(filter);
+    console.log(`n-🔴 => onGetLogs => events`, events);
+    // const { param1, param2 } = events[0].args;
+  };
 
   return (
     <>
+      <div>
+        <Button onClick={onGetLogs}>test get logs</Button>
+      </div>
       <div
         //  style={{ padding: 32, maxWidth: 850, margin: "auto" }}
         className=" flex flex-col justify-center items-center  m-2 "
@@ -140,6 +166,7 @@ function Home({
               // address={address}
               // poolServerUrl={poolServerUrl}
               // contractAddress={contractAddress}
+              contractName={contractName}
               localProvider={localProvider}
               currentMultiSigAddress={currentMultiSigAddress}
               reDeployWallet={reDeployWallet}
