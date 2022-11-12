@@ -94,7 +94,6 @@ function Home({
     console.log(`n-🔴 => onGetLogs => filter`, filter);
     const events = await readContracts[contractName].queryFilter(filter);
     console.log(`n-🔴 => onGetLogs => events`, events);
-    // const { param1, param2 } = events[0].args;
   };
 
   return (
