@@ -20,6 +20,7 @@ function Owners({
   // address,
   // poolServerUrl,
   // contractAddress,
+  contractName,
   localProvider,
   currentMultiSigAddress,
   reDeployWallet,
@@ -28,13 +29,13 @@ function Owners({
 }) {
   const [ownerEvents, setOwnerEvents] = useState([]);
 
-  const allOwnerEvents = useEventListener(
-    currentMultiSigAddress && reDeployWallet === undefined ? readContracts : null,
-    contractNameForEvent,
-    "Owner",
-    localProvider,
-    1,
-  );
+  // const allOwnerEvents = useEventListener(
+  //   currentMultiSigAddress && reDeployWallet === undefined ? readContracts : null,
+  //   contractNameForEvent,
+  //   "Owner",
+  //   localProvider,
+  //   1,
+  // );
 
   const owners = new Set();
   const prevOwners = new Set();
@@ -62,11 +63,27 @@ function Owners({
   //   }
   // }, [owners.size, signaturesRequired]);
 
+  const loadOwnersEvents = async () => {
+    console.log(`n-🔴 => loadOwnersEvents => contractNameForEvent`, contractNameForEvent);
+    const filter = readContracts[contractNameForEvent].filters.Owner();
+    const allOwnerEvents = await readContracts[contractNameForEvent].queryFilter(filter);
+    console.log(`n-🔴 => loadOwnersEvents => allOwnerEvents`, allOwnerEvents);
+
+    setOwnerEvents(allOwnerEvents.filter(contractEvent => contractEvent.address === currentMultiSigAddress));
+  };
+
+  // old owner event load logic
+  // useEffect(() => {
+  //   if (allOwnerEvents.length > 0) {
+  //     setOwnerEvents(allOwnerEvents.filter(contractEvent => contractEvent.address === currentMultiSigAddress));
+  //   }
+  // }, [allOwnerEvents.length]);
+
   useEffect(() => {
-    if (allOwnerEvents.length > 0) {
-      setOwnerEvents(allOwnerEvents.filter(contractEvent => contractEvent.address === currentMultiSigAddress));
+    if (contractNameForEvent !== null) {
+      loadOwnersEvents();
     }
-  }, [allOwnerEvents.length]);
+  }, [contractNameForEvent]);
 
   return (
     <div>
