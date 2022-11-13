@@ -4,8 +4,9 @@ import QR from "qrcode.react";
 import { List, Button, Alert } from "antd";
 import { useState } from "react";
 import { useEffect } from "react";
-import { useEventListener } from "eth-hooks/events/";
+// import { useEventListener } from "eth-hooks/events/";
 import { getFactoryVersion, Sleep } from "../constants";
+import useEventListener from "../hooks/useEventListener";
 
 function Home({
   address,
@@ -24,8 +25,6 @@ function Home({
   currentMultiSigAddress,
   contractNameForEvent,
 }) {
-  const contract = readContracts[contractName];
-
   // const allExecuteTransactionEvents = useEventListener(
   //   currentMultiSigAddress && reDeployWallet === undefined ? readContracts : null,
   //   contractNameForEvent,
@@ -34,23 +33,24 @@ function Home({
   //   1,
   // );
 
-  const [executeTransactionEvents, setExecuteTransactionEvents] = useState();
+  const allExecuteTransactionEvents = useEventListener(
+    currentMultiSigAddress && reDeployWallet === undefined ? readContracts : null,
+    contractNameForEvent,
+    "ExecuteTransaction",
+    localProvider,
+  );
+
+  const [executeTransactionEvents, setExecuteTransactionEvents] = useState(undefined);
   const [walletName, setWalletName] = useState();
+  const [txListLoading, setTxListLoading] = useState(true);
 
   const updateExecutedEvents = async () => {
     // old event listner logic
-    // const filteredEvents = allExecuteTransactionEvents.filter(
-    //   contractEvent => contractEvent.address === currentMultiSigAddress,
-    // );
-    // // const nonceNum = typeof nonce === "number" ? nonce : nonce?.toNumber();
-    // // if (nonceNum === filteredEvents.length) {
-    // setExecuteTransactionEvents(filteredEvents.reverse());
-    // // }
-
-    const filter = readContracts[contractName].filters.ExecuteTransaction();
-    const events = await readContracts[contractName].queryFilter(filter);
-    console.log(`n-🔴 => updateExecutedEvents => events`, events);
-    setExecuteTransactionEvents(events.reverse());
+    const filteredEvents = allExecuteTransactionEvents.filter(
+      contractEvent => contractEvent.address === currentMultiSigAddress,
+    );
+    setExecuteTransactionEvents(filteredEvents.reverse());
+    setTxListLoading(false);
   };
 
   const getWalletName = async () => {
@@ -59,8 +59,6 @@ function Home({
     let factoryVersion = await getFactoryVersion(readContracts[contractName]);
     if (factoryVersion === 1) {
       if (readContracts[contractName] && reDeployWallet === undefined) {
-        // console.log("n-factoryVersion: calling with this version ", factoryVersion);
-        // console.log("n-addres: address is ", readContracts[contractName].address);
         let walletName = await readContracts[contractName].name();
         setWalletName(walletName);
       }
@@ -69,12 +67,6 @@ function Home({
     }
   };
   useEffect(() => {
-    // setTimeout(() => {
-    //   if (readContracts[contractName] !== null) {
-    //     void getWalletName();
-    //   }
-    // }, 1000);
-
     void getWalletName();
   }, [readContracts[contractName]].address);
 
@@ -82,25 +74,10 @@ function Home({
     if (readContracts[contractName]) {
       updateExecutedEvents();
     }
-  }, [
-    // allExecuteTransactionEvents,
-    currentMultiSigAddress,
-    readContracts[contractName],
-  ]);
-
-  const onGetLogs = async () => {
-    console.log(`n-🔴 => onGetLogs => onGetLogs`);
-    const filter = readContracts[contractName].filters.ExecuteTransaction();
-    console.log(`n-🔴 => onGetLogs => filter`, filter);
-    const events = await readContracts[contractName].queryFilter(filter);
-    console.log(`n-🔴 => onGetLogs => events`, events);
-  };
+  }, [allExecuteTransactionEvents, currentMultiSigAddress, readContracts, contractName, readContracts[contractName]]);
 
   return (
     <>
-      <div>
-        <Button onClick={onGetLogs}>test get logs</Button>
-      </div>
       <div
         //  style={{ padding: 32, maxWidth: 850, margin: "auto" }}
         className=" flex flex-col justify-center items-center  m-2 "
@@ -197,7 +174,9 @@ function Home({
             <div className=" w-full md:w-1/2  py-5 ">
               <List
                 // bordered
+
                 dataSource={executeTransactionEvents}
+                loading={txListLoading}
                 renderItem={item => {
                   return (
                     <div className="border-2 rounded-3xl shadow-md mt-4 ">
@@ -230,4 +209,3 @@ const checkProps = (preProps, nextProps) => {
 };
 
 export default React.memo(Home, checkProps);
-// export default Home;

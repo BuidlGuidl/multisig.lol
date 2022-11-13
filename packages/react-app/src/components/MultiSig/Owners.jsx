@@ -1,17 +1,15 @@
-import React, { useEffect } from "react";
+import React, { useCallback, useEffect } from "react";
 import { Select, List, Spin, Collapse } from "antd";
 import axios from "axios";
 
-import { useEventListener } from "eth-hooks/events/";
+// import { useEventListener } from "eth-hooks/events/";
 
 import { Address } from "..";
 import { useState } from "react";
+import useEventListener from "../../hooks/useEventListener";
 
 const { Panel } = Collapse;
 
-// address={address}
-// poolServerUrl={poolServerUrl}
-// contractAddress={contractAddress}
 function Owners({
   // ownerEvents,
   signaturesRequired,
@@ -36,6 +34,13 @@ function Owners({
   //   localProvider,
   //   1,
   // );
+
+  const allOwnerEvents = useEventListener(
+    currentMultiSigAddress && reDeployWallet === undefined ? readContracts : null,
+    contractNameForEvent,
+    "Owner",
+    localProvider,
+  );
 
   const owners = new Set();
   const prevOwners = new Set();
@@ -64,38 +69,28 @@ function Owners({
   // }, [owners.size, signaturesRequired]);
 
   const loadOwnersEvents = async () => {
-    console.log(`n-🔴 => loadOwnersEvents => contractNameForEvent`, contractNameForEvent);
-    const filter = readContracts[contractNameForEvent].filters.Owner();
-    const allOwnerEvents = await readContracts[contractNameForEvent].queryFilter(filter);
-    console.log(`n-🔴 => loadOwnersEvents => allOwnerEvents`, allOwnerEvents);
-
     setOwnerEvents(allOwnerEvents.filter(contractEvent => contractEvent.address === currentMultiSigAddress));
   };
 
-  // old owner event load logic
-  // useEffect(() => {
-  //   if (allOwnerEvents.length > 0) {
-  //     setOwnerEvents(allOwnerEvents.filter(contractEvent => contractEvent.address === currentMultiSigAddress));
-  //   }
-  // }, [allOwnerEvents.length]);
-
   useEffect(() => {
-    if (contractNameForEvent !== null) {
+    if (allOwnerEvents.length > 0) {
       loadOwnersEvents();
     }
-  }, [contractNameForEvent]);
+  }, [allOwnerEvents.length]);
 
   return (
     <div>
       <h2 style={{ marginTop: 32 }}>
         Signatures Required:{" "}
-        {signaturesRequired && ownerEvents.length !== 0 ? signaturesRequired.toNumber() : <Spin></Spin>}
+        {/* {signaturesRequired && ownerEvents.length !== 0 ? signaturesRequired.toNumber() : <Spin></Spin>} */}
+        {signaturesRequired ? signaturesRequired.toNumber() : <Spin></Spin>}
       </h2>
       <List
         header={<h2>Owners</h2>}
         style={{ maxWidth: 400, margin: "auto", marginTop: 32 }}
         bordered
         dataSource={[...owners]}
+        loading={ownerEvents.length === 0}
         renderItem={ownerAddress => {
           return (
             <List.Item key={"owner_" + ownerAddress}>

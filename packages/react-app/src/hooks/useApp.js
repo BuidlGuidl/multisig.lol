@@ -4,7 +4,7 @@ import { ethers } from "ethers";
 import { useLocalStorage, useStaticJsonRPC } from ".";
 import { useExchangeEthPrice } from "eth-hooks/dapps/dex";
 
-import { useEventListener } from "eth-hooks/events/";
+// import { useEventListener } from "eth-hooks/events/";
 
 import {
   useBalance,
@@ -16,6 +16,7 @@ import {
 } from "eth-hooks";
 
 import { Transactor, Web3ModalSetup } from "../helpers";
+import useEventListener from "./useEventListener";
 
 export default function useApp({
   targetNetwork,
