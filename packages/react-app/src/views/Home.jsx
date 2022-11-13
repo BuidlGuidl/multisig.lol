@@ -40,8 +40,9 @@ function Home({
     localProvider,
   );
 
-  const [executeTransactionEvents, setExecuteTransactionEvents] = useState([]);
+  const [executeTransactionEvents, setExecuteTransactionEvents] = useState(undefined);
   const [walletName, setWalletName] = useState();
+  const [txListLoading, setTxListLoading] = useState(true);
 
   const updateExecutedEvents = async () => {
     // old event listner logic
@@ -49,6 +50,7 @@ function Home({
       contractEvent => contractEvent.address === currentMultiSigAddress,
     );
     setExecuteTransactionEvents(filteredEvents.reverse());
+    setTxListLoading(false);
   };
 
   const getWalletName = async () => {
@@ -176,7 +178,7 @@ function Home({
                 // bordered
 
                 dataSource={executeTransactionEvents}
-                loading={executeTransactionEvents.length === 0}
+                loading={txListLoading}
                 renderItem={item => {
                   return (
                     <div className="border-2 rounded-3xl shadow-md mt-4 ">
