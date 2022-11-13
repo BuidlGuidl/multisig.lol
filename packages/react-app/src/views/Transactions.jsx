@@ -1,5 +1,5 @@
 import { parseEther } from "@ethersproject/units";
-import { Button, List, Spin } from "antd";
+import { Button, List, Spin, Checkbox } from "antd";
 import { usePoller } from "eth-hooks";
 import { ethers } from "ethers";
 import { useState } from "react";
@@ -27,6 +27,7 @@ export default function Transactions({
   blockExplorer,
 }) {
   const [transactions, setTransactions] = useState();
+  const [selectedTx, setSelectedTx] = useState(new Map());
   const { currentTheme } = useThemeSwitcher();
 
   usePoller(() => {
@@ -50,6 +51,8 @@ export default function Transactions({
               validSignatures.push({ signer, signature: res.data[i].signatures[sig] });
             }
           }
+
+          res.data[i].nonce = thisNonce;
 
           const update = { ...res.data[i], validSignatures };
           newTransactions.push(update);
@@ -108,7 +111,7 @@ export default function Transactions({
         <List
           // bordered
           dataSource={transactions}
-          renderItem={item => {
+          renderItem={(item, index) => {
             const hasSigned = item.signers.indexOf(address) >= 0;
             const hasEnoughSignatures = item.signatures.length <= signaturesRequired.toNumber();
 
@@ -156,6 +159,11 @@ export default function Transactions({
                               [...item.signatures, signature],
                               newHash,
                             );
+
+                            let obj = selectedTx.get(index);
+                            obj.finalSigList = finalSigList;
+                            selectedTx.set(index, obj);
+                            setSelectedTx(selectedTx);
 
                             const res = await axios.post(poolServerUrl, {
                               ...item,
@@ -239,6 +247,32 @@ export default function Transactions({
                       >
                         Exec
                       </Button>
+                      <Checkbox
+                        onChange={
+                          async (e) => {
+                            if (e.target.checked) {
+                              const newHash = await readContracts[contractName].getTransactionHash(
+                                item.nonce,
+                                item.to,
+                                parseEther("" + parseFloat(item.amount).toFixed(12)),
+                                item.data,
+                              );
+
+                              const [finalSigList, finalSigners] = await getSortedSigList(item.signatures, newHash);
+                              selectedTx.set(index, {
+                                  to: item.to,
+                                  value: parseEther("" + parseFloat(item.amount).toFixed(12)),
+                                  data: item.data,
+                                  finalSigList: finalSigList
+                                });
+                              setSelectedTx(selectedTx);
+                            } else {
+                              selectedTx.delete(index);
+                              setSelectedTx(selectedTx);
+                            }
+                          }
+                        }
+                      />
                     </div>
                   </div>
                   <TenderlySimulation
@@ -252,6 +286,34 @@ export default function Transactions({
             );
           }}
         />
+      <Button
+        type="secondary"
+        onClick={async () => {
+          var tos = [];
+          var values = [];
+          var data = [];
+          var sigs = [];
+
+          for (let i=0; i<selectedTx.size; i++) {
+            if (selectedTx.has(i)) {
+              tos.push(selectedTx.get(i).to);
+              values.push(selectedTx.get(i).value);
+              data.push(selectedTx.get(i).data);
+              sigs.push(selectedTx.get(i).finalSigList);
+            }
+          }
+          tx(
+            writeContracts[contractName].executeBatch(
+              tos,
+              values,
+              data,
+              sigs,
+            )
+          )
+        }}
+      >
+      Exec selected
+      </Button>
       </div>
     </div>
   );
