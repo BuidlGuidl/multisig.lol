@@ -59,8 +59,6 @@ function Home({
     let factoryVersion = await getFactoryVersion(readContracts[contractName]);
     if (factoryVersion === 1) {
       if (readContracts[contractName] && reDeployWallet === undefined) {
-        // console.log("n-factoryVersion: calling with this version ", factoryVersion);
-        // console.log("n-addres: address is ", readContracts[contractName].address);
         let walletName = await readContracts[contractName].name();
         setWalletName(walletName);
       }
