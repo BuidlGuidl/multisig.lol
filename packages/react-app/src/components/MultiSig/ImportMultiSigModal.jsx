@@ -1,11 +1,11 @@
-import React, { useState } from "react";
-import { Button, Modal, Select, Alert } from "antd";
+import React, { useState, useEffect } from "react";
+import { Button, Modal, Select, Alert, Input, Spin } from "antd";
 import { ethers } from "ethers";
-import axios from "axios";
 
 import { useLocalStorage } from "../../hooks";
 
 import { AddressInput } from "..";
+import useDebounce from "../../hooks/useDebounce";
 
 export default function ImportMultiSigModal({
   mainnetProvider,
@@ -17,6 +17,7 @@ export default function ImportMultiSigModal({
   multiSigWalletABI,
   localProvider,
   // poolServerUrl,
+  userWallets,
   getUserWallets,
   isFactoryDeployed,
   setSelectedWalletAddress,
@@ -25,14 +26,21 @@ export default function ImportMultiSigModal({
   const [isModalVisible, setIsModalVisible] = useState(false);
   const [pendingImport, setPendingImport] = useState(false);
   const [error, setError] = useState(false);
+  const [duplicateError, setDuplicateError] = useState(false);
   const [address, setAddress] = useState();
+  const [walletName, setWalletName] = useState("");
+  const [loadingWalletName, setLoadingWalletName] = useState(false);
+  const [factoryVersion, setFactoryVersion] = useState(undefined);
   const [network, setNetwork] = useState(targetNetwork.name);
+
+  const walletAddressDebounce = useDebounce(address, 700);
 
   const resetState = () => {
     setError(false);
     setAddress("");
     setNetwork(targetNetwork.name);
     setPendingImport(false);
+    setWalletName("");
   };
 
   const handleCancel = () => {
@@ -55,23 +63,15 @@ export default function ImportMultiSigModal({
   const handleSubmit = async () => {
     try {
       setPendingImport(true);
-      console.log("address: ", address);
 
       const contract = new ethers.Contract(address, multiSigWalletABI, localProvider);
 
       let signaturesRequired = await contract.signaturesRequired();
       signaturesRequired = signaturesRequired.toString();
 
-      let factoryVersion = await getFactoryVersion(contract);
-      console.log("n-factoryVersion: ", factoryVersion);
-
-      // let signaturesRequired;
       let owners = [];
-      let walletName;
 
       if (factoryVersion === 1) {
-        walletName = await contract.name();
-
         let ownnersCount = await contract.numberOfOwners();
         ownnersCount = ownnersCount.toString();
         for (let index = 0; index < +ownnersCount; index++) {
@@ -81,11 +81,6 @@ export default function ImportMultiSigModal({
       }
 
       let walletAddress = contract.address;
-
-      // FOR OLDER FACTORY BEFORE CREATE2 ADJUSTMENT (THERE IS NO WALLET NAME)
-      if (factoryVersion === 0) {
-        walletName = contract.address;
-      }
 
       let importWalletData = {
         walletName,
@@ -113,6 +108,51 @@ export default function ImportMultiSigModal({
     }
   };
 
+  const checkDuplicateWallet = address => {
+    let isExists = userWallets.find(data => data.walletAddress === address);
+    if (isExists) {
+      setDuplicateError(true);
+    }
+  };
+
+  const onEnterWalletAddress = async address => {
+    try {
+      if (ethers.utils.isAddress(address)) {
+        setError(false);
+        setLoadingWalletName(true);
+        const contract = new ethers.Contract(address, multiSigWalletABI, localProvider);
+
+        let factoryVersion = await getFactoryVersion(contract);
+        setFactoryVersion(factoryVersion);
+
+        if (factoryVersion === 1) {
+          const walletName = await contract.name();
+          setWalletName(walletName);
+        }
+
+        setLoadingWalletName(false);
+        checkDuplicateWallet(address);
+      } else {
+        setWalletName("");
+        setError(true);
+      }
+    } catch (error) {
+      setWalletName("");
+      setLoadingWalletName(false);
+      setError(true);
+    }
+  };
+
+  const onEnterWalletName = async event => {
+    setWalletName(event.target.value);
+  };
+
+  useEffect(() => {
+    if (walletAddressDebounce) {
+      onEnterWalletAddress(walletAddressDebounce);
+    }
+  }, [walletAddressDebounce]);
+
   return (
     <>
       <Button type="primary" ghost onClick={() => setIsModalVisible(true)} disabled={isFactoryDeployed === undefined}>
@@ -130,7 +170,7 @@ export default function ImportMultiSigModal({
           <Button
             key="submit"
             type="primary"
-            disabled={!address || !network}
+            disabled={!address || !network || error || walletName === "" || duplicateError}
             loading={pendingImport}
             onClick={handleSubmit}
           >
@@ -146,10 +186,18 @@ export default function ImportMultiSigModal({
             value={address}
             onChange={setAddress}
           />
+          <Input
+            placeholder="Enter wallet name"
+            value={walletName}
+            onChange={onEnterWalletName}
+            suffix={loadingWalletName && <Spin spinning />}
+            disabled={error || duplicateError}
+          />
           <Select defaultValue={targetNetwork.name} onChange={value => setNetwork(value)}>
             {networkOptions}
           </Select>
           {error && <Alert message="Unable to import: this doesn't seem like a multisig." type="error" showIcon />}
+          {duplicateError && <Alert message="Wallet already present ! " type="error" showIcon />}
         </div>
       </Modal>
     </>
