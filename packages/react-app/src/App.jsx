@@ -1,4 +1,6 @@
 import { Button, Col, Menu, Row, Select } from "antd";
+import { MinusCircleOutlined } from "@ant-design/icons";
+
 import Routes from "./Routes";
 
 // import CreateMultiSigModal from "./components/MultiSig/CreateMultiSigModal";
@@ -21,7 +23,7 @@ import {
   Ramp,
   ThemeSwitch,
 } from "./components";
-import { ALCHEMY_KEY, NETWORKS } from "./constants";
+import { ALCHEMY_KEY, NETWORKS, Sleep } from "./constants";
 //import multiSigWalletABI from "./contracts/multi_sig_wallet";
 // contracts
 import axios from "axios";
@@ -87,6 +89,7 @@ function App(props) {
   // const [executeTransactionEvents, setExecuteTransactionEvents] = useState();
 
   const [importedMultiSigs] = useLocalStorage("importedMultiSigs");
+  const [hiddenWallets, setHiddenWallets] = useLocalStorage("hiddenWallets", []);
   const [multiSigFactoryData, setMultiSigFactoryData] = useLocalStorage("multiSigFactoryData");
 
   const [mainWalletConnectSession, setMainWalletConnectSession] = useLocalStorage("walletConnectSession_main");
@@ -153,8 +156,6 @@ function App(props) {
   useOnBlock(mainnetProvider, () => {
     console.log(`⛓ A new mainnet block is here: ${mainnetProvider._lastBlockNumber}`);
   });
-
-  // console.log("n-readContracts: ", readContracts);
 
   /**----------------------
    * methods
@@ -290,12 +291,12 @@ function App(props) {
       let localWallets =
         importedMultiSigs && targetNetwork.name in importedMultiSigs ? [...importedMultiSigs[targetNetwork.name]] : [];
 
-      let allWallets = [...localWallets, ...data["userWallets"]].flat();
+      let allWallets = [...localWallets, ...data["userWallets"]]
+        .flat()
+        .filter(data => hiddenWallets.includes(data.walletAddress) === false);
 
       // setUserWallets(data["userWallets"]);
       setUserWallets(allWallets);
-
-      // console.log("n-importedMultiSigs[targetNetwork.name]: ", importedMultiSigs[targetNetwork.name]);
 
       // set and reset  ContractNameForEvent to load the ownerevents
       setContractNameForEvent(null);
@@ -306,7 +307,6 @@ function App(props) {
       if (isUpdate) {
         // const lastMultiSigAddress = data["userWallets"][data["userWallets"].length - 1]?.walletAddress;
         const lastMultiSigAddress = allWallets[allWallets.length - 1]?.walletAddress;
-        console.log("lastMultiSigAddress: ", lastMultiSigAddress);
         setCurrentMultiSigAddress(lastMultiSigAddress);
         setContractNameForEvent(null);
         setIsCreateModalVisible(false);
@@ -492,7 +492,7 @@ function App(props) {
     if (address !== undefined) {
       getUserWallets(false);
     }
-  }, [address, updateServerWallets]);
+  }, [address, updateServerWallets, hiddenWallets.length]);
 
   /**----------------------
    * set current selected sig address from localstorage
@@ -579,6 +579,14 @@ function App(props) {
     </>
   );
 
+  const hideWalletItem = async (e, walletAddress) => {
+    e.stopPropagation();
+    e.preventDefault();
+
+    setHiddenWallets([...hiddenWallets, walletAddress]);
+    // await getUserWallets(false);
+  };
+
   const WalletActions = (
     <>
       <div key={address} className="flex justify-start items-center p-2 my-2  flex-wrap ">
@@ -620,28 +628,25 @@ function App(props) {
             setSelectedWalletAddress={setSelectedWalletAddress}
           />
         </div>
-        <div className="m-2  w-28">
+        <div className="m-2  w-32">
           <Select
             className="w-full"
-            // value={[currentMultiSigAddress]}
             value={currentMultiSigAddress}
-            // style={{ width: 120, marginRight: 5 }}
             onChange={handleMultiSigChange}
+            key={userWallets && userWallets.length}
           >
-            {/* {multiSigs.map((address, index) => {
-                return (
-                  <Option key={index} value={address}>
-                    {address}
-                  </Option>
-                );
-              })} */}
-
             {userWallets &&
               userWallets.length > 0 &&
               userWallets.map((data, index) => {
                 return (
                   <Option key={index} value={data.walletAddress}>
-                    {data.walletName}
+                    <div className="flex justify-between items-center">
+                      <div>{data.walletName}</div>
+                      <MinusCircleOutlined
+                        onClick={e => hideWalletItem(e, data.walletAddress)}
+                        style={{ color: "red" }}
+                      />
+                    </div>
                   </Option>
                 );
               })}
