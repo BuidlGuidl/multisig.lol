@@ -614,6 +614,7 @@ function App(props) {
             multiSigWalletABI={multiSigWalletABI}
             localProvider={localProvider}
             // poolServerUrl={BACKEND_URL}
+            userWallets={userWallets}
             getUserWallets={getUserWallets}
             isFactoryDeployed={isFactoryDeployed}
             setSelectedWalletAddress={setSelectedWalletAddress}
