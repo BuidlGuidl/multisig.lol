@@ -182,7 +182,6 @@ export default function ImportMultiSigModal({
           <AddressInput
             autoFocus
             ensProvider={mainnetProvider}
-            // ensProvider={localProvider}
             placeholder={"Multisig address"}
             value={address}
             onChange={setAddress}
