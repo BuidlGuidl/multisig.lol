@@ -179,6 +179,9 @@ export default function Transactions({
                         key={item.hash}
                         type={hasEnoughSignatures ? "primary" : "secondary"}
                         onClick={async () => {
+
+                          console.log("EXEC")
+
                           const newHash = await readContracts[contractName].getTransactionHash(
                             item.nonce,
                             item.to,
@@ -188,17 +191,27 @@ export default function Transactions({
 
                           const [finalSigList, finalSigners] = await getSortedSigList(item.signatures, newHash);
 
-                          // get estimate gas for a execute tx
-                          let estimateGasLimit = await writeContracts[contractName].estimateGas.executeTransaction(
-                            item.to,
-                            parseEther("" + parseFloat(item.amount).toFixed(12)),
-                            item.data,
-                            finalSigList,
-                          );
-                          estimateGasLimit = await estimateGasLimit.toNumber();
+                          let finalGaslimit = 250000
 
-                          // add extra 50k gas
-                          const finalGaslimit = estimateGasLimit + 50000;
+                          try{
+                            // get estimate gas for a execute tx
+                            let estimateGasLimit = await writeContracts[contractName].estimateGas.executeTransaction(
+                              item.to,
+                              parseEther("" + parseFloat(item.amount).toFixed(12)),
+                              item.data,
+                              finalSigList,
+                            );
+                            estimateGasLimit = await estimateGasLimit.toNumber();
+
+                            console.log("estimateGasLimit",estimateGasLimit)
+
+                            // add extra 50k gas
+                            finalGaslimit =  estimateGasLimit + 50000;
+
+                          }catch(e){
+                            console.log("Failed to estimate gas")
+
+                          }
 
                           tx(
                             writeContracts[contractName].executeTransaction(
