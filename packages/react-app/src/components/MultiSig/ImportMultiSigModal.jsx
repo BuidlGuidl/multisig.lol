@@ -6,6 +6,7 @@ import { useLocalStorage } from "../../hooks";
 
 import { AddressInput } from "..";
 import useDebounce from "../../hooks/useDebounce";
+import useStore from "../../store/useStore";
 
 export default function ImportMultiSigModal({
   mainnetProvider,
@@ -21,6 +22,7 @@ export default function ImportMultiSigModal({
   getUserWallets,
   isFactoryDeployed,
   setSelectedWalletAddress,
+  walletParams,
 }) {
   const [importedMultiSigs, setImportedMultiSigs] = useLocalStorage("importedMultiSigs");
   const [isModalVisible, setIsModalVisible] = useState(false);
@@ -147,24 +149,44 @@ export default function ImportMultiSigModal({
     setWalletName(event.target.value);
   };
 
+  const importURLWallet = async () => {
+    if (walletParams && userWallets) {
+      let isExists = userWallets.find(data => data.walletAddress === address);
+
+      setIsModalVisible(isExists === undefined);
+      setAddress(walletParams.walletAddress);
+    }
+  };
+
   useEffect(() => {
     if (walletAddressDebounce) {
       onEnterWalletAddress(walletAddressDebounce);
     }
   }, [walletAddressDebounce]);
 
+  useEffect(() => {
+    importURLWallet();
+  }, [walletParams, userWallets]);
+
   return (
     <>
-      <Button type="primary" ghost onClick={() => setIsModalVisible(true)} disabled={isFactoryDeployed === undefined}>
+      <Button
+        type="primary"
+        ghost
+        onClick={() => setIsModalVisible(true)}
+        disabled={isFactoryDeployed === undefined || walletParams !== undefined}
+      >
         Import
       </Button>
       <Modal
         title="Import Multisig"
         visible={isModalVisible}
-        onCancel={handleCancel}
+        closable={walletParams === undefined}
+        // onCancel={handleCancel}
+
         destroyOnClose
         footer={[
-          <Button key="back" onClick={handleCancel}>
+          <Button key="back" onClick={handleCancel} disabled={walletParams !== undefined}>
             Cancel
           </Button>,
           <Button

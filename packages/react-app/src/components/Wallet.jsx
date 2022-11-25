@@ -327,7 +327,7 @@ export default function Wallet(props) {
       <Modal
         visible={open}
         title={
-          <div style={{  display: "flex", alignItems: "center", justifyContent: "space-around" }}>
+          <div style={{ display: "flex", alignItems: "center", justifyContent: "space-around" }}>
             {selectedAddress ? <Address address={selectedAddress} ensProvider={props.ensProvider} /> : <Spin />}
             <Balance address={selectedAddress} provider={props.provider} dollarMultiplier={props.price} />
           </div>

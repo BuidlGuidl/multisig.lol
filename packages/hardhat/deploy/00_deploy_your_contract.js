@@ -22,7 +22,7 @@ module.exports = async ({ getNamedAccounts, deployments, getChainId }) => {
   const MultiSigFactoryDeployed = await deploy("MultiSigFactory", {
     from: deployer,
     log: true,
-    waitConfirmations: 5,
+    // waitConfirmations: 5,
   });
 
   // const MultiSigWalletDeployed = await deploy("MultiSigWallet", {
