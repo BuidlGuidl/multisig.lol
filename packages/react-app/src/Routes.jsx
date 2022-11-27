@@ -1,16 +1,18 @@
 import React from "react";
 
-import { Button, Col, Row, Alert, Select } from "antd";
+import { Alert, Button, Col, Row } from "antd";
 import { Route, Switch } from "react-router-dom";
+
 import "./App.css";
 import { Contract } from "./components";
-import { Home, Hints, Subgraph, CreateTransaction, Transactions } from "./views";
+import { CreateTransaction, Hints, Home, Subgraph, Transactions } from "./views";
 
 /**----------------------
  * TODO:we can create a global context state and fetch all this props on individual components
  * ---------------------*/
 
 const Routes = ({
+  targetNetwork,
   contractName,
   contractAddress,
   mainnetProvider,
@@ -78,31 +80,51 @@ const Routes = ({
             </>
           ) : (
             <>
-              {/* {currentMultiSigAddress && ( */}
-              {true && (
-                <Home
-                  key={currentMultiSigAddress}
-                  address={address}
-                  contractAddress={currentMultiSigAddress}
-                  localProvider={localProvider}
-                  price={price}
-                  mainnetProvider={mainnetProvider}
-                  blockExplorer={blockExplorer}
-                  // executeTransactionEvents={executeTransactionEvents}
-                  contractName={contractName}
-                  readContracts={readContracts}
-                  // ownerEvents={ownerEvents}
-                  signaturesRequired={signaturesRequired}
-                  // poolServerUrl={BACKEND_URL}
-                  reDeployWallet={reDeployWallet}
-                  isFactoryDeployed={isFactoryDeployed}
-                  currentMultiSigAddress={currentMultiSigAddress}
-                  contractNameForEvent={contractNameForEvent}
-                />
-              )}
+              <Home
+                key={currentMultiSigAddress}
+                targetNetwork={targetNetwork}
+                address={address}
+                contractAddress={currentMultiSigAddress}
+                localProvider={localProvider}
+                price={price}
+                mainnetProvider={mainnetProvider}
+                blockExplorer={blockExplorer}
+                // executeTransactionEvents={executeTransactionEvents}
+                contractName={contractName}
+                readContracts={readContracts}
+                // ownerEvents={ownerEvents}
+                signaturesRequired={signaturesRequired}
+                // poolServerUrl={BACKEND_URL}
+                reDeployWallet={reDeployWallet}
+                isFactoryDeployed={isFactoryDeployed}
+                currentMultiSigAddress={currentMultiSigAddress}
+                contractNameForEvent={contractNameForEvent}
+              />
             </>
           )}
         </Route>
+        <Route exact path="/:walletAddress/:networkName">
+          <Home
+            key={currentMultiSigAddress}
+            address={address}
+            contractAddress={currentMultiSigAddress}
+            localProvider={localProvider}
+            price={price}
+            mainnetProvider={mainnetProvider}
+            blockExplorer={blockExplorer}
+            // executeTransactionEvents={executeTransactionEvents}
+            contractName={contractName}
+            readContracts={readContracts}
+            // ownerEvents={ownerEvents}
+            signaturesRequired={signaturesRequired}
+            // poolServerUrl={BACKEND_URL}
+            reDeployWallet={reDeployWallet}
+            isFactoryDeployed={isFactoryDeployed}
+            currentMultiSigAddress={currentMultiSigAddress}
+            contractNameForEvent={contractNameForEvent}
+          />
+        </Route>
+
         <Route path="/create">
           <CreateTransaction
             poolServerUrl={BACKEND_URL}

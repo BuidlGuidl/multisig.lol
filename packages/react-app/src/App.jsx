@@ -2,6 +2,8 @@ import { Button, Col, Menu, Row, Select } from "antd";
 import { MinusCircleOutlined } from "@ant-design/icons";
 
 import Routes from "./Routes";
+import StoreProvider from "./store/StoreProvider";
+import WalletActions from "./components/MultiSig/WalletActions";
 
 // import CreateMultiSigModal from "./components/MultiSig/CreateMultiSigModal";
 
@@ -33,6 +35,7 @@ import deployedContracts from "./contracts/hardhat_contracts.json";
 import { Web3ModalSetup } from "./helpers";
 import { useLocalStorage } from "./hooks";
 import useApp from "./hooks/useApp";
+import { useStore } from "./store/useStore";
 
 const { Option } = Select;
 const { ethers } = require("ethers");
@@ -178,7 +181,7 @@ function App(props) {
     }, 1);
   };
 
-  const handleMultiSigChange = value => {
+  const handleMultiSigChange = async value => {
     setContractNameForEvent(null);
     setCurrentMultiSigAddress(value);
     setSelectedWalletAddress(value);
@@ -319,7 +322,7 @@ function App(props) {
   };
 
   const onChangeNetwork = async value => {
-    if (targetNetwork.chainId != NETWORKS[value].chainId) {
+    if (targetNetwork.chainId !== NETWORKS[value].chainId) {
       // window.localStorage.setItem("network", value);
       // setTimeout(() => {
       //   window.location.reload();
@@ -587,80 +590,16 @@ function App(props) {
     // await getUserWallets(false);
   };
 
-  const WalletActions = (
-    <>
-      <div key={address} className="flex justify-start items-center p-2 my-2  flex-wrap ">
-        <div>
-          <CreateMultiSigModal
-            key={address}
-            reDeployWallet={reDeployWallet}
-            setReDeployWallet={setReDeployWallet}
-            poolServerUrl={BACKEND_URL}
-            price={price}
-            selectedChainId={selectedChainId}
-            mainnetProvider={mainnetProvider}
-            address={address}
-            tx={tx}
-            writeContracts={writeContracts}
-            contractName={"MultiSigFactory"}
-            isCreateModalVisible={isCreateModalVisible}
-            setIsCreateModalVisible={setIsCreateModalVisible}
-            getUserWallets={getUserWallets}
-            currentNetworkName={targetNetwork.name}
-            isFactoryDeployed={isFactoryDeployed}
-          />
-        </div>
-
-        <div className="m-2  w-16">
-          <ImportMultiSigModal
-            mainnetProvider={mainnetProvider}
-            targetNetwork={targetNetwork}
-            networkOptions={selectNetworkOptions}
-            // multiSigs={multiSigs}
-            // setMultiSigs={setMultiSigs}
-            // setCurrentMultiSigAddress={setCurrentMultiSigAddress}
-            multiSigWalletABI={multiSigWalletABI}
-            localProvider={localProvider}
-            // poolServerUrl={BACKEND_URL}
-            userWallets={userWallets}
-            getUserWallets={getUserWallets}
-            isFactoryDeployed={isFactoryDeployed}
-            setSelectedWalletAddress={setSelectedWalletAddress}
-          />
-        </div>
-        <div className="m-2  w-32">
-          <Select
-            className="w-full"
-            value={currentMultiSigAddress}
-            onChange={handleMultiSigChange}
-            key={userWallets && userWallets.length}
-          >
-            {userWallets &&
-              userWallets.length > 0 &&
-              userWallets.map((data, index) => {
-                return (
-                  <Option key={index} value={data.walletAddress}>
-                    <div className="flex justify-between items-center">
-                      <div>{data.walletName}</div>
-                      <MinusCircleOutlined
-                        onClick={e => hideWalletItem(e, data.walletAddress)}
-                        style={{ color: "red" }}
-                      />
-                    </div>
-                  </Option>
-                );
-              })}
-          </Select>
-        </div>
-        <div className="m-2  w-28 ">{networkSelect}</div>
-      </div>
-    </>
-  );
-
   const MainMenu = (
     <div className="flex justify-center mt-5" key={address}>
       <Menu disabled={!userHasMultiSigs} selectedKeys={[location.pathname]} mode="horizontal">
-        <Menu.Item key="/">
+        <Menu.Item
+          key="/"
+          onClick={() => {
+            // to reload wallet contract on homepage
+            createEthersContractWallet();
+          }}
+        >
           <Link to="/">MultiSig</Link>
         </Menu.Item>
         <Menu.Item key="/create" disabled={reDeployWallet !== undefined}>
@@ -717,53 +656,84 @@ function App(props) {
     </>
   );
 
+  const store = {
+    address,
+    reDeployWallet,
+    price,
+    selectedChainId,
+    mainnetProvider,
+    setReDeployWallet,
+    BACKEND_URL,
+    tx,
+    writeContracts,
+    isCreateModalVisible,
+    setIsCreateModalVisible,
+    getUserWallets,
+    targetNetwork,
+    isFactoryDeployed,
+    contractName,
+    networkOptions,
+    multiSigWalletABI,
+    localProvider,
+    userWallets,
+    setSelectedWalletAddress,
+    onChangeNetwork,
+    currentMultiSigAddress,
+    handleMultiSigChange,
+    hideWalletItem,
+  };
+
   return (
     <div className="App">
-      {HeaderBar}
-      {WalletActions}
-      {MainMenu}
-      {Object.keys(writeContracts).length > 0 && Object.keys(readContracts).length > 0 && (
-        <>
-          <Routes
-            // key={currentMultiSigAddress}
-            // allOwnerEvents={allOwnerEvents}
-            BACKEND_URL={BACKEND_URL}
-            DEBUG={DEBUG}
-            account={address}
-            address={address}
-            blockExplorer={blockExplorer}
-            contractAddress={contractAddress}
-            contractConfig={contractConfig}
-            contractName={contractName}
-            currentMultiSigAddress={currentMultiSigAddress}
-            customContract={mainnetContracts && mainnetContracts.contracts && mainnetContracts.contracts.DAI}
-            // executeTransactionEvents={executeTransactionEvents}
-            gasPrice={gasPrice}
-            localProvider={localProvider}
-            mainnetContracts={mainnetContracts}
-            mainnetProvider={mainnetProvider}
-            nonce={nonce}
-            // ownerEvents={ownerEvents}
-            poolServerUrl={BACKEND_URL}
-            price={price}
-            readContracts={readContracts}
-            setIsCreateModalVisible={setIsCreateModalVisible}
-            signaturesRequired={signaturesRequired}
-            subgraphUri={props.subgraphUri}
-            tx={tx}
-            userHasMultiSigs={userHasMultiSigs}
-            userSigner={userSigner}
-            writeContracts={writeContracts}
-            yourLocalBalance={yourLocalBalance}
-            reDeployWallet={reDeployWallet}
-            isFactoryDeployed={isFactoryDeployed}
-            contractNameForEvent={contractNameForEvent}
-          />
-        </>
-      )}
-      <ThemeSwitch />
+      <StoreProvider store={{ ...store }}>
+        {HeaderBar}
+        <WalletActions />
+        {MainMenu}
 
-      {BurnerWallet}
+        {Object.keys(writeContracts).length > 0 && Object.keys(readContracts).length > 0 && (
+          <>
+            <Routes
+              // key={currentMultiSigAddress}
+              // allOwnerEvents={allOwnerEvents}
+              BACKEND_URL={BACKEND_URL}
+              DEBUG={DEBUG}
+              targetNetwork={targetNetwork}
+              account={address}
+              address={address}
+              blockExplorer={blockExplorer}
+              contractAddress={contractAddress}
+              contractConfig={contractConfig}
+              contractName={contractName}
+              currentMultiSigAddress={currentMultiSigAddress}
+              customContract={mainnetContracts && mainnetContracts.contracts && mainnetContracts.contracts.DAI}
+              // executeTransactionEvents={executeTransactionEvents}
+              gasPrice={gasPrice}
+              localProvider={localProvider}
+              mainnetContracts={mainnetContracts}
+              mainnetProvider={mainnetProvider}
+              nonce={nonce}
+              // ownerEvents={ownerEvents}
+              poolServerUrl={BACKEND_URL}
+              price={price}
+              readContracts={readContracts}
+              setIsCreateModalVisible={setIsCreateModalVisible}
+              signaturesRequired={signaturesRequired}
+              subgraphUri={props.subgraphUri}
+              tx={tx}
+              userHasMultiSigs={userHasMultiSigs}
+              userSigner={userSigner}
+              writeContracts={writeContracts}
+              yourLocalBalance={yourLocalBalance}
+              reDeployWallet={reDeployWallet}
+              isFactoryDeployed={isFactoryDeployed}
+              contractNameForEvent={contractNameForEvent}
+            />
+          </>
+        )}
+        <ThemeSwitch />
+
+        {BurnerWallet}
+      </StoreProvider>
     </div>
   );
 }

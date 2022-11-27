@@ -1,27 +1,31 @@
 import React from "react";
+import { useParams } from "react-router-dom";
+import { ShareAltOutlined } from "@ant-design/icons";
+
 import { Balance, Address, TransactionListItem, Owners } from "../components";
 import QR from "qrcode.react";
-import { List, Button, Alert } from "antd";
+import { List, Button, Alert, Typography, message } from "antd";
 import { useState } from "react";
 import { useEffect } from "react";
 // import { useEventListener } from "eth-hooks/events/";
 import { getFactoryVersion, Sleep } from "../constants";
 import useEventListener from "../hooks/useEventListener";
+import { useStore } from "../store/useStore";
+
+const { Text } = Typography;
 
 function Home({
+  targetNetwork,
   address,
   contractAddress,
   localProvider,
   price,
   mainnetProvider,
   blockExplorer,
-  // executeTransactionEvents,
   contractName,
   readContracts,
-  // ownerEvents,
   signaturesRequired,
   reDeployWallet,
-  // poolServerUrl,
   currentMultiSigAddress,
   contractNameForEvent,
 }) {
@@ -32,6 +36,9 @@ function Home({
   //   localProvider,
   //   1,
   // );
+  const [state, dispatch] = useStore();
+
+  const walletParams = useParams();
 
   const allExecuteTransactionEvents = useEventListener(
     currentMultiSigAddress && reDeployWallet === undefined ? readContracts : null,
@@ -76,6 +83,14 @@ function Home({
     }
   }, [allExecuteTransactionEvents, currentMultiSigAddress, readContracts, contractName, readContracts[contractName]]);
 
+  useEffect(() => {
+    if ("walletAddress" in walletParams && "networkName" in walletParams) {
+      dispatch({ payload: { walletParams } });
+    } else {
+      dispatch({ payload: { walletParams: undefined } });
+    }
+  }, [walletParams]);
+
   return (
     <>
       <div
@@ -90,7 +105,7 @@ function Home({
           </>
         )}
         {/* main contract info */}
-        <div className="flex  justify-around  flex-wrap  w-full border-2 p-4 md:w-auto md:rounded-3xl md:shadow-md ">
+        <div className="flex  justify-around  flex-wrap  w-full border-2 p-4 md:w-auto md:rounded-3xl md:shadow-md">
           {/* contract balanace qr */}
           <div
             // style={{ paddingBottom: 32 }}
@@ -130,11 +145,9 @@ function Home({
           </div>
 
           {/* contract owner signature */}
-          <div
-            // style={{ padding: 32 }}
-            className="w-full px-2 mt-4  md:mt-0 md:flex-1 md:w-96 "
-          >
+          <div className="w-full px-2 mt-4  md:mt-0 md:flex-1 md:w-96 ">
             <Owners
+              key={walletParams && JSON.stringify(walletParams)}
               // ownerEvents={ownerEvents}
               signaturesRequired={signaturesRequired}
               mainnetProvider={mainnetProvider}
@@ -150,14 +163,24 @@ function Home({
               readContracts={readContracts}
             />
           </div>
+
+          {/* share wallet url */}
+          <div className="">
+            <Text
+              copyable={{
+                icon: [
+                  <ShareAltOutlined className="text-xl cursor-pointer" style={{ color: "#1890FF" }} />,
+                  <ShareAltOutlined className="text-xl cursor-pointer" style={{ color: "greenyellow" }} />,
+                ],
+                text: `${window.location.origin}/${contractAddress}/${targetNetwork?.name}`,
+                tooltips: ["Copy wallet share url", "Copied"],
+              }}
+            />
+          </div>
         </div>
 
         {/* proposal create button */}
-        <div
-          // style={{ padding: 64 }}
-
-          className="my-5"
-        >
+        <div className="my-5">
           {reDeployWallet === undefined && (
             <Button
               type={"primary"}
