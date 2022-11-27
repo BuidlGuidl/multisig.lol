@@ -137,10 +137,7 @@ export default function Transactions({
                     >
                       {item.signatures.length}/{signaturesRequired.toNumber()} {hasSigned ? "✅" : ""}
                     </div>
-                    <div
-                      // style={{ padding: 4 }}
-                      className="b--red w-full flex justify-between p-2"
-                    >
+                    <div className="w-full flex justify-between p-2">
                       <Button
                         type="secondary"
                         onClick={async () => {
@@ -160,7 +157,8 @@ export default function Transactions({
                               newHash,
                             );
 
-                            let obj = selectedTx.get(index);
+                            let obj = selectedTx.get(index) ? selectedTx.get(index) : {};
+
                             obj.finalSigList = finalSigList;
                             selectedTx.set(index, obj);
                             setSelectedTx(selectedTx);
@@ -179,8 +177,7 @@ export default function Transactions({
                         key={item.hash}
                         type={hasEnoughSignatures ? "primary" : "secondary"}
                         onClick={async () => {
-
-                          console.log("EXEC")
+                          console.log("EXEC");
 
                           const newHash = await readContracts[contractName].getTransactionHash(
                             item.nonce,
@@ -191,9 +188,9 @@ export default function Transactions({
 
                           const [finalSigList, finalSigners] = await getSortedSigList(item.signatures, newHash);
 
-                          let finalGaslimit = 250000
+                          let finalGaslimit = 250000;
 
-                          try{
+                          try {
                             // get estimate gas for a execute tx
                             let estimateGasLimit = await writeContracts[contractName].estimateGas.executeTransaction(
                               item.to,
@@ -203,14 +200,12 @@ export default function Transactions({
                             );
                             estimateGasLimit = await estimateGasLimit.toNumber();
 
-                            console.log("estimateGasLimit",estimateGasLimit)
+                            console.log("estimateGasLimit", estimateGasLimit);
 
                             // add extra 50k gas
-                            finalGaslimit =  estimateGasLimit + 50000;
-
-                          }catch(e){
-                            console.log("Failed to estimate gas")
-
+                            finalGaslimit = estimateGasLimit + 50000;
+                          } catch (e) {
+                            console.log("Failed to estimate gas");
                           }
 
                           tx(
@@ -261,30 +256,28 @@ export default function Transactions({
                         Exec
                       </Button>
                       <Checkbox
-                        onChange={
-                          async (e) => {
-                            if (e.target.checked) {
-                              const newHash = await readContracts[contractName].getTransactionHash(
-                                item.nonce,
-                                item.to,
-                                parseEther("" + parseFloat(item.amount).toFixed(12)),
-                                item.data,
-                              );
+                        onChange={async e => {
+                          if (e.target.checked) {
+                            const newHash = await readContracts[contractName].getTransactionHash(
+                              item.nonce,
+                              item.to,
+                              parseEther("" + parseFloat(item.amount).toFixed(12)),
+                              item.data,
+                            );
 
-                              const [finalSigList, finalSigners] = await getSortedSigList(item.signatures, newHash);
-                              selectedTx.set(index, {
-                                  to: item.to,
-                                  value: parseEther("" + parseFloat(item.amount).toFixed(12)),
-                                  data: item.data,
-                                  finalSigList: finalSigList
-                                });
-                              setSelectedTx(selectedTx);
-                            } else {
-                              selectedTx.delete(index);
-                              setSelectedTx(selectedTx);
-                            }
+                            const [finalSigList, finalSigners] = await getSortedSigList(item.signatures, newHash);
+                            selectedTx.set(index, {
+                              to: item.to,
+                              value: parseEther("" + parseFloat(item.amount).toFixed(12)),
+                              data: item.data,
+                              finalSigList: finalSigList,
+                            });
+                            setSelectedTx(selectedTx);
+                          } else {
+                            selectedTx.delete(index);
+                            setSelectedTx(selectedTx);
                           }
-                        }
+                        }}
                       />
                     </div>
                   </div>
@@ -299,34 +292,27 @@ export default function Transactions({
             );
           }}
         />
-      <Button
-        type="secondary"
-        onClick={async () => {
-          var tos = [];
-          var values = [];
-          var data = [];
-          var sigs = [];
+        <Button
+          type="secondary"
+          onClick={async () => {
+            var tos = [];
+            var values = [];
+            var data = [];
+            var sigs = [];
 
-          for (let i=0; i<selectedTx.size; i++) {
-            if (selectedTx.has(i)) {
-              tos.push(selectedTx.get(i).to);
-              values.push(selectedTx.get(i).value);
-              data.push(selectedTx.get(i).data);
-              sigs.push(selectedTx.get(i).finalSigList);
+            for (let i = 0; i < selectedTx.size; i++) {
+              if (selectedTx.has(i)) {
+                tos.push(selectedTx.get(i).to);
+                values.push(selectedTx.get(i).value);
+                data.push(selectedTx.get(i).data);
+                sigs.push(selectedTx.get(i).finalSigList);
+              }
             }
-          }
-          tx(
-            writeContracts[contractName].executeBatch(
-              tos,
-              values,
-              data,
-              sigs,
-            )
-          )
-        }}
-      >
-      Exec selected
-      </Button>
+            tx(writeContracts[contractName].executeBatch(tos, values, data, sigs));
+          }}
+        >
+          Exec selected
+        </Button>
       </div>
     </div>
   );
