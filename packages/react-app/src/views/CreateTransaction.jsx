@@ -204,6 +204,8 @@ export default function CreateTransaction({
               mainnetProvider={mainnetProvider}
               price={price}
               isTxLoaded={isTxLoaded}
+              customNonce={customNonce}
+              setCustomNonce={setCustomNonce}
             />
           ) : (
             <>
@@ -255,13 +257,13 @@ export default function CreateTransaction({
                 )}
                 {(methodName == "transferFunds" || methodName == "customCallData") && (
                   <EtherInput
-                  price={price}
-                  mode="USD"
-                  value={amount}
-                  contractAddress={contractAddress}
-                  onChange={setAmount}
-                  provider={localProvider}
-                />
+                    price={price}
+                    mode="USD"
+                    value={amount}
+                    contractAddress={contractAddress}
+                    onChange={setAmount}
+                    provider={localProvider}
+                  />
                 )}
               </div>
               <InputNumber
@@ -269,10 +271,7 @@ export default function CreateTransaction({
                 placeholder="Leave blank for current nonce"
                 defaultValue={nonce}
                 onChange={value => {
-                  if (value == null) {
-                    value = nonce;
-                  }
-                  setCustomNonce(value);
+                  setCustomNonce(value >= 0 ? value : 0);
                 }}
               />
               <Space style={{ marginTop: 32 }}>
