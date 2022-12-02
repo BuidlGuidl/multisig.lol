@@ -6,7 +6,15 @@ import TransactionDetailsModal from "./MultiSig/TransactionDetailsModal";
 import { NETWORKS } from "../constants";
 import { parseExternalContractTransaction } from "../helpers";
 
-export default function IFrame({ address, loadTransactionData, mainnetProvider, price, isTxLoaded }) {
+export default function IFrame({
+  address,
+  loadTransactionData,
+  mainnetProvider,
+  price,
+  isTxLoaded,
+  customNonce,
+  setCustomNonce,
+}) {
   const cachedNetwork = window.localStorage.getItem("network");
   let targetNetwork = NETWORKS[cachedNetwork || "mainnet"];
 
@@ -262,6 +270,8 @@ export default function IFrame({ address, loadTransactionData, mainnetProvider, 
           to={tx.to}
           value={tx.value}
           type="IFrame"
+          customNonce={customNonce}
+          setCustomNonce={setCustomNonce}
         />
       )}
     </div>

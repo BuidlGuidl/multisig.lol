@@ -1,7 +1,7 @@
+import { Button, Modal } from "antd";
 import React from "react";
-import { Modal, Button } from "antd";
 import { Address, Balance } from "..";
-import { ethers } from "ethers";
+import { InputNumber } from "antd";
 
 export default function TransactionDetailsModal({
   visible,
@@ -14,10 +14,12 @@ export default function TransactionDetailsModal({
   to = false,
   value = false,
   type = "",
+  customNonce,
+  setCustomNonce,
 }) {
   return (
     <Modal
-      title={`${ type } Transaction Details`}
+      title={`${type} Transaction Details`}
       visible={visible}
       onCancel={handleCancel}
       destroyOnClose
@@ -27,13 +29,13 @@ export default function TransactionDetailsModal({
       footer={
         showFooter
           ? [
-            <Button key="cancel" onClick={handleCancel}>
-              Cancel
-            </Button>,
-            <Button key="ok" type="primary" onClick={handleOk}>
-              Propose
-            </Button>,
-          ]
+              <Button key="cancel" onClick={handleCancel}>
+                Cancel
+              </Button>,
+              <Button key="ok" type="primary" onClick={handleOk}>
+                Propose
+              </Button>,
+            ]
           : null
       }
     >
@@ -73,13 +75,12 @@ export default function TransactionDetailsModal({
                 </div>
               );
             } else if (element.type === "uint256") {
-
               //first try toNumber
-              let numberDisplay = ""
-              try{
-                numberDisplay = ""+txnInfo.args[index].toNumber()
-              }catch(e){
-                numberDisplay = ""+txnInfo.args[index].toString()
+              let numberDisplay = "";
+              try {
+                numberDisplay = "" + txnInfo.args[index].toNumber();
+              } catch (e) {
+                numberDisplay = "" + txnInfo.args[index].toString();
               }
 
               return (
@@ -112,6 +113,17 @@ export default function TransactionDetailsModal({
             <b>SigHash : &nbsp;</b>
             {txnInfo.sighash}
           </p>
+          <div className="flex justify-start items-center">
+            <div className="font-bold mr-2">Enter custom nonce :</div>
+            <InputNumber
+              placeholder="Enter nonce"
+              style={{ width: "25%" }}
+              defaultValue={customNonce}
+              onChange={value => {
+                setCustomNonce(value >= 0 ? value : 0);
+              }}
+            />
+          </div>
         </div>
       )}
     </Modal>
