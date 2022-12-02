@@ -31,6 +31,7 @@
         "ipfs": "yarn workspace @scaffold-eth/react-app ipfs",
         "surge": "yarn workspace @scaffold-eth/react-app surge",
         "s3": "yarn workspace @scaffold-eth/react-app s3",
+        "stage": "yarn workspace @scaffold-eth/react-app stage",
         "ship": "yarn workspace @scaffold-eth/react-app ship",
         "generate": "yarn workspace @scaffold-eth/hardhat generate",
         "account": "yarn workspace @scaffold-eth/hardhat account",
