@@ -974,55 +974,6 @@ module.exports = {
         address: "0x1f9840a85d5aF5bf1D1762F925BDADdC4201F984",
         abi: ERC20ABI,
       },
-      MultiSigFactory: {
-        address: "0x8b50c76eAf0Db1B7dE1f7bA456351E98cFd8bd9f",
-        abi: MULTISIGABI,
-      },
-    },
-  },
-  5: {
-    //goerli
-    contracts: {
-      MultiSigFactory: {
-        address: "0x8b50c76eAf0Db1B7dE1f7bA456351E98cFd8bd9f",
-        abi: MULTISIGABI,
-      },
-    },
-  },
-  10: {
-    //optimisim
-    contracts: {
-      MultiSigFactory: {
-        address: "0x8b50c76eAf0Db1B7dE1f7bA456351E98cFd8bd9f",
-        abi: MULTISIGABI,
-      },
-    },
-  },
-  100: {
-    //xdai
-    contracts: {
-      MultiSigFactory: {
-        address: "0x8b50c76eAf0Db1B7dE1f7bA456351E98cFd8bd9f",
-        abi: MULTISIGABI,
-      },
-    },
-  },
-  137: {
-    //polygon
-    contracts: {
-      MultiSigFactory: {
-        address: "0x8b50c76eAf0Db1B7dE1f7bA456351E98cFd8bd9f",
-        abi: MULTISIGABI,
-      },
-    },
-  },
-  42161: {
-    //arbitrum
-    contracts: {
-      MultiSigFactory: {
-        address: "0x8b50c76eAf0Db1B7dE1f7bA456351E98cFd8bd9f",
-        abi: MULTISIGABI,
-      },
     },
   },
 };
