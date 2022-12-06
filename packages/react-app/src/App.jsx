@@ -30,12 +30,21 @@ import { ALCHEMY_KEY, NETWORKS, Sleep } from "./constants";
 // contracts
 import axios from "axios";
 import MultiSigWalletAbi from "./configs/MultiSigWallet_ABI.json";
-import deployedContracts from "./contracts/hardhat_contracts.json";
+import hardhatContracts from "./contracts/hardhat_contracts.json";
+import _deployedContracts from "./contracts/deployed_contracts.json";
 
 import { Web3ModalSetup } from "./helpers";
 import { useLocalStorage } from "./hooks";
 import useApp from "./hooks/useApp";
 import { useStore } from "./store/useStore";
+
+
+let deployedContracts = {
+  ..._deployedContracts,
+  ...hardhatContracts,
+}
+
+console.log("deployedContracts",deployedContracts)
 
 const { Option } = Select;
 const { ethers } = require("ethers");
