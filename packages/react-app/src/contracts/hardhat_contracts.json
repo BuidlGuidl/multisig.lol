@@ -1,0 +1,2846 @@
+{
+  "1": {
+    "mainnet": {
+      "name": "mainnet",
+      "chainId": "1",
+      "contracts": {
+        "MultiSigFactory": {
+          "address": "0x8b50c76eAf0Db1B7dE1f7bA456351E98cFd8bd9f",
+          "abi": [
+            {
+              "inputs": [],
+              "name": "CALLER_NOT_REGISTERED",
+              "type": "error"
+            },
+            {
+              "anonymous": false,
+              "inputs": [
+                {
+                  "indexed": true,
+                  "internalType": "uint256",
+                  "name": "contractId",
+                  "type": "uint256"
+                },
+                {
+                  "indexed": false,
+                  "internalType": "string",
+                  "name": "name",
+                  "type": "string"
+                },
+                {
+                  "indexed": true,
+                  "internalType": "address",
+                  "name": "contractAddress",
+                  "type": "address"
+                },
+                {
+                  "indexed": false,
+                  "internalType": "address",
+                  "name": "creator",
+                  "type": "address"
+                },
+                {
+                  "indexed": false,
+                  "internalType": "address[]",
+                  "name": "owners",
+                  "type": "address[]"
+                },
+                {
+                  "indexed": false,
+                  "internalType": "uint256",
+                  "name": "signaturesRequired",
+                  "type": "uint256"
+                }
+              ],
+              "name": "Create2Event",
+              "type": "event"
+            },
+            {
+              "anonymous": false,
+              "inputs": [
+                {
+                  "indexed": true,
+                  "internalType": "address",
+                  "name": "contractAddress",
+                  "type": "address"
+                },
+                {
+                  "indexed": false,
+                  "internalType": "address[]",
+                  "name": "owners",
+                  "type": "address[]"
+                },
+                {
+                  "indexed": true,
+                  "internalType": "uint256",
+                  "name": "signaturesRequired",
+                  "type": "uint256"
+                }
+              ],
+              "name": "Owners",
+              "type": "event"
+            },
+            {
+              "inputs": [
+                {
+                  "internalType": "string",
+                  "name": "_name",
+                  "type": "string"
+                }
+              ],
+              "name": "computedAddress",
+              "outputs": [
+                {
+                  "internalType": "address",
+                  "name": "",
+                  "type": "address"
+                }
+              ],
+              "stateMutability": "view",
+              "type": "function"
+            },
+            {
+              "inputs": [
+                {
+                  "internalType": "address[]",
+                  "name": "_owners",
+                  "type": "address[]"
+                },
+                {
+                  "internalType": "uint256",
+                  "name": "_signaturesRequired",
+                  "type": "uint256"
+                },
+                {
+                  "internalType": "string",
+                  "name": "_name",
+                  "type": "string"
+                }
+              ],
+              "name": "create2",
+              "outputs": [],
+              "stateMutability": "payable",
+              "type": "function"
+            },
+            {
+              "inputs": [
+                {
+                  "internalType": "address",
+                  "name": "_contractAddress",
+                  "type": "address"
+                },
+                {
+                  "internalType": "address[]",
+                  "name": "_owners",
+                  "type": "address[]"
+                },
+                {
+                  "internalType": "uint256",
+                  "name": "_signaturesRequired",
+                  "type": "uint256"
+                }
+              ],
+              "name": "emitOwners",
+              "outputs": [],
+              "stateMutability": "nonpayable",
+              "type": "function"
+            },
+            {
+              "inputs": [
+                {
+                  "internalType": "uint256",
+                  "name": "_index",
+                  "type": "uint256"
+                }
+              ],
+              "name": "getMultiSig",
+              "outputs": [
+                {
+                  "internalType": "address",
+                  "name": "multiSigAddress",
+                  "type": "address"
+                },
+                {
+                  "internalType": "uint256",
+                  "name": "signaturesRequired",
+                  "type": "uint256"
+                },
+                {
+                  "internalType": "uint256",
+                  "name": "balance",
+                  "type": "uint256"
+                }
+              ],
+              "stateMutability": "view",
+              "type": "function"
+            },
+            {
+              "inputs": [
+                {
+                  "internalType": "uint256",
+                  "name": "",
+                  "type": "uint256"
+                }
+              ],
+              "name": "multiSigs",
+              "outputs": [
+                {
+                  "internalType": "contract MultiSigWallet",
+                  "name": "",
+                  "type": "address"
+                }
+              ],
+              "stateMutability": "view",
+              "type": "function"
+            },
+            {
+              "inputs": [],
+              "name": "numberOfMultiSigs",
+              "outputs": [
+                {
+                  "internalType": "uint256",
+                  "name": "",
+                  "type": "uint256"
+                }
+              ],
+              "stateMutability": "view",
+              "type": "function"
+            }
+          ]
+        }
+      }
+    }
+  },
+  "3": {
+    "ropsten": {
+      "name": "ropsten",
+      "chainId": "3",
+      "contracts": {
+        "MultiSigFactory": {
+          "address": "0x3E14373EFBcbd5bE16F6f1634175192dDb127D75",
+          "abi": [
+            {
+              "inputs": [],
+              "name": "CALLER_NOT_REGISTERED",
+              "type": "error"
+            },
+            {
+              "anonymous": false,
+              "inputs": [
+                {
+                  "indexed": true,
+                  "internalType": "uint256",
+                  "name": "contractId",
+                  "type": "uint256"
+                },
+                {
+                  "indexed": false,
+                  "internalType": "string",
+                  "name": "name",
+                  "type": "string"
+                },
+                {
+                  "indexed": true,
+                  "internalType": "address",
+                  "name": "contractAddress",
+                  "type": "address"
+                },
+                {
+                  "indexed": false,
+                  "internalType": "address",
+                  "name": "creator",
+                  "type": "address"
+                },
+                {
+                  "indexed": false,
+                  "internalType": "address[]",
+                  "name": "owners",
+                  "type": "address[]"
+                },
+                {
+                  "indexed": false,
+                  "internalType": "uint256",
+                  "name": "signaturesRequired",
+                  "type": "uint256"
+                }
+              ],
+              "name": "Create2Event",
+              "type": "event"
+            },
+            {
+              "anonymous": false,
+              "inputs": [
+                {
+                  "indexed": true,
+                  "internalType": "address",
+                  "name": "contractAddress",
+                  "type": "address"
+                },
+                {
+                  "indexed": false,
+                  "internalType": "address[]",
+                  "name": "owners",
+                  "type": "address[]"
+                },
+                {
+                  "indexed": true,
+                  "internalType": "uint256",
+                  "name": "signaturesRequired",
+                  "type": "uint256"
+                }
+              ],
+              "name": "Owners",
+              "type": "event"
+            },
+            {
+              "inputs": [
+                {
+                  "internalType": "string",
+                  "name": "_name",
+                  "type": "string"
+                }
+              ],
+              "name": "computedAddress",
+              "outputs": [
+                {
+                  "internalType": "address",
+                  "name": "",
+                  "type": "address"
+                }
+              ],
+              "stateMutability": "view",
+              "type": "function"
+            },
+            {
+              "inputs": [
+                {
+                  "internalType": "uint256",
+                  "name": "_chainId",
+                  "type": "uint256"
+                },
+                {
+                  "internalType": "address[]",
+                  "name": "_owners",
+                  "type": "address[]"
+                },
+                {
+                  "internalType": "uint256",
+                  "name": "_signaturesRequired",
+                  "type": "uint256"
+                },
+                {
+                  "internalType": "string",
+                  "name": "_name",
+                  "type": "string"
+                }
+              ],
+              "name": "create2",
+              "outputs": [],
+              "stateMutability": "payable",
+              "type": "function"
+            },
+            {
+              "inputs": [
+                {
+                  "internalType": "address",
+                  "name": "_contractAddress",
+                  "type": "address"
+                },
+                {
+                  "internalType": "address[]",
+                  "name": "_owners",
+                  "type": "address[]"
+                },
+                {
+                  "internalType": "uint256",
+                  "name": "_signaturesRequired",
+                  "type": "uint256"
+                }
+              ],
+              "name": "emitOwners",
+              "outputs": [],
+              "stateMutability": "nonpayable",
+              "type": "function"
+            },
+            {
+              "inputs": [
+                {
+                  "internalType": "uint256",
+                  "name": "_index",
+                  "type": "uint256"
+                }
+              ],
+              "name": "getMultiSig",
+              "outputs": [
+                {
+                  "internalType": "address",
+                  "name": "multiSigAddress",
+                  "type": "address"
+                },
+                {
+                  "internalType": "uint256",
+                  "name": "signaturesRequired",
+                  "type": "uint256"
+                },
+                {
+                  "internalType": "uint256",
+                  "name": "balance",
+                  "type": "uint256"
+                }
+              ],
+              "stateMutability": "view",
+              "type": "function"
+            },
+            {
+              "inputs": [
+                {
+                  "internalType": "uint256",
+                  "name": "",
+                  "type": "uint256"
+                }
+              ],
+              "name": "multiSigs",
+              "outputs": [
+                {
+                  "internalType": "contract MultiSigWallet",
+                  "name": "",
+                  "type": "address"
+                }
+              ],
+              "stateMutability": "view",
+              "type": "function"
+            },
+            {
+              "inputs": [],
+              "name": "numberOfMultiSigs",
+              "outputs": [
+                {
+                  "internalType": "uint256",
+                  "name": "",
+                  "type": "uint256"
+                }
+              ],
+              "stateMutability": "view",
+              "type": "function"
+            }
+          ]
+        }
+      }
+    }
+  },
+  "4": {
+    "rinkeby": {
+      "name": "rinkeby",
+      "chainId": "4",
+      "contracts": {
+        "MultiSigFactory": {
+          "address": "0x3E14373EFBcbd5bE16F6f1634175192dDb127D75",
+          "abi": [
+            {
+              "inputs": [],
+              "name": "CALLER_NOT_REGISTERED",
+              "type": "error"
+            },
+            {
+              "anonymous": false,
+              "inputs": [
+                {
+                  "indexed": true,
+                  "internalType": "uint256",
+                  "name": "contractId",
+                  "type": "uint256"
+                },
+                {
+                  "indexed": false,
+                  "internalType": "string",
+                  "name": "name",
+                  "type": "string"
+                },
+                {
+                  "indexed": true,
+                  "internalType": "address",
+                  "name": "contractAddress",
+                  "type": "address"
+                },
+                {
+                  "indexed": false,
+                  "internalType": "address",
+                  "name": "creator",
+                  "type": "address"
+                },
+                {
+                  "indexed": false,
+                  "internalType": "address[]",
+                  "name": "owners",
+                  "type": "address[]"
+                },
+                {
+                  "indexed": false,
+                  "internalType": "uint256",
+                  "name": "signaturesRequired",
+                  "type": "uint256"
+                }
+              ],
+              "name": "Create2Event",
+              "type": "event"
+            },
+            {
+              "anonymous": false,
+              "inputs": [
+                {
+                  "indexed": true,
+                  "internalType": "address",
+                  "name": "contractAddress",
+                  "type": "address"
+                },
+                {
+                  "indexed": false,
+                  "internalType": "address[]",
+                  "name": "owners",
+                  "type": "address[]"
+                },
+                {
+                  "indexed": true,
+                  "internalType": "uint256",
+                  "name": "signaturesRequired",
+                  "type": "uint256"
+                }
+              ],
+              "name": "Owners",
+              "type": "event"
+            },
+            {
+              "inputs": [
+                {
+                  "internalType": "string",
+                  "name": "_name",
+                  "type": "string"
+                }
+              ],
+              "name": "computedAddress",
+              "outputs": [
+                {
+                  "internalType": "address",
+                  "name": "",
+                  "type": "address"
+                }
+              ],
+              "stateMutability": "view",
+              "type": "function"
+            },
+            {
+              "inputs": [
+                {
+                  "internalType": "uint256",
+                  "name": "_chainId",
+                  "type": "uint256"
+                },
+                {
+                  "internalType": "address[]",
+                  "name": "_owners",
+                  "type": "address[]"
+                },
+                {
+                  "internalType": "uint256",
+                  "name": "_signaturesRequired",
+                  "type": "uint256"
+                },
+                {
+                  "internalType": "string",
+                  "name": "_name",
+                  "type": "string"
+                }
+              ],
+              "name": "create2",
+              "outputs": [],
+              "stateMutability": "payable",
+              "type": "function"
+            },
+            {
+              "inputs": [
+                {
+                  "internalType": "address",
+                  "name": "_contractAddress",
+                  "type": "address"
+                },
+                {
+                  "internalType": "address[]",
+                  "name": "_owners",
+                  "type": "address[]"
+                },
+                {
+                  "internalType": "uint256",
+                  "name": "_signaturesRequired",
+                  "type": "uint256"
+                }
+              ],
+              "name": "emitOwners",
+              "outputs": [],
+              "stateMutability": "nonpayable",
+              "type": "function"
+            },
+            {
+              "inputs": [
+                {
+                  "internalType": "uint256",
+                  "name": "_index",
+                  "type": "uint256"
+                }
+              ],
+              "name": "getMultiSig",
+              "outputs": [
+                {
+                  "internalType": "address",
+                  "name": "multiSigAddress",
+                  "type": "address"
+                },
+                {
+                  "internalType": "uint256",
+                  "name": "signaturesRequired",
+                  "type": "uint256"
+                },
+                {
+                  "internalType": "uint256",
+                  "name": "balance",
+                  "type": "uint256"
+                }
+              ],
+              "stateMutability": "view",
+              "type": "function"
+            },
+            {
+              "inputs": [
+                {
+                  "internalType": "uint256",
+                  "name": "",
+                  "type": "uint256"
+                }
+              ],
+              "name": "multiSigs",
+              "outputs": [
+                {
+                  "internalType": "contract MultiSigWallet",
+                  "name": "",
+                  "type": "address"
+                }
+              ],
+              "stateMutability": "view",
+              "type": "function"
+            },
+            {
+              "inputs": [],
+              "name": "numberOfMultiSigs",
+              "outputs": [
+                {
+                  "internalType": "uint256",
+                  "name": "",
+                  "type": "uint256"
+                }
+              ],
+              "stateMutability": "view",
+              "type": "function"
+            }
+          ]
+        }
+      }
+    }
+  },
+  "5": {
+    "goerli": {
+      "name": "goerli",
+      "chainId": "5",
+      "contracts": {
+        "MultiSigFactory": {
+          "address": "0x8b50c76eAf0Db1B7dE1f7bA456351E98cFd8bd9f",
+          "abi": [
+            {
+              "inputs": [],
+              "name": "CALLER_NOT_REGISTERED",
+              "type": "error"
+            },
+            {
+              "anonymous": false,
+              "inputs": [
+                {
+                  "indexed": true,
+                  "internalType": "uint256",
+                  "name": "contractId",
+                  "type": "uint256"
+                },
+                {
+                  "indexed": false,
+                  "internalType": "string",
+                  "name": "name",
+                  "type": "string"
+                },
+                {
+                  "indexed": true,
+                  "internalType": "address",
+                  "name": "contractAddress",
+                  "type": "address"
+                },
+                {
+                  "indexed": false,
+                  "internalType": "address",
+                  "name": "creator",
+                  "type": "address"
+                },
+                {
+                  "indexed": false,
+                  "internalType": "address[]",
+                  "name": "owners",
+                  "type": "address[]"
+                },
+                {
+                  "indexed": false,
+                  "internalType": "uint256",
+                  "name": "signaturesRequired",
+                  "type": "uint256"
+                }
+              ],
+              "name": "Create2Event",
+              "type": "event"
+            },
+            {
+              "anonymous": false,
+              "inputs": [
+                {
+                  "indexed": true,
+                  "internalType": "address",
+                  "name": "contractAddress",
+                  "type": "address"
+                },
+                {
+                  "indexed": false,
+                  "internalType": "address[]",
+                  "name": "owners",
+                  "type": "address[]"
+                },
+                {
+                  "indexed": true,
+                  "internalType": "uint256",
+                  "name": "signaturesRequired",
+                  "type": "uint256"
+                }
+              ],
+              "name": "Owners",
+              "type": "event"
+            },
+            {
+              "inputs": [
+                {
+                  "internalType": "string",
+                  "name": "_name",
+                  "type": "string"
+                }
+              ],
+              "name": "computedAddress",
+              "outputs": [
+                {
+                  "internalType": "address",
+                  "name": "",
+                  "type": "address"
+                }
+              ],
+              "stateMutability": "view",
+              "type": "function"
+            },
+            {
+              "inputs": [
+                {
+                  "internalType": "address[]",
+                  "name": "_owners",
+                  "type": "address[]"
+                },
+                {
+                  "internalType": "uint256",
+                  "name": "_signaturesRequired",
+                  "type": "uint256"
+                },
+                {
+                  "internalType": "string",
+                  "name": "_name",
+                  "type": "string"
+                }
+              ],
+              "name": "create2",
+              "outputs": [],
+              "stateMutability": "payable",
+              "type": "function"
+            },
+            {
+              "inputs": [
+                {
+                  "internalType": "address",
+                  "name": "_contractAddress",
+                  "type": "address"
+                },
+                {
+                  "internalType": "address[]",
+                  "name": "_owners",
+                  "type": "address[]"
+                },
+                {
+                  "internalType": "uint256",
+                  "name": "_signaturesRequired",
+                  "type": "uint256"
+                }
+              ],
+              "name": "emitOwners",
+              "outputs": [],
+              "stateMutability": "nonpayable",
+              "type": "function"
+            },
+            {
+              "inputs": [
+                {
+                  "internalType": "uint256",
+                  "name": "_index",
+                  "type": "uint256"
+                }
+              ],
+              "name": "getMultiSig",
+              "outputs": [
+                {
+                  "internalType": "address",
+                  "name": "multiSigAddress",
+                  "type": "address"
+                },
+                {
+                  "internalType": "uint256",
+                  "name": "signaturesRequired",
+                  "type": "uint256"
+                },
+                {
+                  "internalType": "uint256",
+                  "name": "balance",
+                  "type": "uint256"
+                }
+              ],
+              "stateMutability": "view",
+              "type": "function"
+            },
+            {
+              "inputs": [
+                {
+                  "internalType": "uint256",
+                  "name": "",
+                  "type": "uint256"
+                }
+              ],
+              "name": "multiSigs",
+              "outputs": [
+                {
+                  "internalType": "contract MultiSigWallet",
+                  "name": "",
+                  "type": "address"
+                }
+              ],
+              "stateMutability": "view",
+              "type": "function"
+            },
+            {
+              "inputs": [],
+              "name": "numberOfMultiSigs",
+              "outputs": [
+                {
+                  "internalType": "uint256",
+                  "name": "",
+                  "type": "uint256"
+                }
+              ],
+              "stateMutability": "view",
+              "type": "function"
+            }
+          ]
+        }
+      }
+    }
+  },
+  "10": {
+    "optimism": {
+      "name": "optimism",
+      "chainId": "10",
+      "contracts": {
+        "MultiSigFactory": {
+          "address": "0x8b50c76eAf0Db1B7dE1f7bA456351E98cFd8bd9f",
+          "abi": [
+            {
+              "inputs": [],
+              "name": "CALLER_NOT_REGISTERED",
+              "type": "error"
+            },
+            {
+              "anonymous": false,
+              "inputs": [
+                {
+                  "indexed": true,
+                  "internalType": "uint256",
+                  "name": "contractId",
+                  "type": "uint256"
+                },
+                {
+                  "indexed": false,
+                  "internalType": "string",
+                  "name": "name",
+                  "type": "string"
+                },
+                {
+                  "indexed": true,
+                  "internalType": "address",
+                  "name": "contractAddress",
+                  "type": "address"
+                },
+                {
+                  "indexed": false,
+                  "internalType": "address",
+                  "name": "creator",
+                  "type": "address"
+                },
+                {
+                  "indexed": false,
+                  "internalType": "address[]",
+                  "name": "owners",
+                  "type": "address[]"
+                },
+                {
+                  "indexed": false,
+                  "internalType": "uint256",
+                  "name": "signaturesRequired",
+                  "type": "uint256"
+                }
+              ],
+              "name": "Create2Event",
+              "type": "event"
+            },
+            {
+              "anonymous": false,
+              "inputs": [
+                {
+                  "indexed": true,
+                  "internalType": "address",
+                  "name": "contractAddress",
+                  "type": "address"
+                },
+                {
+                  "indexed": false,
+                  "internalType": "address[]",
+                  "name": "owners",
+                  "type": "address[]"
+                },
+                {
+                  "indexed": true,
+                  "internalType": "uint256",
+                  "name": "signaturesRequired",
+                  "type": "uint256"
+                }
+              ],
+              "name": "Owners",
+              "type": "event"
+            },
+            {
+              "inputs": [
+                {
+                  "internalType": "string",
+                  "name": "_name",
+                  "type": "string"
+                }
+              ],
+              "name": "computedAddress",
+              "outputs": [
+                {
+                  "internalType": "address",
+                  "name": "",
+                  "type": "address"
+                }
+              ],
+              "stateMutability": "view",
+              "type": "function"
+            },
+            {
+              "inputs": [
+                {
+                  "internalType": "address[]",
+                  "name": "_owners",
+                  "type": "address[]"
+                },
+                {
+                  "internalType": "uint256",
+                  "name": "_signaturesRequired",
+                  "type": "uint256"
+                },
+                {
+                  "internalType": "string",
+                  "name": "_name",
+                  "type": "string"
+                }
+              ],
+              "name": "create2",
+              "outputs": [],
+              "stateMutability": "payable",
+              "type": "function"
+            },
+            {
+              "inputs": [
+                {
+                  "internalType": "address",
+                  "name": "_contractAddress",
+                  "type": "address"
+                },
+                {
+                  "internalType": "address[]",
+                  "name": "_owners",
+                  "type": "address[]"
+                },
+                {
+                  "internalType": "uint256",
+                  "name": "_signaturesRequired",
+                  "type": "uint256"
+                }
+              ],
+              "name": "emitOwners",
+              "outputs": [],
+              "stateMutability": "nonpayable",
+              "type": "function"
+            },
+            {
+              "inputs": [
+                {
+                  "internalType": "uint256",
+                  "name": "_index",
+                  "type": "uint256"
+                }
+              ],
+              "name": "getMultiSig",
+              "outputs": [
+                {
+                  "internalType": "address",
+                  "name": "multiSigAddress",
+                  "type": "address"
+                },
+                {
+                  "internalType": "uint256",
+                  "name": "signaturesRequired",
+                  "type": "uint256"
+                },
+                {
+                  "internalType": "uint256",
+                  "name": "balance",
+                  "type": "uint256"
+                }
+              ],
+              "stateMutability": "view",
+              "type": "function"
+            },
+            {
+              "inputs": [
+                {
+                  "internalType": "uint256",
+                  "name": "",
+                  "type": "uint256"
+                }
+              ],
+              "name": "multiSigs",
+              "outputs": [
+                {
+                  "internalType": "contract MultiSigWallet",
+                  "name": "",
+                  "type": "address"
+                }
+              ],
+              "stateMutability": "view",
+              "type": "function"
+            },
+            {
+              "inputs": [],
+              "name": "numberOfMultiSigs",
+              "outputs": [
+                {
+                  "internalType": "uint256",
+                  "name": "",
+                  "type": "uint256"
+                }
+              ],
+              "stateMutability": "view",
+              "type": "function"
+            }
+          ]
+        }
+      }
+    }
+  },
+  "42": {
+    "kovan": {
+      "name": "kovan",
+      "chainId": "42",
+      "contracts": {
+        "MultiSigFactory": {
+          "address": "0x3E14373EFBcbd5bE16F6f1634175192dDb127D75",
+          "abi": [
+            {
+              "inputs": [],
+              "name": "CALLER_NOT_REGISTERED",
+              "type": "error"
+            },
+            {
+              "anonymous": false,
+              "inputs": [
+                {
+                  "indexed": true,
+                  "internalType": "uint256",
+                  "name": "contractId",
+                  "type": "uint256"
+                },
+                {
+                  "indexed": false,
+                  "internalType": "string",
+                  "name": "name",
+                  "type": "string"
+                },
+                {
+                  "indexed": true,
+                  "internalType": "address",
+                  "name": "contractAddress",
+                  "type": "address"
+                },
+                {
+                  "indexed": false,
+                  "internalType": "address",
+                  "name": "creator",
+                  "type": "address"
+                },
+                {
+                  "indexed": false,
+                  "internalType": "address[]",
+                  "name": "owners",
+                  "type": "address[]"
+                },
+                {
+                  "indexed": false,
+                  "internalType": "uint256",
+                  "name": "signaturesRequired",
+                  "type": "uint256"
+                }
+              ],
+              "name": "Create2Event",
+              "type": "event"
+            },
+            {
+              "anonymous": false,
+              "inputs": [
+                {
+                  "indexed": true,
+                  "internalType": "address",
+                  "name": "contractAddress",
+                  "type": "address"
+                },
+                {
+                  "indexed": false,
+                  "internalType": "address[]",
+                  "name": "owners",
+                  "type": "address[]"
+                },
+                {
+                  "indexed": true,
+                  "internalType": "uint256",
+                  "name": "signaturesRequired",
+                  "type": "uint256"
+                }
+              ],
+              "name": "Owners",
+              "type": "event"
+            },
+            {
+              "inputs": [
+                {
+                  "internalType": "string",
+                  "name": "_name",
+                  "type": "string"
+                }
+              ],
+              "name": "computedAddress",
+              "outputs": [
+                {
+                  "internalType": "address",
+                  "name": "",
+                  "type": "address"
+                }
+              ],
+              "stateMutability": "view",
+              "type": "function"
+            },
+            {
+              "inputs": [
+                {
+                  "internalType": "uint256",
+                  "name": "_chainId",
+                  "type": "uint256"
+                },
+                {
+                  "internalType": "address[]",
+                  "name": "_owners",
+                  "type": "address[]"
+                },
+                {
+                  "internalType": "uint256",
+                  "name": "_signaturesRequired",
+                  "type": "uint256"
+                },
+                {
+                  "internalType": "string",
+                  "name": "_name",
+                  "type": "string"
+                }
+              ],
+              "name": "create2",
+              "outputs": [],
+              "stateMutability": "payable",
+              "type": "function"
+            },
+            {
+              "inputs": [
+                {
+                  "internalType": "address",
+                  "name": "_contractAddress",
+                  "type": "address"
+                },
+                {
+                  "internalType": "address[]",
+                  "name": "_owners",
+                  "type": "address[]"
+                },
+                {
+                  "internalType": "uint256",
+                  "name": "_signaturesRequired",
+                  "type": "uint256"
+                }
+              ],
+              "name": "emitOwners",
+              "outputs": [],
+              "stateMutability": "nonpayable",
+              "type": "function"
+            },
+            {
+              "inputs": [
+                {
+                  "internalType": "uint256",
+                  "name": "_index",
+                  "type": "uint256"
+                }
+              ],
+              "name": "getMultiSig",
+              "outputs": [
+                {
+                  "internalType": "address",
+                  "name": "multiSigAddress",
+                  "type": "address"
+                },
+                {
+                  "internalType": "uint256",
+                  "name": "signaturesRequired",
+                  "type": "uint256"
+                },
+                {
+                  "internalType": "uint256",
+                  "name": "balance",
+                  "type": "uint256"
+                }
+              ],
+              "stateMutability": "view",
+              "type": "function"
+            },
+            {
+              "inputs": [
+                {
+                  "internalType": "uint256",
+                  "name": "",
+                  "type": "uint256"
+                }
+              ],
+              "name": "multiSigs",
+              "outputs": [
+                {
+                  "internalType": "contract MultiSigWallet",
+                  "name": "",
+                  "type": "address"
+                }
+              ],
+              "stateMutability": "view",
+              "type": "function"
+            },
+            {
+              "inputs": [],
+              "name": "numberOfMultiSigs",
+              "outputs": [
+                {
+                  "internalType": "uint256",
+                  "name": "",
+                  "type": "uint256"
+                }
+              ],
+              "stateMutability": "view",
+              "type": "function"
+            }
+          ]
+        }
+      }
+    }
+  },
+  "100": {
+    "gnosis": {
+      "name": "gnosis",
+      "chainId": "100",
+      "contracts": {
+        "MultiSigFactory": {
+          "address": "0x8b50c76eAf0Db1B7dE1f7bA456351E98cFd8bd9f",
+          "abi": [
+            {
+              "inputs": [],
+              "name": "CALLER_NOT_REGISTERED",
+              "type": "error"
+            },
+            {
+              "anonymous": false,
+              "inputs": [
+                {
+                  "indexed": true,
+                  "internalType": "uint256",
+                  "name": "contractId",
+                  "type": "uint256"
+                },
+                {
+                  "indexed": false,
+                  "internalType": "string",
+                  "name": "name",
+                  "type": "string"
+                },
+                {
+                  "indexed": true,
+                  "internalType": "address",
+                  "name": "contractAddress",
+                  "type": "address"
+                },
+                {
+                  "indexed": false,
+                  "internalType": "address",
+                  "name": "creator",
+                  "type": "address"
+                },
+                {
+                  "indexed": false,
+                  "internalType": "address[]",
+                  "name": "owners",
+                  "type": "address[]"
+                },
+                {
+                  "indexed": false,
+                  "internalType": "uint256",
+                  "name": "signaturesRequired",
+                  "type": "uint256"
+                }
+              ],
+              "name": "Create2Event",
+              "type": "event"
+            },
+            {
+              "anonymous": false,
+              "inputs": [
+                {
+                  "indexed": true,
+                  "internalType": "address",
+                  "name": "contractAddress",
+                  "type": "address"
+                },
+                {
+                  "indexed": false,
+                  "internalType": "address[]",
+                  "name": "owners",
+                  "type": "address[]"
+                },
+                {
+                  "indexed": true,
+                  "internalType": "uint256",
+                  "name": "signaturesRequired",
+                  "type": "uint256"
+                }
+              ],
+              "name": "Owners",
+              "type": "event"
+            },
+            {
+              "inputs": [
+                {
+                  "internalType": "string",
+                  "name": "_name",
+                  "type": "string"
+                }
+              ],
+              "name": "computedAddress",
+              "outputs": [
+                {
+                  "internalType": "address",
+                  "name": "",
+                  "type": "address"
+                }
+              ],
+              "stateMutability": "view",
+              "type": "function"
+            },
+            {
+              "inputs": [
+                {
+                  "internalType": "address[]",
+                  "name": "_owners",
+                  "type": "address[]"
+                },
+                {
+                  "internalType": "uint256",
+                  "name": "_signaturesRequired",
+                  "type": "uint256"
+                },
+                {
+                  "internalType": "string",
+                  "name": "_name",
+                  "type": "string"
+                }
+              ],
+              "name": "create2",
+              "outputs": [],
+              "stateMutability": "payable",
+              "type": "function"
+            },
+            {
+              "inputs": [
+                {
+                  "internalType": "address",
+                  "name": "_contractAddress",
+                  "type": "address"
+                },
+                {
+                  "internalType": "address[]",
+                  "name": "_owners",
+                  "type": "address[]"
+                },
+                {
+                  "internalType": "uint256",
+                  "name": "_signaturesRequired",
+                  "type": "uint256"
+                }
+              ],
+              "name": "emitOwners",
+              "outputs": [],
+              "stateMutability": "nonpayable",
+              "type": "function"
+            },
+            {
+              "inputs": [
+                {
+                  "internalType": "uint256",
+                  "name": "_index",
+                  "type": "uint256"
+                }
+              ],
+              "name": "getMultiSig",
+              "outputs": [
+                {
+                  "internalType": "address",
+                  "name": "multiSigAddress",
+                  "type": "address"
+                },
+                {
+                  "internalType": "uint256",
+                  "name": "signaturesRequired",
+                  "type": "uint256"
+                },
+                {
+                  "internalType": "uint256",
+                  "name": "balance",
+                  "type": "uint256"
+                }
+              ],
+              "stateMutability": "view",
+              "type": "function"
+            },
+            {
+              "inputs": [
+                {
+                  "internalType": "uint256",
+                  "name": "",
+                  "type": "uint256"
+                }
+              ],
+              "name": "multiSigs",
+              "outputs": [
+                {
+                  "internalType": "contract MultiSigWallet",
+                  "name": "",
+                  "type": "address"
+                }
+              ],
+              "stateMutability": "view",
+              "type": "function"
+            },
+            {
+              "inputs": [],
+              "name": "numberOfMultiSigs",
+              "outputs": [
+                {
+                  "internalType": "uint256",
+                  "name": "",
+                  "type": "uint256"
+                }
+              ],
+              "stateMutability": "view",
+              "type": "function"
+            }
+          ]
+        }
+      }
+    },
+    "xdai": {
+      "name": "xdai",
+      "chainId": "100",
+      "contracts": {
+        "MultiSigFactory": {
+          "address": "0xb61f5595ed9742E486E0491fC05603F0523A0261",
+          "abi": [
+            {
+              "inputs": [],
+              "stateMutability": "nonpayable",
+              "type": "constructor"
+            },
+            {
+              "anonymous": false,
+              "inputs": [
+                {
+                  "indexed": true,
+                  "internalType": "uint256",
+                  "name": "contractId",
+                  "type": "uint256"
+                },
+                {
+                  "indexed": true,
+                  "internalType": "address",
+                  "name": "contractAddress",
+                  "type": "address"
+                },
+                {
+                  "indexed": false,
+                  "internalType": "address",
+                  "name": "creator",
+                  "type": "address"
+                },
+                {
+                  "indexed": false,
+                  "internalType": "address[]",
+                  "name": "owners",
+                  "type": "address[]"
+                },
+                {
+                  "indexed": false,
+                  "internalType": "uint256",
+                  "name": "signaturesRequired",
+                  "type": "uint256"
+                }
+              ],
+              "name": "Create",
+              "type": "event"
+            },
+            {
+              "anonymous": false,
+              "inputs": [
+                {
+                  "indexed": true,
+                  "internalType": "uint256",
+                  "name": "contractId",
+                  "type": "uint256"
+                },
+                {
+                  "indexed": false,
+                  "internalType": "string",
+                  "name": "name",
+                  "type": "string"
+                },
+                {
+                  "indexed": true,
+                  "internalType": "address",
+                  "name": "contractAddress",
+                  "type": "address"
+                },
+                {
+                  "indexed": false,
+                  "internalType": "address",
+                  "name": "creator",
+                  "type": "address"
+                },
+                {
+                  "indexed": false,
+                  "internalType": "address[]",
+                  "name": "owners",
+                  "type": "address[]"
+                },
+                {
+                  "indexed": false,
+                  "internalType": "uint256",
+                  "name": "signaturesRequired",
+                  "type": "uint256"
+                }
+              ],
+              "name": "Create2Event",
+              "type": "event"
+            },
+            {
+              "anonymous": false,
+              "inputs": [
+                {
+                  "indexed": true,
+                  "internalType": "address",
+                  "name": "contractAddress",
+                  "type": "address"
+                },
+                {
+                  "indexed": false,
+                  "internalType": "address[]",
+                  "name": "owners",
+                  "type": "address[]"
+                },
+                {
+                  "indexed": true,
+                  "internalType": "uint256",
+                  "name": "signaturesRequired",
+                  "type": "uint256"
+                }
+              ],
+              "name": "Owners",
+              "type": "event"
+            },
+            {
+              "inputs": [
+                {
+                  "internalType": "bytes32",
+                  "name": "_salt",
+                  "type": "bytes32"
+                },
+                {
+                  "internalType": "string",
+                  "name": "_name",
+                  "type": "string"
+                }
+              ],
+              "name": "computedAddress",
+              "outputs": [
+                {
+                  "internalType": "address",
+                  "name": "",
+                  "type": "address"
+                }
+              ],
+              "stateMutability": "view",
+              "type": "function"
+            },
+            {
+              "inputs": [
+                {
+                  "internalType": "uint256",
+                  "name": "_chainId",
+                  "type": "uint256"
+                },
+                {
+                  "internalType": "address[]",
+                  "name": "_owners",
+                  "type": "address[]"
+                },
+                {
+                  "internalType": "uint256",
+                  "name": "_signaturesRequired",
+                  "type": "uint256"
+                }
+              ],
+              "name": "create",
+              "outputs": [],
+              "stateMutability": "payable",
+              "type": "function"
+            },
+            {
+              "inputs": [
+                {
+                  "internalType": "uint256",
+                  "name": "_chainId",
+                  "type": "uint256"
+                },
+                {
+                  "internalType": "address[]",
+                  "name": "_owners",
+                  "type": "address[]"
+                },
+                {
+                  "internalType": "uint256",
+                  "name": "_signaturesRequired",
+                  "type": "uint256"
+                },
+                {
+                  "internalType": "bytes32",
+                  "name": "_salt",
+                  "type": "bytes32"
+                },
+                {
+                  "internalType": "string",
+                  "name": "_name",
+                  "type": "string"
+                }
+              ],
+              "name": "create2",
+              "outputs": [],
+              "stateMutability": "payable",
+              "type": "function"
+            },
+            {
+              "inputs": [
+                {
+                  "internalType": "address",
+                  "name": "_contractAddress",
+                  "type": "address"
+                },
+                {
+                  "internalType": "address[]",
+                  "name": "_owners",
+                  "type": "address[]"
+                },
+                {
+                  "internalType": "uint256",
+                  "name": "_signaturesRequired",
+                  "type": "uint256"
+                }
+              ],
+              "name": "emitOwners",
+              "outputs": [],
+              "stateMutability": "nonpayable",
+              "type": "function"
+            },
+            {
+              "inputs": [
+                {
+                  "internalType": "uint256",
+                  "name": "_index",
+                  "type": "uint256"
+                }
+              ],
+              "name": "getMultiSig",
+              "outputs": [
+                {
+                  "internalType": "address",
+                  "name": "multiSigAddress",
+                  "type": "address"
+                },
+                {
+                  "internalType": "uint256",
+                  "name": "signaturesRequired",
+                  "type": "uint256"
+                },
+                {
+                  "internalType": "uint256",
+                  "name": "balance",
+                  "type": "uint256"
+                }
+              ],
+              "stateMutability": "view",
+              "type": "function"
+            },
+            {
+              "inputs": [
+                {
+                  "internalType": "uint256",
+                  "name": "",
+                  "type": "uint256"
+                }
+              ],
+              "name": "multiSigs",
+              "outputs": [
+                {
+                  "internalType": "contract MultiSigWallet",
+                  "name": "",
+                  "type": "address"
+                }
+              ],
+              "stateMutability": "view",
+              "type": "function"
+            },
+            {
+              "inputs": [],
+              "name": "numberOfMultiSigs",
+              "outputs": [
+                {
+                  "internalType": "uint256",
+                  "name": "",
+                  "type": "uint256"
+                }
+              ],
+              "stateMutability": "view",
+              "type": "function"
+            }
+          ]
+        }
+      }
+    }
+  },
+  "137": {
+    "polygon": {
+      "name": "polygon",
+      "chainId": "137",
+      "contracts": {
+        "MultiSigFactory": {
+          "address": "0x8b50c76eAf0Db1B7dE1f7bA456351E98cFd8bd9f",
+          "abi": [
+            {
+              "inputs": [],
+              "name": "CALLER_NOT_REGISTERED",
+              "type": "error"
+            },
+            {
+              "anonymous": false,
+              "inputs": [
+                {
+                  "indexed": true,
+                  "internalType": "uint256",
+                  "name": "contractId",
+                  "type": "uint256"
+                },
+                {
+                  "indexed": false,
+                  "internalType": "string",
+                  "name": "name",
+                  "type": "string"
+                },
+                {
+                  "indexed": true,
+                  "internalType": "address",
+                  "name": "contractAddress",
+                  "type": "address"
+                },
+                {
+                  "indexed": false,
+                  "internalType": "address",
+                  "name": "creator",
+                  "type": "address"
+                },
+                {
+                  "indexed": false,
+                  "internalType": "address[]",
+                  "name": "owners",
+                  "type": "address[]"
+                },
+                {
+                  "indexed": false,
+                  "internalType": "uint256",
+                  "name": "signaturesRequired",
+                  "type": "uint256"
+                }
+              ],
+              "name": "Create2Event",
+              "type": "event"
+            },
+            {
+              "anonymous": false,
+              "inputs": [
+                {
+                  "indexed": true,
+                  "internalType": "address",
+                  "name": "contractAddress",
+                  "type": "address"
+                },
+                {
+                  "indexed": false,
+                  "internalType": "address[]",
+                  "name": "owners",
+                  "type": "address[]"
+                },
+                {
+                  "indexed": true,
+                  "internalType": "uint256",
+                  "name": "signaturesRequired",
+                  "type": "uint256"
+                }
+              ],
+              "name": "Owners",
+              "type": "event"
+            },
+            {
+              "inputs": [
+                {
+                  "internalType": "string",
+                  "name": "_name",
+                  "type": "string"
+                }
+              ],
+              "name": "computedAddress",
+              "outputs": [
+                {
+                  "internalType": "address",
+                  "name": "",
+                  "type": "address"
+                }
+              ],
+              "stateMutability": "view",
+              "type": "function"
+            },
+            {
+              "inputs": [
+                {
+                  "internalType": "address[]",
+                  "name": "_owners",
+                  "type": "address[]"
+                },
+                {
+                  "internalType": "uint256",
+                  "name": "_signaturesRequired",
+                  "type": "uint256"
+                },
+                {
+                  "internalType": "string",
+                  "name": "_name",
+                  "type": "string"
+                }
+              ],
+              "name": "create2",
+              "outputs": [],
+              "stateMutability": "payable",
+              "type": "function"
+            },
+            {
+              "inputs": [
+                {
+                  "internalType": "address",
+                  "name": "_contractAddress",
+                  "type": "address"
+                },
+                {
+                  "internalType": "address[]",
+                  "name": "_owners",
+                  "type": "address[]"
+                },
+                {
+                  "internalType": "uint256",
+                  "name": "_signaturesRequired",
+                  "type": "uint256"
+                }
+              ],
+              "name": "emitOwners",
+              "outputs": [],
+              "stateMutability": "nonpayable",
+              "type": "function"
+            },
+            {
+              "inputs": [
+                {
+                  "internalType": "uint256",
+                  "name": "_index",
+                  "type": "uint256"
+                }
+              ],
+              "name": "getMultiSig",
+              "outputs": [
+                {
+                  "internalType": "address",
+                  "name": "multiSigAddress",
+                  "type": "address"
+                },
+                {
+                  "internalType": "uint256",
+                  "name": "signaturesRequired",
+                  "type": "uint256"
+                },
+                {
+                  "internalType": "uint256",
+                  "name": "balance",
+                  "type": "uint256"
+                }
+              ],
+              "stateMutability": "view",
+              "type": "function"
+            },
+            {
+              "inputs": [
+                {
+                  "internalType": "uint256",
+                  "name": "",
+                  "type": "uint256"
+                }
+              ],
+              "name": "multiSigs",
+              "outputs": [
+                {
+                  "internalType": "contract MultiSigWallet",
+                  "name": "",
+                  "type": "address"
+                }
+              ],
+              "stateMutability": "view",
+              "type": "function"
+            },
+            {
+              "inputs": [],
+              "name": "numberOfMultiSigs",
+              "outputs": [
+                {
+                  "internalType": "uint256",
+                  "name": "",
+                  "type": "uint256"
+                }
+              ],
+              "stateMutability": "view",
+              "type": "function"
+            }
+          ]
+        }
+      }
+    }
+  },
+  "7700": {
+    "canto": {
+      "name": "canto",
+      "chainId": "7700",
+      "contracts": {
+        "MultiSigFactory": {
+          "address": "0x8b50c76eAf0Db1B7dE1f7bA456351E98cFd8bd9f",
+          "abi": [
+            {
+              "inputs": [],
+              "name": "CALLER_NOT_REGISTERED",
+              "type": "error"
+            },
+            {
+              "anonymous": false,
+              "inputs": [
+                {
+                  "indexed": true,
+                  "internalType": "uint256",
+                  "name": "contractId",
+                  "type": "uint256"
+                },
+                {
+                  "indexed": false,
+                  "internalType": "string",
+                  "name": "name",
+                  "type": "string"
+                },
+                {
+                  "indexed": true,
+                  "internalType": "address",
+                  "name": "contractAddress",
+                  "type": "address"
+                },
+                {
+                  "indexed": false,
+                  "internalType": "address",
+                  "name": "creator",
+                  "type": "address"
+                },
+                {
+                  "indexed": false,
+                  "internalType": "address[]",
+                  "name": "owners",
+                  "type": "address[]"
+                },
+                {
+                  "indexed": false,
+                  "internalType": "uint256",
+                  "name": "signaturesRequired",
+                  "type": "uint256"
+                }
+              ],
+              "name": "Create2Event",
+              "type": "event"
+            },
+            {
+              "anonymous": false,
+              "inputs": [
+                {
+                  "indexed": true,
+                  "internalType": "address",
+                  "name": "contractAddress",
+                  "type": "address"
+                },
+                {
+                  "indexed": false,
+                  "internalType": "address[]",
+                  "name": "owners",
+                  "type": "address[]"
+                },
+                {
+                  "indexed": true,
+                  "internalType": "uint256",
+                  "name": "signaturesRequired",
+                  "type": "uint256"
+                }
+              ],
+              "name": "Owners",
+              "type": "event"
+            },
+            {
+              "inputs": [
+                {
+                  "internalType": "string",
+                  "name": "_name",
+                  "type": "string"
+                }
+              ],
+              "name": "computedAddress",
+              "outputs": [
+                {
+                  "internalType": "address",
+                  "name": "",
+                  "type": "address"
+                }
+              ],
+              "stateMutability": "view",
+              "type": "function"
+            },
+            {
+              "inputs": [
+                {
+                  "internalType": "address[]",
+                  "name": "_owners",
+                  "type": "address[]"
+                },
+                {
+                  "internalType": "uint256",
+                  "name": "_signaturesRequired",
+                  "type": "uint256"
+                },
+                {
+                  "internalType": "string",
+                  "name": "_name",
+                  "type": "string"
+                }
+              ],
+              "name": "create2",
+              "outputs": [],
+              "stateMutability": "payable",
+              "type": "function"
+            },
+            {
+              "inputs": [
+                {
+                  "internalType": "address",
+                  "name": "_contractAddress",
+                  "type": "address"
+                },
+                {
+                  "internalType": "address[]",
+                  "name": "_owners",
+                  "type": "address[]"
+                },
+                {
+                  "internalType": "uint256",
+                  "name": "_signaturesRequired",
+                  "type": "uint256"
+                }
+              ],
+              "name": "emitOwners",
+              "outputs": [],
+              "stateMutability": "nonpayable",
+              "type": "function"
+            },
+            {
+              "inputs": [
+                {
+                  "internalType": "uint256",
+                  "name": "_index",
+                  "type": "uint256"
+                }
+              ],
+              "name": "getMultiSig",
+              "outputs": [
+                {
+                  "internalType": "address",
+                  "name": "multiSigAddress",
+                  "type": "address"
+                },
+                {
+                  "internalType": "uint256",
+                  "name": "signaturesRequired",
+                  "type": "uint256"
+                },
+                {
+                  "internalType": "uint256",
+                  "name": "balance",
+                  "type": "uint256"
+                }
+              ],
+              "stateMutability": "view",
+              "type": "function"
+            },
+            {
+              "inputs": [
+                {
+                  "internalType": "uint256",
+                  "name": "",
+                  "type": "uint256"
+                }
+              ],
+              "name": "multiSigs",
+              "outputs": [
+                {
+                  "internalType": "contract MultiSigWallet",
+                  "name": "",
+                  "type": "address"
+                }
+              ],
+              "stateMutability": "view",
+              "type": "function"
+            },
+            {
+              "inputs": [],
+              "name": "numberOfMultiSigs",
+              "outputs": [
+                {
+                  "internalType": "uint256",
+                  "name": "",
+                  "type": "uint256"
+                }
+              ],
+              "stateMutability": "view",
+              "type": "function"
+            }
+          ]
+        }
+      }
+    }
+  },
+  "31337": {
+    "localhost": {
+      "name": "localhost",
+      "chainId": "31337",
+      "contracts": {
+        "MultiSigFactory": {
+          "address": "0x5FbDB2315678afecb367f032d93F642f64180aa3",
+          "abi": [
+            {
+              "inputs": [],
+              "name": "CALLER_NOT_REGISTERED",
+              "type": "error"
+            },
+            {
+              "anonymous": false,
+              "inputs": [
+                {
+                  "indexed": true,
+                  "internalType": "uint256",
+                  "name": "contractId",
+                  "type": "uint256"
+                },
+                {
+                  "indexed": false,
+                  "internalType": "string",
+                  "name": "name",
+                  "type": "string"
+                },
+                {
+                  "indexed": true,
+                  "internalType": "address",
+                  "name": "contractAddress",
+                  "type": "address"
+                },
+                {
+                  "indexed": false,
+                  "internalType": "address",
+                  "name": "creator",
+                  "type": "address"
+                },
+                {
+                  "indexed": false,
+                  "internalType": "address[]",
+                  "name": "owners",
+                  "type": "address[]"
+                },
+                {
+                  "indexed": false,
+                  "internalType": "uint256",
+                  "name": "signaturesRequired",
+                  "type": "uint256"
+                }
+              ],
+              "name": "Create2Event",
+              "type": "event"
+            },
+            {
+              "anonymous": false,
+              "inputs": [
+                {
+                  "indexed": true,
+                  "internalType": "address",
+                  "name": "contractAddress",
+                  "type": "address"
+                },
+                {
+                  "indexed": false,
+                  "internalType": "address[]",
+                  "name": "owners",
+                  "type": "address[]"
+                },
+                {
+                  "indexed": true,
+                  "internalType": "uint256",
+                  "name": "signaturesRequired",
+                  "type": "uint256"
+                }
+              ],
+              "name": "Owners",
+              "type": "event"
+            },
+            {
+              "inputs": [
+                {
+                  "internalType": "string",
+                  "name": "_name",
+                  "type": "string"
+                }
+              ],
+              "name": "computedAddress",
+              "outputs": [
+                {
+                  "internalType": "address",
+                  "name": "",
+                  "type": "address"
+                }
+              ],
+              "stateMutability": "view",
+              "type": "function"
+            },
+            {
+              "inputs": [
+                {
+                  "internalType": "address[]",
+                  "name": "_owners",
+                  "type": "address[]"
+                },
+                {
+                  "internalType": "uint256",
+                  "name": "_signaturesRequired",
+                  "type": "uint256"
+                },
+                {
+                  "internalType": "string",
+                  "name": "_name",
+                  "type": "string"
+                }
+              ],
+              "name": "create2",
+              "outputs": [],
+              "stateMutability": "payable",
+              "type": "function"
+            },
+            {
+              "inputs": [
+                {
+                  "internalType": "address",
+                  "name": "_contractAddress",
+                  "type": "address"
+                },
+                {
+                  "internalType": "address[]",
+                  "name": "_owners",
+                  "type": "address[]"
+                },
+                {
+                  "internalType": "uint256",
+                  "name": "_signaturesRequired",
+                  "type": "uint256"
+                }
+              ],
+              "name": "emitOwners",
+              "outputs": [],
+              "stateMutability": "nonpayable",
+              "type": "function"
+            },
+            {
+              "inputs": [
+                {
+                  "internalType": "uint256",
+                  "name": "_index",
+                  "type": "uint256"
+                }
+              ],
+              "name": "getMultiSig",
+              "outputs": [
+                {
+                  "internalType": "address",
+                  "name": "multiSigAddress",
+                  "type": "address"
+                },
+                {
+                  "internalType": "uint256",
+                  "name": "signaturesRequired",
+                  "type": "uint256"
+                },
+                {
+                  "internalType": "uint256",
+                  "name": "balance",
+                  "type": "uint256"
+                }
+              ],
+              "stateMutability": "view",
+              "type": "function"
+            },
+            {
+              "inputs": [
+                {
+                  "internalType": "uint256",
+                  "name": "",
+                  "type": "uint256"
+                }
+              ],
+              "name": "multiSigs",
+              "outputs": [
+                {
+                  "internalType": "contract MultiSigWallet",
+                  "name": "",
+                  "type": "address"
+                }
+              ],
+              "stateMutability": "view",
+              "type": "function"
+            },
+            {
+              "inputs": [],
+              "name": "numberOfMultiSigs",
+              "outputs": [
+                {
+                  "internalType": "uint256",
+                  "name": "",
+                  "type": "uint256"
+                }
+              ],
+              "stateMutability": "view",
+              "type": "function"
+            }
+          ]
+        }
+      }
+    }
+  },
+  "42161": {
+    "arbitrum": {
+      "name": "arbitrum",
+      "chainId": "42161",
+      "contracts": {
+        "MultiSigFactory": {
+          "address": "0x8b50c76eAf0Db1B7dE1f7bA456351E98cFd8bd9f",
+          "abi": [
+            {
+              "inputs": [],
+              "name": "CALLER_NOT_REGISTERED",
+              "type": "error"
+            },
+            {
+              "anonymous": false,
+              "inputs": [
+                {
+                  "indexed": true,
+                  "internalType": "uint256",
+                  "name": "contractId",
+                  "type": "uint256"
+                },
+                {
+                  "indexed": false,
+                  "internalType": "string",
+                  "name": "name",
+                  "type": "string"
+                },
+                {
+                  "indexed": true,
+                  "internalType": "address",
+                  "name": "contractAddress",
+                  "type": "address"
+                },
+                {
+                  "indexed": false,
+                  "internalType": "address",
+                  "name": "creator",
+                  "type": "address"
+                },
+                {
+                  "indexed": false,
+                  "internalType": "address[]",
+                  "name": "owners",
+                  "type": "address[]"
+                },
+                {
+                  "indexed": false,
+                  "internalType": "uint256",
+                  "name": "signaturesRequired",
+                  "type": "uint256"
+                }
+              ],
+              "name": "Create2Event",
+              "type": "event"
+            },
+            {
+              "anonymous": false,
+              "inputs": [
+                {
+                  "indexed": true,
+                  "internalType": "address",
+                  "name": "contractAddress",
+                  "type": "address"
+                },
+                {
+                  "indexed": false,
+                  "internalType": "address[]",
+                  "name": "owners",
+                  "type": "address[]"
+                },
+                {
+                  "indexed": true,
+                  "internalType": "uint256",
+                  "name": "signaturesRequired",
+                  "type": "uint256"
+                }
+              ],
+              "name": "Owners",
+              "type": "event"
+            },
+            {
+              "inputs": [
+                {
+                  "internalType": "string",
+                  "name": "_name",
+                  "type": "string"
+                }
+              ],
+              "name": "computedAddress",
+              "outputs": [
+                {
+                  "internalType": "address",
+                  "name": "",
+                  "type": "address"
+                }
+              ],
+              "stateMutability": "view",
+              "type": "function"
+            },
+            {
+              "inputs": [
+                {
+                  "internalType": "address[]",
+                  "name": "_owners",
+                  "type": "address[]"
+                },
+                {
+                  "internalType": "uint256",
+                  "name": "_signaturesRequired",
+                  "type": "uint256"
+                },
+                {
+                  "internalType": "string",
+                  "name": "_name",
+                  "type": "string"
+                }
+              ],
+              "name": "create2",
+              "outputs": [],
+              "stateMutability": "payable",
+              "type": "function"
+            },
+            {
+              "inputs": [
+                {
+                  "internalType": "address",
+                  "name": "_contractAddress",
+                  "type": "address"
+                },
+                {
+                  "internalType": "address[]",
+                  "name": "_owners",
+                  "type": "address[]"
+                },
+                {
+                  "internalType": "uint256",
+                  "name": "_signaturesRequired",
+                  "type": "uint256"
+                }
+              ],
+              "name": "emitOwners",
+              "outputs": [],
+              "stateMutability": "nonpayable",
+              "type": "function"
+            },
+            {
+              "inputs": [
+                {
+                  "internalType": "uint256",
+                  "name": "_index",
+                  "type": "uint256"
+                }
+              ],
+              "name": "getMultiSig",
+              "outputs": [
+                {
+                  "internalType": "address",
+                  "name": "multiSigAddress",
+                  "type": "address"
+                },
+                {
+                  "internalType": "uint256",
+                  "name": "signaturesRequired",
+                  "type": "uint256"
+                },
+                {
+                  "internalType": "uint256",
+                  "name": "balance",
+                  "type": "uint256"
+                }
+              ],
+              "stateMutability": "view",
+              "type": "function"
+            },
+            {
+              "inputs": [
+                {
+                  "internalType": "uint256",
+                  "name": "",
+                  "type": "uint256"
+                }
+              ],
+              "name": "multiSigs",
+              "outputs": [
+                {
+                  "internalType": "contract MultiSigWallet",
+                  "name": "",
+                  "type": "address"
+                }
+              ],
+              "stateMutability": "view",
+              "type": "function"
+            },
+            {
+              "inputs": [],
+              "name": "numberOfMultiSigs",
+              "outputs": [
+                {
+                  "internalType": "uint256",
+                  "name": "",
+                  "type": "uint256"
+                }
+              ],
+              "stateMutability": "view",
+              "type": "function"
+            }
+          ]
+        }
+      }
+    }
+  },
+  "80001": {
+    "mumbai": {
+      "name": "mumbai",
+      "chainId": "80001",
+      "contracts": {
+        "MultiSigFactory": {
+          "address": "0x8b50c76eAf0Db1B7dE1f7bA456351E98cFd8bd9f",
+          "abi": [
+            {
+              "inputs": [],
+              "name": "CALLER_NOT_REGISTERED",
+              "type": "error"
+            },
+            {
+              "anonymous": false,
+              "inputs": [
+                {
+                  "indexed": true,
+                  "internalType": "uint256",
+                  "name": "contractId",
+                  "type": "uint256"
+                },
+                {
+                  "indexed": false,
+                  "internalType": "string",
+                  "name": "name",
+                  "type": "string"
+                },
+                {
+                  "indexed": true,
+                  "internalType": "address",
+                  "name": "contractAddress",
+                  "type": "address"
+                },
+                {
+                  "indexed": false,
+                  "internalType": "address",
+                  "name": "creator",
+                  "type": "address"
+                },
+                {
+                  "indexed": false,
+                  "internalType": "address[]",
+                  "name": "owners",
+                  "type": "address[]"
+                },
+                {
+                  "indexed": false,
+                  "internalType": "uint256",
+                  "name": "signaturesRequired",
+                  "type": "uint256"
+                }
+              ],
+              "name": "Create2Event",
+              "type": "event"
+            },
+            {
+              "anonymous": false,
+              "inputs": [
+                {
+                  "indexed": true,
+                  "internalType": "address",
+                  "name": "contractAddress",
+                  "type": "address"
+                },
+                {
+                  "indexed": false,
+                  "internalType": "address[]",
+                  "name": "owners",
+                  "type": "address[]"
+                },
+                {
+                  "indexed": true,
+                  "internalType": "uint256",
+                  "name": "signaturesRequired",
+                  "type": "uint256"
+                }
+              ],
+              "name": "Owners",
+              "type": "event"
+            },
+            {
+              "inputs": [
+                {
+                  "internalType": "string",
+                  "name": "_name",
+                  "type": "string"
+                }
+              ],
+              "name": "computedAddress",
+              "outputs": [
+                {
+                  "internalType": "address",
+                  "name": "",
+                  "type": "address"
+                }
+              ],
+              "stateMutability": "view",
+              "type": "function"
+            },
+            {
+              "inputs": [
+                {
+                  "internalType": "address[]",
+                  "name": "_owners",
+                  "type": "address[]"
+                },
+                {
+                  "internalType": "uint256",
+                  "name": "_signaturesRequired",
+                  "type": "uint256"
+                },
+                {
+                  "internalType": "string",
+                  "name": "_name",
+                  "type": "string"
+                }
+              ],
+              "name": "create2",
+              "outputs": [],
+              "stateMutability": "payable",
+              "type": "function"
+            },
+            {
+              "inputs": [
+                {
+                  "internalType": "address",
+                  "name": "_contractAddress",
+                  "type": "address"
+                },
+                {
+                  "internalType": "address[]",
+                  "name": "_owners",
+                  "type": "address[]"
+                },
+                {
+                  "internalType": "uint256",
+                  "name": "_signaturesRequired",
+                  "type": "uint256"
+                }
+              ],
+              "name": "emitOwners",
+              "outputs": [],
+              "stateMutability": "nonpayable",
+              "type": "function"
+            },
+            {
+              "inputs": [
+                {
+                  "internalType": "uint256",
+                  "name": "_index",
+                  "type": "uint256"
+                }
+              ],
+              "name": "getMultiSig",
+              "outputs": [
+                {
+                  "internalType": "address",
+                  "name": "multiSigAddress",
+                  "type": "address"
+                },
+                {
+                  "internalType": "uint256",
+                  "name": "signaturesRequired",
+                  "type": "uint256"
+                },
+                {
+                  "internalType": "uint256",
+                  "name": "balance",
+                  "type": "uint256"
+                }
+              ],
+              "stateMutability": "view",
+              "type": "function"
+            },
+            {
+              "inputs": [
+                {
+                  "internalType": "uint256",
+                  "name": "",
+                  "type": "uint256"
+                }
+              ],
+              "name": "multiSigs",
+              "outputs": [
+                {
+                  "internalType": "contract MultiSigWallet",
+                  "name": "",
+                  "type": "address"
+                }
+              ],
+              "stateMutability": "view",
+              "type": "function"
+            },
+            {
+              "inputs": [],
+              "name": "numberOfMultiSigs",
+              "outputs": [
+                {
+                  "internalType": "uint256",
+                  "name": "",
+                  "type": "uint256"
+                }
+              ],
+              "stateMutability": "view",
+              "type": "function"
+            }
+          ]
+        }
+      }
+    }
+  }
+}
