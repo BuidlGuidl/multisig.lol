@@ -266,6 +266,12 @@ export default function CreateTransaction({
                   />
                 )}
               </div>
+              {/*
+
+              pulling this for now 
+
+              I think we will have the nonce edit in the propose page because everything will be a safe app that bubbles up to the propose 
+              
               <InputNumber
                 style={{ width: "100%" }}
                 placeholder="Leave blank for current nonce"
@@ -273,7 +279,7 @@ export default function CreateTransaction({
                 onChange={value => {
                   setCustomNonce(value >= 0 ? value : 0);
                 }}
-              />
+              />*/}
               <Space style={{ marginTop: 32 }}>
                 <Button loading={loading} onClick={createTransaction} type="primary">
                   Propose
