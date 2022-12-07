@@ -1,4 +1,4 @@
-# 👛 multisig.lol - a hella-forkable ethereum multisig 
+# 👛 multisig.lol - forkable ethereum multisig 
 
 🚀 Built with [Scaffold-Eth](https://github.com/scaffold-eth/scaffold-eth)
 
