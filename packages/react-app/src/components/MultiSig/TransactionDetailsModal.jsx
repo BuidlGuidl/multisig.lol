@@ -113,19 +113,20 @@ export default function TransactionDetailsModal({
             <b>SigHash : &nbsp;</b>
             {txnInfo.sighash}
           </p>
-          <div className="flex justify-start items-center">
-            <div className="font-bold mr-2">Enter custom nonce :</div>
-            <InputNumber
-              placeholder="Enter nonce"
-              style={{ width: "25%" }}
-              defaultValue={customNonce}
-              onChange={value => {
-                setCustomNonce(value >= 0 ? value : 0);
-              }}
-            />
-          </div>
         </div>
       )}
+
+      <div className="flex justify-start items-center">
+        <div className="font-bold mr-2">Enter custom nonce :</div>
+        <InputNumber
+          placeholder="Enter nonce"
+          style={{ width: "25%" }}
+          defaultValue={customNonce}
+          onChange={value => {
+            setCustomNonce(value >= 0 ? value : 0);
+          }}
+        />
+      </div>
     </Modal>
   );
 }
