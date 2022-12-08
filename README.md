@@ -40,4 +40,3 @@ yarn backend
 📱 Open http://localhost:3000 to see the app
 
 💬 Join the multisig.lol developer chat: https://t.me/+0wAfxh5Na9pkNzUx
-
