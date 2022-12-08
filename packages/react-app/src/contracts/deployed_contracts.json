@@ -2842,5 +2842,216 @@
         }
       }
     }
+  },"11155111": {
+    "sepolia": {
+      "name": "sepolia",
+      "chainId": "11155111",
+      "contracts": {
+        "MultiSigFactory": {
+          "address": "0x8b50c76eAf0Db1B7dE1f7bA456351E98cFd8bd9f",
+          "abi": [
+            {
+              "inputs": [],
+              "name": "CALLER_NOT_REGISTERED",
+              "type": "error"
+            },
+            {
+              "anonymous": false,
+              "inputs": [
+                {
+                  "indexed": true,
+                  "internalType": "uint256",
+                  "name": "contractId",
+                  "type": "uint256"
+                },
+                {
+                  "indexed": false,
+                  "internalType": "string",
+                  "name": "name",
+                  "type": "string"
+                },
+                {
+                  "indexed": true,
+                  "internalType": "address",
+                  "name": "contractAddress",
+                  "type": "address"
+                },
+                {
+                  "indexed": false,
+                  "internalType": "address",
+                  "name": "creator",
+                  "type": "address"
+                },
+                {
+                  "indexed": false,
+                  "internalType": "address[]",
+                  "name": "owners",
+                  "type": "address[]"
+                },
+                {
+                  "indexed": false,
+                  "internalType": "uint256",
+                  "name": "signaturesRequired",
+                  "type": "uint256"
+                }
+              ],
+              "name": "Create2Event",
+              "type": "event"
+            },
+            {
+              "anonymous": false,
+              "inputs": [
+                {
+                  "indexed": true,
+                  "internalType": "address",
+                  "name": "contractAddress",
+                  "type": "address"
+                },
+                {
+                  "indexed": false,
+                  "internalType": "address[]",
+                  "name": "owners",
+                  "type": "address[]"
+                },
+                {
+                  "indexed": true,
+                  "internalType": "uint256",
+                  "name": "signaturesRequired",
+                  "type": "uint256"
+                }
+              ],
+              "name": "Owners",
+              "type": "event"
+            },
+            {
+              "inputs": [
+                {
+                  "internalType": "string",
+                  "name": "_name",
+                  "type": "string"
+                }
+              ],
+              "name": "computedAddress",
+              "outputs": [
+                {
+                  "internalType": "address",
+                  "name": "",
+                  "type": "address"
+                }
+              ],
+              "stateMutability": "view",
+              "type": "function"
+            },
+            {
+              "inputs": [
+                {
+                  "internalType": "address[]",
+                  "name": "_owners",
+                  "type": "address[]"
+                },
+                {
+                  "internalType": "uint256",
+                  "name": "_signaturesRequired",
+                  "type": "uint256"
+                },
+                {
+                  "internalType": "string",
+                  "name": "_name",
+                  "type": "string"
+                }
+              ],
+              "name": "create2",
+              "outputs": [],
+              "stateMutability": "payable",
+              "type": "function"
+            },
+            {
+              "inputs": [
+                {
+                  "internalType": "address",
+                  "name": "_contractAddress",
+                  "type": "address"
+                },
+                {
+                  "internalType": "address[]",
+                  "name": "_owners",
+                  "type": "address[]"
+                },
+                {
+                  "internalType": "uint256",
+                  "name": "_signaturesRequired",
+                  "type": "uint256"
+                }
+              ],
+              "name": "emitOwners",
+              "outputs": [],
+              "stateMutability": "nonpayable",
+              "type": "function"
+            },
+            {
+              "inputs": [
+                {
+                  "internalType": "uint256",
+                  "name": "_index",
+                  "type": "uint256"
+                }
+              ],
+              "name": "getMultiSig",
+              "outputs": [
+                {
+                  "internalType": "address",
+                  "name": "multiSigAddress",
+                  "type": "address"
+                },
+                {
+                  "internalType": "uint256",
+                  "name": "signaturesRequired",
+                  "type": "uint256"
+                },
+                {
+                  "internalType": "uint256",
+                  "name": "balance",
+                  "type": "uint256"
+                }
+              ],
+              "stateMutability": "view",
+              "type": "function"
+            },
+            {
+              "inputs": [
+                {
+                  "internalType": "uint256",
+                  "name": "",
+                  "type": "uint256"
+                }
+              ],
+              "name": "multiSigs",
+              "outputs": [
+                {
+                  "internalType": "contract MultiSigWallet",
+                  "name": "",
+                  "type": "address"
+                }
+              ],
+              "stateMutability": "view",
+              "type": "function"
+            },
+            {
+              "inputs": [],
+              "name": "numberOfMultiSigs",
+              "outputs": [
+                {
+                  "internalType": "uint256",
+                  "name": "",
+                  "type": "uint256"
+                }
+              ],
+              "stateMutability": "view",
+              "type": "function"
+            }
+          ]
+        }
+      }
+    }
   }
 }
