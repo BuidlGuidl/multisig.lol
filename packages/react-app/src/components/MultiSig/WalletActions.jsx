@@ -115,7 +115,7 @@ const WalletActions = () => {
                 return (
                   <Option key={index} value={data.walletAddress}>
                     <div className="flex justify-between items-center">
-                      <div>{data.walletName}</div>
+                      <div>{data.walletName.slice(0, 14) + "..."}</div>
                       {walletParams === undefined && (
                         <>
                           <MinusCircleOutlined
