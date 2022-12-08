@@ -140,7 +140,7 @@ export default function CreateTransaction({
             setIsTxLoaded(prev => true);
             setTimeout(() => {
               let hostURL = window.location.origin;
-              window.open(`${hostURL}/pool`, "_blank");
+              window.open(`${ hostURL }/pool`, "_blank");
 
               setIsTxLoaded(prev => false);
               return;

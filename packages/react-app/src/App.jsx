@@ -36,15 +36,14 @@ import _deployedContracts from "./contracts/deployed_contracts.json";
 import { Web3ModalSetup } from "./helpers";
 import { useLocalStorage } from "./hooks";
 import useApp from "./hooks/useApp";
-import { useStore } from "./store/useStore";
-
+// import { useStore } from "./store/useStore";
 
 let deployedContracts = {
   ..._deployedContracts,
   ...hardhatContracts,
-}
+};
 
-console.log("deployedContracts",deployedContracts)
+console.log("deployedContracts", deployedContracts);
 
 const { Option } = Select;
 const { ethers } = require("ethers");
