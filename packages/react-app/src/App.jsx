@@ -81,8 +81,8 @@ let deployedContracts = {
 
 console.log("deployedContracts", deployedContracts);
 
-// const WALLET_CONTRACT_ADDRESS = "0x25de874Ad86d0EA205EC503888a4ff6361042c2D";
-const WALLET_CONTRACT_ADDRESS = "0xb3E2A650c9032A40168148e5b1bdb69E68A461D8";
+const WALLET_CONTRACT_ADDRESS = "0x25de874Ad86d0EA205EC503888a4ff6361042c2D";
+// const WALLET_CONTRACT_ADDRESS = "0xb3E2A650c9032A40168148e5b1bdb69E68A461D8";
 
 const multiSigWalletABI = MultiSigWalletAbi["abi"];
 const contractName = "MultiSigWallet";
