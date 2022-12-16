@@ -6,7 +6,8 @@ import axios from "axios";
 
 import { Address } from "..";
 import { useState } from "react";
-import useEventListener from "../../hooks/useEventListener";
+// import useEventListener from "../../hooks/useEventListener";
+import { useEventListener } from "eth-hooks/events/useEventListener";
 
 const { Panel } = Collapse;
 
@@ -15,9 +16,6 @@ function Owners({
   signaturesRequired,
   mainnetProvider,
   blockExplorer,
-  // address,
-  // poolServerUrl,
-  // contractAddress,
   contractName,
   localProvider,
   currentMultiSigAddress,
@@ -27,19 +25,12 @@ function Owners({
 }) {
   const [ownerEvents, setOwnerEvents] = useState([]);
 
-  // const allOwnerEvents = useEventListener(
-  //   currentMultiSigAddress && reDeployWallet === undefined ? readContracts : null,
-  //   contractNameForEvent,
-  //   "Owner",
-  //   localProvider,
-  //   1,
-  // );
-
   const allOwnerEvents = useEventListener(
-    currentMultiSigAddress && reDeployWallet === undefined ? readContracts : null,
+    contractNameForEvent in readContracts && readContracts,
     contractNameForEvent,
     "Owner",
     localProvider,
+    0,
   );
 
   const owners = new Set();
@@ -53,20 +44,6 @@ function Owners({
       owners.delete(ownerEvent.args.owner);
     }
   });
-  // const updateOwners = async owners => {
-  //   let reqData = {
-  //     owners: [...owners],
-  //   };
-  //   const res = await axios.post(poolServerUrl + `updateOwners/${address}/${contractAddress}`, reqData);
-  //   console.log("update owner response", res.data);
-  // };
-
-  // useEffect(() => {
-  //   if (signaturesRequired && owners.size > 0) {
-  //     //  disabled for updating owners at backend as it is automatically updated
-  //     // updateOwners(owners);
-  //   }
-  // }, [owners.size, signaturesRequired]);
 
   const loadOwnersEvents = async () => {
     setOwnerEvents(allOwnerEvents.filter(contractEvent => contractEvent.address === currentMultiSigAddress));
