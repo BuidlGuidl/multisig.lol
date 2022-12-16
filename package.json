@@ -4,7 +4,7 @@
     "keywords": [
         "ethereum",
         "react",
-        "uniswap",
+        "multisig",
         "workspaces",
         "yarn"
     ],
@@ -40,16 +40,6 @@
         "fundedwallet": "cd packages/hardhat && npx hardhat fundedwallet",
         "flatten": "cd packages/hardhat && npx hardhat flatten",
         "clean": "cd packages/hardhat && npx hardhat clean",
-        "run-graph-node": "yarn workspace @scaffold-eth/services run-graph-node",
-        "remove-graph-node": "yarn workspace @scaffold-eth/services remove-graph-node",
-        "clean-graph-node": "yarn workspace @scaffold-eth/services clean-graph-node",
-        "graph-codegen": "yarn workspace @scaffold-eth/subgraph graph codegen",
-        "graph-build": "yarn workspace @scaffold-eth/subgraph graph build",
-        "graph-create-local": "yarn workspace @scaffold-eth/subgraph graph create --node http://localhost:8020/ scaffold-eth/your-contract",
-        "graph-remove-local": "yarn workspace @scaffold-eth/subgraph graph remove --node http://localhost:8020/ scaffold-eth/your-contract",
-        "graph-deploy-local": "yarn workspace @scaffold-eth/subgraph graph deploy --node http://localhost:8020/ --ipfs http://localhost:5001 scaffold-eth/your-contract",
-        "graph-ship-local": "yarn graph-codegen && yarn graph-build --network localhost && yarn graph-deploy-local",
-        "deploy-and-graph": "yarn deploy && yarn graph-ship-local",
         "theme": "yarn workspace @scaffold-eth/react-app theme",
         "watch-theme": "yarn workspace @scaffold-eth/react-app watch",
         "postinstall": "husky install",
@@ -60,8 +50,6 @@
             "packages/*"
         ],
         "nohoist": [
-            "**/@graphprotocol/graph-ts",
-            "**/@graphprotocol/graph-ts/**",
             "**/hardhat",
             "**/hardhat/**",
             "**/hardhat-ts",

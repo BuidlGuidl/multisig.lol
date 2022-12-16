@@ -177,7 +177,7 @@ export default function Transactions({
                         key={item.hash}
                         type={hasEnoughSignatures ? "primary" : "secondary"}
                         onClick={async () => {
-                          console.log("EXEC");
+                          console.log("EXEC", item);
 
                           const newHash = await readContracts[contractName].getTransactionHash(
                             item.nonce,
