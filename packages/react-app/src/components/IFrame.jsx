@@ -34,7 +34,7 @@ export default function IFrame({
   useEffect(() => {
     setAddress(address);
     setRpcUrl(targetNetwork.rpcUrl);
-  }, []);
+  }, [address, setAddress, setRpcUrl, targetNetwork.rpcUrl]);
 
   useEffect(() => {
     const fetchSafeDapps = async chainId => {
@@ -74,12 +74,16 @@ export default function IFrame({
   }, [newTx]);
 
   useEffect(() => {
-    if (tx) {
-      decodeFunctionData();
-    }
-  }, [tx]);
-
-  useEffect(() => {
+    const decodeFunctionData = async () => {
+      try {
+        const parsedTransactionData = await parseExternalContractTransaction(tx.to, tx.data);
+        setParsedTransactionData(parsedTransactionData);
+        setIsModalVisible(true);
+      } catch (error) {
+        console.log(error);
+        setParsedTransactionData(null);
+      }
+    };
     if (tx) {
       decodeFunctionData();
     }
@@ -90,17 +94,6 @@ export default function IFrame({
       hideModal();
     }
   }, [isTxLoaded]);
-
-  const decodeFunctionData = async () => {
-    try {
-      const parsedTransactionData = await parseExternalContractTransaction(tx.to, tx.data);
-      setParsedTransactionData(parsedTransactionData);
-      setIsModalVisible(true);
-    } catch (error) {
-      console.log(error);
-      setParsedTransactionData(null);
-    }
-  };
 
   const hideModal = () => setIsModalVisible(false);
   const onRefresh = () => setRefresh(!refresh);

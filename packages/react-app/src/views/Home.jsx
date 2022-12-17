@@ -4,7 +4,7 @@ import { ShareAltOutlined } from "@ant-design/icons";
 
 import { Balance, Address, TransactionListItem, Owners } from "../components";
 import QR from "qrcode.react";
-import { List, Button, Alert, Typography, message } from "antd";
+import { List, Button, Alert, Typography } from "antd";
 import { useState } from "react";
 import { useEffect } from "react";
 // import { useEventListener } from "eth-hooks/events/";
@@ -36,7 +36,7 @@ function Home({
   //   localProvider,
   //   1,
   // );
-  const [state, dispatch] = useStore();
+  const [, dispatch] = useStore();
 
   const walletParams = useParams();
 
@@ -51,37 +51,36 @@ function Home({
   const [walletName, setWalletName] = useState();
   const [txListLoading, setTxListLoading] = useState(true);
 
-  const updateExecutedEvents = async () => {
-    // old event listner logic
-    const filteredEvents = allExecuteTransactionEvents.filter(
-      contractEvent => contractEvent.address === currentMultiSigAddress,
-    );
-    setExecuteTransactionEvents(filteredEvents.reverse());
-    setTxListLoading(false);
-  };
-
-  const getWalletName = async () => {
-    // wait for 1 sec to get proper contract instance
-    await Sleep(1000);
-    let factoryVersion = await getFactoryVersion(readContracts[contractName]);
-    if (factoryVersion === 1) {
-      if (readContracts[contractName] && reDeployWallet === undefined) {
-        let walletName = await readContracts[contractName].name();
-        setWalletName(walletName);
+  useEffect(() => {
+    const getWalletName = async () => {
+      // wait for 1 sec to get proper contract instance
+      await Sleep(1000);
+      let factoryVersion = await getFactoryVersion(readContracts[contractName]);
+      if (factoryVersion === 1) {
+        if (readContracts[contractName] && reDeployWallet === undefined) {
+          let walletName = await readContracts[contractName].name();
+          setWalletName(walletName);
+        }
+      } else {
+        setWalletName("");
       }
-    } else {
-      setWalletName("");
-    }
-  };
-  useEffect(() => {
+    };
     void getWalletName();
-  }, [readContracts[contractName]].address);
+  }, [contractName, reDeployWallet, readContracts]);
 
   useEffect(() => {
+    const updateExecutedEvents = async () => {
+      // old event listner logic
+      const filteredEvents = allExecuteTransactionEvents.filter(
+        contractEvent => contractEvent.address === currentMultiSigAddress,
+      );
+      setExecuteTransactionEvents(filteredEvents.reverse());
+      setTxListLoading(false);
+    };
     if (readContracts[contractName]) {
       updateExecutedEvents();
     }
-  }, [allExecuteTransactionEvents, currentMultiSigAddress, readContracts, contractName, readContracts[contractName]]);
+  }, [allExecuteTransactionEvents, currentMultiSigAddress, readContracts, contractName]);
 
   useEffect(() => {
     if ("walletAddress" in walletParams && "networkName" in walletParams) {
@@ -89,7 +88,7 @@ function Home({
     } else {
       dispatch({ payload: { walletParams: undefined } });
     }
-  }, [walletParams]);
+  }, [walletParams, dispatch]);
 
   return (
     <>

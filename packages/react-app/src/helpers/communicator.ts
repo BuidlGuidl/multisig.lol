@@ -1,21 +1,11 @@
 import { MutableRefObject, useEffect, useState } from "react";
 import { MessageFormatter } from "./messageFormatter";
-import {
-  SDKMessageEvent,
-  MethodToResponse,
-  Methods,
-  ErrorResponse,
-  RequestId,
-} from "./types";
+import { SDKMessageEvent, MethodToResponse, Methods, ErrorResponse, RequestId } from "./types";
 import { getSDKVersion } from "./utils";
 
 type MessageHandler = (
-  msg: SDKMessageEvent
-) =>
-  | void
-  | MethodToResponse[Methods]
-  | ErrorResponse
-  | Promise<MethodToResponse[Methods] | ErrorResponse | void>;
+  msg: SDKMessageEvent,
+) => void | MethodToResponse[Methods] | ErrorResponse | Promise<MethodToResponse[Methods] | ErrorResponse | void>;
 
 export enum LegacyMethods {
   getEnvInfo = "getEnvInfo",
@@ -55,11 +45,7 @@ class AppCommunicator {
   send = (data: unknown, requestId: RequestId, error = false): void => {
     const sdkVersion = getSDKVersion();
     const msg = error
-      ? MessageFormatter.makeErrorResponse(
-          requestId,
-          data as string,
-          sdkVersion
-        )
+      ? MessageFormatter.makeErrorResponse(requestId, data as string, sdkVersion)
       : MessageFormatter.makeResponse(requestId, data, sdkVersion);
     // console.log("send", { msg });
     this.iframeRef.current?.contentWindow?.postMessage(msg, "*");
@@ -92,17 +78,11 @@ class AppCommunicator {
   };
 }
 
-const useAppCommunicator = (
-  iframeRef: MutableRefObject<HTMLIFrameElement | null>
-): AppCommunicator | undefined => {
-  const [communicator, setCommunicator] = useState<AppCommunicator | undefined>(
-    undefined
-  );
+const useAppCommunicator = (iframeRef: MutableRefObject<HTMLIFrameElement | null>): AppCommunicator | undefined => {
+  const [communicator, setCommunicator] = useState<AppCommunicator | undefined>(undefined);
   useEffect(() => {
     let communicatorInstance: AppCommunicator;
-    const initCommunicator = (
-      iframeRef: MutableRefObject<HTMLIFrameElement>
-    ) => {
+    const initCommunicator = (iframeRef: MutableRefObject<HTMLIFrameElement>) => {
       communicatorInstance = new AppCommunicator(iframeRef);
       setCommunicator(communicatorInstance);
     };

@@ -1,5 +1,4 @@
 import { Button, Col, Menu, Row, Select } from "antd";
-import { MinusCircleOutlined } from "@ant-design/icons";
 
 import Routes from "./Routes";
 import StoreProvider from "./store/StoreProvider";
@@ -14,18 +13,16 @@ import { Link, useLocation } from "react-router-dom";
 import "./App.css";
 import {
   Account,
-  CreateMultiSigModal,
   Faucet,
   FaucetHint,
   GasGauge,
   Header,
-  ImportMultiSigModal,
   NetworkDisplay,
   NetworkSwitch,
   Ramp,
   ThemeSwitch,
 } from "./components";
-import { ALCHEMY_KEY, NETWORKS, Sleep } from "./constants";
+import { ALCHEMY_KEY, NETWORKS } from "./constants";
 //import multiSigWalletABI from "./contracts/multi_sig_wallet";
 // contracts
 import axios from "axios";
@@ -45,7 +42,6 @@ let deployedContracts = {
 
 console.log("deployedContracts", deployedContracts);
 
-const { Option } = Select;
 const { ethers } = require("ethers");
 
 /// 📡 What chain are your contracts deployed to?
@@ -91,7 +87,6 @@ function App(props) {
   const [updateServerWallets, setUpdateServerWallets] = useState(false);
   const location = useLocation();
   const [isCreateModalVisible, setIsCreateModalVisible] = useState(false);
-  const [multiSigs, setMultiSigs] = useState([]);
   const [currentMultiSigAddress, setCurrentMultiSigAddress] = useState();
   const [signaturesRequired, setSignaturesRequired] = useState();
   const [nonce, setNonce] = useState(0);
@@ -103,7 +98,7 @@ function App(props) {
   const [hiddenWallets, setHiddenWallets] = useLocalStorage("hiddenWallets", []);
   const [multiSigFactoryData, setMultiSigFactoryData] = useLocalStorage("multiSigFactoryData");
 
-  const [mainWalletConnectSession, setMainWalletConnectSession] = useLocalStorage("walletConnectSession_main");
+  const [mainWalletConnectSession] = useLocalStorage("walletConnectSession_main");
   const [selectedWalletAddress, setSelectedWalletAddress] = useLocalStorage("selectedWalletAddress");
 
   /**----------------------
@@ -112,7 +107,7 @@ function App(props) {
 
   // backend transaction handler:
   let BACKEND_URL = "http://localhost:49899/";
-  if (targetNetwork && targetNetwork.name && targetNetwork.name != "localhost") {
+  if (targetNetwork && targetNetwork.name && targetNetwork.name !== "localhost") {
     BACKEND_URL = "https://backend.multisig.lol:49899/";
   }
 
@@ -132,7 +127,6 @@ function App(props) {
     mainnetProvider,
     price,
     gasPrice,
-    userProviderAndSigner,
     userSigner,
     localChainId,
     selectedChainId,
@@ -172,7 +166,7 @@ function App(props) {
    * methods
    * ---------------------*/
 
-  const logoutOfWeb3Modal = async () => {
+  const logoutOfWeb3Modal = useCallback(async () => {
     await web3Modal.clearCachedProvider();
     if (injectedProvider && injectedProvider.provider && typeof injectedProvider.provider.disconnect == "function") {
       await injectedProvider.provider.disconnect();
@@ -187,7 +181,7 @@ function App(props) {
     setTimeout(() => {
       window.location.reload();
     }, 1);
-  };
+  }, [injectedProvider]);
 
   const handleMultiSigChange = async value => {
     setContractNameForEvent(null);
@@ -195,22 +189,7 @@ function App(props) {
     setSelectedWalletAddress(value);
   };
 
-  async function getAddress() {
-    if (userSigner) {
-      const newAddress = await userSigner.getAddress();
-      setAddress(newAddress);
-    }
-  }
-
-  const updateUserWallets = () => {
-    let multiSigsForUser = userWallets && [...userWallets.map(data => data.walletAddress)];
-
-    const recentMultiSigAddress = multiSigsForUser && multiSigsForUser[multiSigsForUser.length - 1];
-    setCurrentMultiSigAddress(recentMultiSigAddress);
-    // setMultiSigs(multiSigsForUser);
-  };
-
-  const createEthersContractWallet = () => {
+  const createEthersContractWallet = useCallback(() => {
     async function getContractValues() {
       const latestSignaturesRequired = await readContracts.MultiSigWallet.signaturesRequired();
       setSignaturesRequired(latestSignaturesRequired);
@@ -236,41 +215,7 @@ function App(props) {
     } else {
       setReDeployWallet(currentMultiSig);
     }
-  };
-
-  const syncWalletsWithServer = async () => {
-    // let factoryVersion = await getFactoryVersion();
-    let totalWalletCount = await readContracts["MultiSigFactory"]?.numberOfMultiSigs();
-    totalWalletCount = totalWalletCount ? totalWalletCount.toNumber() : 0;
-
-    if (totalWalletCount !== 0 && totalWalletCount === walletCreate2Events.length && updateServerWallets === false) {
-      // if (userWallets !== undefined && totalWalletCount !== userWallets.length) {
-      let walletsData = walletCreate2Events.map(data => data.args);
-      /**----------------------
-       * iterating over create even data and send it to backend api to update
-       * ---------------------*/
-      for (let index = 0; index < walletsData.length; index++) {
-        let wallet = walletsData[index];
-        let walletName = wallet.name;
-        let walletAddress = wallet.contractAddress;
-        let creator = wallet.creator;
-        let owners = wallet.owners;
-        let signaturesRequired = wallet.signaturesRequired.toNumber();
-        let reqData = {
-          owners,
-          signaturesRequired,
-        };
-        const res = await axios.post(
-          BACKEND_URL + `createWallet/${creator}/${walletName}/${walletAddress}/${selectedChainId}`,
-          reqData,
-        );
-        let data = res.data;
-        // console.log("update wallets on api res data: ", data);
-      }
-      setUpdateServerWallets(true);
-      // }
-    }
-  };
+  }, [currentMultiSigAddress, localProvider, readContracts, selectedChainId, userSigner, userWallets, writeContracts]);
 
   const loadWeb3Modal = useCallback(async () => {
     const provider = await web3Modal.connect();
@@ -294,89 +239,97 @@ function App(props) {
     // eslint-disable-next-line
   }, [setInjectedProvider]);
 
-  const getUserWallets = async isUpdate => {
-    if (isFactoryDeployed !== undefined) {
-      let res = await axios.get(BACKEND_URL + `getWallets/${address}`);
-      let data = res.data;
+  const getUserWallets = useCallback(
+    async isUpdate => {
+      if (isFactoryDeployed !== undefined) {
+        let res = await axios.get(BACKEND_URL + `getWallets/${address}`);
+        let data = res.data;
 
-      let localWallets =
-        importedMultiSigs && targetNetwork.name in importedMultiSigs ? [...importedMultiSigs[targetNetwork.name]] : [];
+        let localWallets =
+          importedMultiSigs && targetNetwork.name in importedMultiSigs
+            ? [...importedMultiSigs[targetNetwork.name]]
+            : [];
 
-      let allWallets = [...localWallets, ...data["userWallets"]]
-        .flat()
-        .filter(data => hiddenWallets.includes(data.walletAddress) === false);
+        let allWallets = [...localWallets, ...data["userWallets"]]
+          .flat()
+          .filter(data => hiddenWallets.includes(data.walletAddress) === false);
 
-      // setUserWallets(data["userWallets"]);
-      setUserWallets(allWallets);
+        // setUserWallets(data["userWallets"]);
+        setUserWallets(allWallets);
 
-      // set and reset  ContractNameForEvent to load the ownerevents
-      setContractNameForEvent(null);
-      setTimeout(() => {
-        setContractNameForEvent("MultiSigWallet");
-      }, 100);
-
-      if (isUpdate) {
-        // const lastMultiSigAddress = data["userWallets"][data["userWallets"].length - 1]?.walletAddress;
-        const lastMultiSigAddress = allWallets[allWallets.length - 1]?.walletAddress;
-        setCurrentMultiSigAddress(lastMultiSigAddress);
+        // set and reset  ContractNameForEvent to load the ownerevents
         setContractNameForEvent(null);
-        setIsCreateModalVisible(false);
-
         setTimeout(() => {
           setContractNameForEvent("MultiSigWallet");
         }, 100);
-      }
-    }
-  };
 
-  const onChangeNetwork = async value => {
-    if (targetNetwork.chainId !== NETWORKS[value].chainId) {
-      // window.localStorage.setItem("network", value);
-      // setTimeout(() => {
-      //   window.location.reload();
-      // }, 1);
-      let targetNetwork = NETWORKS[value];
+        if (isUpdate) {
+          // const lastMultiSigAddress = data["userWallets"][data["userWallets"].length - 1]?.walletAddress;
+          const lastMultiSigAddress = allWallets[allWallets.length - 1]?.walletAddress;
+          setCurrentMultiSigAddress(lastMultiSigAddress);
+          setContractNameForEvent(null);
+          setIsCreateModalVisible(false);
 
-      const ethereum = window.ethereum;
-      const data = [
-        {
-          chainId: "0x" + targetNetwork.chainId.toString(16),
-          chainName: targetNetwork.name,
-          nativeCurrency: targetNetwork.nativeCurrency,
-          rpcUrls: [targetNetwork.rpcUrl],
-          blockExplorerUrls: [targetNetwork.blockExplorer],
-        },
-      ];
-      console.log("data", data);
-
-      let switchTx;
-      // https://docs.metamask.io/guide/rpc-api.html#other-rpc-methods
-      try {
-        switchTx = await ethereum.request({
-          method: "wallet_switchEthereumChain",
-          params: [{ chainId: data[0].chainId }],
-        });
-      } catch (switchError) {
-        // not checking specific error code, because maybe we're not using MetaMask
-        try {
-          switchTx = await ethereum.request({
-            method: "wallet_addEthereumChain",
-            params: data,
-          });
-        } catch (addError) {
-          // handle "add" error
+          setTimeout(() => {
+            setContractNameForEvent("MultiSigWallet");
+          }, 100);
         }
       }
+    },
+    [BACKEND_URL, address, hiddenWallets, importedMultiSigs, isFactoryDeployed, targetNetwork.name],
+  );
 
-      window.localStorage.setItem("network", value);
-      // setTimeout(() => {
-      // window.location.reload();
-      // }, 1);
+  const onChangeNetwork = useCallback(
+    async value => {
+      if (targetNetwork.chainId !== NETWORKS[value].chainId) {
+        // window.localStorage.setItem("network", value);
+        // setTimeout(() => {
+        //   window.location.reload();
+        // }, 1);
+        let targetNetwork = NETWORKS[value];
 
-      if (switchTx) {
+        const ethereum = window.ethereum;
+        const data = [
+          {
+            chainId: "0x" + targetNetwork.chainId.toString(16),
+            chainName: targetNetwork.name,
+            nativeCurrency: targetNetwork.nativeCurrency,
+            rpcUrls: [targetNetwork.rpcUrl],
+            blockExplorerUrls: [targetNetwork.blockExplorer],
+          },
+        ];
+        console.log("data", data);
+
+        let switchTx;
+        // https://docs.metamask.io/guide/rpc-api.html#other-rpc-methods
+        try {
+          switchTx = await ethereum.request({
+            method: "wallet_switchEthereumChain",
+            params: [{ chainId: data[0].chainId }],
+          });
+        } catch (switchError) {
+          // not checking specific error code, because maybe we're not using MetaMask
+          try {
+            switchTx = await ethereum.request({
+              method: "wallet_addEthereumChain",
+              params: data,
+            });
+          } catch (addError) {
+            // handle "add" error
+          }
+        }
+
+        window.localStorage.setItem("network", value);
+        // setTimeout(() => {
+        // window.location.reload();
+        // }, 1);
+
+        if (switchTx) {
+        }
       }
-    }
-  };
+    },
+    [targetNetwork.chainId],
+  );
 
   /**----------------------
    * useEffect hooks
@@ -397,7 +350,7 @@ function App(props) {
     }
     // return () => {
     // };
-  }, []);
+  }, [mainWalletConnectSession]);
 
   // -----------------
   //   page reload on metamask account and network change
@@ -415,7 +368,7 @@ function App(props) {
         window.location.reload();
       }
     });
-  }, []);
+  }, [logoutOfWeb3Modal, targetNetwork.chainId]);
 
   /**----------------------
    * on factory address change remove imported wallets from localstorage
@@ -442,12 +395,18 @@ function App(props) {
         }
       }
     }
-  }, [userSigner]);
+  }, [multiSigFactoryData, setMultiSigFactoryData, targetNetwork.chainId, targetNetwork.name, userSigner]);
 
   /**----------------------
    * set main account address once provider and signer loads
    * ---------------------*/
   useEffect(() => {
+    async function getAddress() {
+      if (userSigner) {
+        const newAddress = await userSigner.getAddress();
+        setAddress(newAddress);
+      }
+    }
     getAddress();
   }, [userSigner]);
 
@@ -456,10 +415,18 @@ function App(props) {
    * ---------------------*/
 
   useEffect(() => {
+    const updateUserWallets = () => {
+      let multiSigsForUser = userWallets && [...userWallets.map(data => data.walletAddress)];
+
+      const recentMultiSigAddress = multiSigsForUser && multiSigsForUser[multiSigsForUser.length - 1];
+      setCurrentMultiSigAddress(recentMultiSigAddress);
+      // setMultiSigs(multiSigsForUser);
+    };
+
     if (address && userWallets) {
       updateUserWallets();
     }
-  }, [userWallets && userWallets.length, address]);
+  }, [address, userWallets]);
 
   /**----------------------
    * set nounce and signatures required
@@ -477,14 +444,53 @@ function App(props) {
     if (currentMultiSigAddress) {
       createEthersContractWallet();
     }
-  }, [currentMultiSigAddress, readContracts, writeContracts, selectedChainId]);
+  }, [currentMultiSigAddress, readContracts, writeContracts, selectedChainId, createEthersContractWallet]);
 
   /**----------------------
    * sync wallets with server on load
    * ---------------------*/
   useEffect(() => {
+    const syncWalletsWithServer = async () => {
+      // let factoryVersion = await getFactoryVersion();
+      let totalWalletCount = await readContracts["MultiSigFactory"]?.numberOfMultiSigs();
+      totalWalletCount = totalWalletCount ? totalWalletCount.toNumber() : 0;
+
+      if (totalWalletCount !== 0 && totalWalletCount === walletCreate2Events.length && updateServerWallets === false) {
+        // if (userWallets !== undefined && totalWalletCount !== userWallets.length) {
+        let walletsData = walletCreate2Events.map(data => data.args);
+        /**----------------------
+         * iterating over create even data and send it to backend api to update
+         * ---------------------*/
+        for (let index = 0; index < walletsData.length; index++) {
+          let wallet = walletsData[index];
+          let walletName = wallet.name;
+          let walletAddress = wallet.contractAddress;
+          let creator = wallet.creator;
+          let owners = wallet.owners;
+          let signaturesRequired = wallet.signaturesRequired.toNumber();
+          let reqData = {
+            owners,
+            signaturesRequired,
+          };
+          await axios.post(
+            BACKEND_URL + `createWallet/${creator}/${walletName}/${walletAddress}/${selectedChainId}`,
+            reqData,
+          );
+        }
+        setUpdateServerWallets(true);
+        // }
+      }
+    };
+
     void syncWalletsWithServer();
-  }, [walletCreate2Events.length, userWallets && userWallets.length]);
+  }, [
+    BACKEND_URL,
+    readContracts,
+    selectedChainId,
+    updateServerWallets,
+    walletCreate2Events,
+    walletCreate2Events.length,
+  ]);
 
   /**----------------------
    * load web3 modal
@@ -503,7 +509,7 @@ function App(props) {
     if (address !== undefined) {
       getUserWallets(false);
     }
-  }, [address, updateServerWallets, hiddenWallets.length]);
+  }, [address, updateServerWallets, hiddenWallets.length, getUserWallets]);
 
   /**----------------------
    * set current selected sig address from localstorage
@@ -530,17 +536,6 @@ function App(props) {
       </Select.Option>,
     );
   }
-
-  const networkSelect = (
-    <Select
-      className="w-full text-left"
-      defaultValue={targetNetwork.name}
-      // style={{ textAlign: "left", width: 170 }}
-      onChange={onChangeNetwork}
-    >
-      {selectNetworkOptions}
-    </Select>
-  );
 
   // top header bar
   const HeaderBar = (

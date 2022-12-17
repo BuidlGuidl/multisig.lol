@@ -2,13 +2,11 @@ import { Button, Input, Badge, Spin } from "antd";
 import { CameraOutlined, QrcodeOutlined } from "@ant-design/icons";
 import WalletConnect from "@walletconnect/client";
 import QrReader from "react-qr-reader";
-import { useState, useEffect } from "react";
-import { ethers } from "ethers";
+import { useState, useEffect, useCallback } from "react";
 
 import { useLocalStorage } from "../hooks";
 import { parseExternalContractTransaction } from "../helpers";
 import TransactionDetailsModal from "./MultiSig/TransactionDetailsModal";
-import MultiSigWalletAbi from "../configs/MultiSigWallet_ABI.json";
 
 let CLIENT_META = {
   description: "Forkable multisig for prototyping.",
@@ -29,19 +27,88 @@ const WalletConnectInput = ({ chainId, address, loadTransactionData, mainnetProv
   const [walletLoading, setWalletLoading] = useState(false);
 
   // localstorage states
-  const [walletConnectSession_wallet, setWalletConnectSession_wallet] = useLocalStorage(
-    "walletConnectSession_wallet",
-    undefined,
-  );
-  const [walletConnectSession_main, setWalletConnectSession_main] = useLocalStorage(
-    "walletConnectSession_main",
-    undefined,
-  );
+  const [, setWalletConnectSession_wallet] = useLocalStorage("walletConnectSession_wallet", undefined);
+  const [, setWalletConnectSession_main] = useLocalStorage("walletConnectSession_main", undefined);
 
   const [walletConnectUri, setWalletConnectUri] = useLocalStorage("walletConnectUri_wallet", "");
   const [isConnected, setIsConnected] = useLocalStorage("isConnected_wallet", false);
   const [peerMeta, setPeerMeta] = useLocalStorage("peerMeta");
   // let location = useLocation();
+
+  const resetConnection = useCallback(() => {
+    console.log("n-resetConnection: RESET EVERYTHING ");
+    setWalletConnectUri("");
+    setIsConnected(false);
+    setWalletConnectSession_wallet("");
+    setPeerMeta("");
+    setData();
+    setValue();
+    setTo();
+  }, [setIsConnected, setPeerMeta, setWalletConnectSession_wallet, setWalletConnectUri]);
+
+  const subscribeToEvents = useCallback(
+    connector => {
+      // console.log("n-connector: EVENT LISTENER ", connector);
+      setWalletConnect_wallet(connector);
+
+      connector.on("session_request", (error, payload) => {
+        if (error) {
+          console.log("n-error: session request ", error);
+          throw error;
+        }
+
+        console.log("Event: session_request", payload);
+        setPeerMeta(payload.params[0].peerMeta);
+
+        connector.approveSession({
+          accounts: [address],
+          chainId,
+        });
+
+        // console.log("n-connector.connected: ", connector.connected);
+        if (connector.connected) {
+          setIsConnected(true);
+          console.log("Session successfully connected.");
+
+          console.log("WALLET CONNECTED !!! ", connector.connected);
+
+          let walletConnect = localStorage.getItem("walletconnect");
+          setWalletConnectSession_wallet(JSON.parse(walletConnect));
+          setWalletLoading(false);
+        }
+      });
+      //
+      connector.on("call_request", (error, payload) => {
+        if (error) {
+          throw error;
+        }
+
+        console.log("Event: call_request", payload);
+        parseCallRequest(payload);
+      });
+      //
+
+      connector.on("disconnect", (error, payload) => {
+        console.log("disconnected ");
+        console.log("Event: disconnect", payload);
+
+        // remove wallet connect instance
+        localStorage.removeItem("walletconnect");
+        setWalletConnectSession_wallet("");
+
+        resetConnection();
+
+        setTimeout(() => {
+          window.location.reload(true);
+        }, 500);
+
+        if (error) {
+          throw error;
+        }
+      });
+    },
+    [address, chainId, resetConnection, setIsConnected, setPeerMeta, setWalletConnectSession_wallet],
+  );
 
   useEffect(() => {
     if (walletConnectUri && address) {
@@ -65,7 +132,7 @@ const WalletConnectInput = ({ chainId, address, loadTransactionData, mainnetProv
         subscribeToEvents(connector);
       }
     }
-  }, [address]);
+  }, [address, subscribeToEvents, walletConnectUri]);
 
   //
   useEffect(() => {
@@ -132,11 +199,22 @@ const WalletConnectInput = ({ chainId, address, loadTransactionData, mainnetProv
   //
 
   useEffect(() => {
-    // if (data && to) {
+    const decodeFunctionData = async () => {
+      try {
+        // console.log("n-decodeFunctionData: ", to, data);
+        const parsedTransactionData = await parseExternalContractTransaction(to, data);
+        // console.log("n-parsedTransactionData: ", parsedTransactionData);
+        setParsedTransactionData(parsedTransactionData);
+        setIsModalVisible(true);
+      } catch (error) {
+        console.log(error);
+        setParsedTransactionData(null);
+      }
+    };
     if (to) {
       decodeFunctionData();
     }
-  }, [data]);
+  }, [data, to]);
   //
 
   const onWalletConnect = walletConnectUri => {
@@ -194,67 +272,6 @@ const WalletConnectInput = ({ chainId, address, loadTransactionData, mainnetProv
     return connector;
   };
 
-  const subscribeToEvents = connector => {
-    // console.log("n-connector: EVENT LISTENER ", connector);
-    setWalletConnect_wallet(connector);
-
-    connector.on("session_request", (error, payload) => {
-      if (error) {
-        console.log("n-error: session request ", error);
-        throw error;
-      }
-
-      console.log("Event: session_request", payload);
-      setPeerMeta(payload.params[0].peerMeta);
-
-      connector.approveSession({
-        accounts: [address],
-        chainId,
-      });
-
-      // console.log("n-connector.connected: ", connector.connected);
-      if (connector.connected) {
-        setIsConnected(true);
-        console.log("Session successfully connected.");
-
-        console.log("WALLET CONNECTED !!! ", connector.connected);
-
-        let walletConnect = localStorage.getItem("walletconnect");
-        setWalletConnectSession_wallet(JSON.parse(walletConnect));
-        setWalletLoading(false);
-      }
-    });
-    //
-    connector.on("call_request", (error, payload) => {
-      if (error) {
-        throw error;
-      }
-
-      console.log("Event: call_request", payload);
-      parseCallRequest(payload);
-    });
-    //
-
-    connector.on("disconnect", (error, payload) => {
-      console.log("disconnected ");
-      console.log("Event: disconnect", payload);
-
-      // remove wallet connect instance
-      localStorage.removeItem("walletconnect");
-      setWalletConnectSession_wallet("");
-
-      resetConnection();
-
-      setTimeout(() => {
-        window.location.reload(true);
-      }, 500);
-
-      if (error) {
-        throw error;
-      }
-    });
-  };
-
   const parseCallRequest = payload => {
     const callData = payload.params[0];
 
@@ -264,18 +281,6 @@ const WalletConnectInput = ({ chainId, address, loadTransactionData, mainnetProv
   };
   //
 
-  const decodeFunctionData = async () => {
-    try {
-      // console.log("n-decodeFunctionData: ", to, data);
-      const parsedTransactionData = await parseExternalContractTransaction(to, data);
-      // console.log("n-parsedTransactionData: ", parsedTransactionData);
-      setParsedTransactionData(parsedTransactionData);
-      setIsModalVisible(true);
-    } catch (error) {
-      console.log(error);
-      setParsedTransactionData(null);
-    }
-  };
   //
 
   const killSession = (isReload = true) => {
@@ -318,17 +323,6 @@ const WalletConnectInput = ({ chainId, address, loadTransactionData, mainnetProv
       to,
       value,
     });
-  };
-
-  const resetConnection = () => {
-    console.log("n-resetConnection: RESET EVERYTHING ");
-    setWalletConnectUri("");
-    setIsConnected(false);
-    setWalletConnectSession_wallet("");
-    setPeerMeta("");
-    setData();
-    setValue();
-    setTo();
   };
 
   return (
@@ -400,7 +394,7 @@ const WalletConnectInput = ({ chainId, address, loadTransactionData, mainnetProv
             {peerMeta !== undefined && (
               <>
                 <div className="flex justify-center items-start w-full ">
-                  <img src={peerMeta.icons[0]} style={{ width: 30, height: 25 }} />
+                  <img alt={"icon"} src={peerMeta.icons[0]} style={{ width: 30, height: 25 }} />
                   <div>
                     <p>
                       <a href={peerMeta.url} target="_blank" rel="noreferrer">

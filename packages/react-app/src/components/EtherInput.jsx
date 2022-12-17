@@ -46,8 +46,8 @@ export default function EtherInput(props) {
   let gasCost = 0;
 
   if (usingBalance) {
-    if(props.gasPrice){
-      gasCost =  parseInt(props.gasPrice, 10) * 150000 / 10 ** 18;
+    if (props.gasPrice) {
+      gasCost = (parseInt(props.gasPrice, 10) * 150000) / 10 ** 18;
     }
 
     const etherBalance = utils.formatEther(usingBalance);
@@ -80,73 +80,72 @@ export default function EtherInput(props) {
 
   return (
     <div>
-    <span
-      style={{ cursor: "pointer", color: "red", float: "right", marginTop: "-5px" }}
-      onClick={() => {
-        setDisplay(getBalance(mode));
-        setDisplayMax(true);
-        if (typeof props.onChange === "function") {
-          props.onChange(floatBalance);
-        }
-      }}
-    >
-      max
-    </span>
-    <Input
-      placeholder={props.placeholder ? props.placeholder : "amount in " + mode}
-      autoFocus={props.autoFocus}
-      prefix={mode === "USD" ? "$" : "Ξ"}
-      value={display}
-      addonAfter={
-        !props.price ? (
-          ""
-        ) : (
-          <div
-            style={{ cursor: "pointer" }}
-            onClick={() => {
-              if (mode === "USD") {
-                setMode("ETH");
-                displayMax ? setDisplay(getBalance("ETH")) : setDisplay(currentValue);
-              } else if (mode === "ETH") {
-                setMode("USD");
-                if (currentValue) {
-                  const usdValue = "" + (parseFloat(currentValue) * props.price).toFixed(2);
-                  displayMax ? setDisplay(getBalance("USD")) : setDisplay(usdValue);
-                } else {
-                  setDisplay(currentValue);
+      <span
+        style={{ cursor: "pointer", color: "red", float: "right", marginTop: "-5px" }}
+        onClick={() => {
+          setDisplay(getBalance(mode));
+          setDisplayMax(true);
+          if (typeof props.onChange === "function") {
+            props.onChange(floatBalance);
+          }
+        }}
+      >
+        max
+      </span>
+      <Input
+        placeholder={props.placeholder ? props.placeholder : "amount in " + mode}
+        autoFocus={props.autoFocus}
+        prefix={mode === "USD" ? "$" : "Ξ"}
+        value={display}
+        addonAfter={
+          !props.price ? (
+            ""
+          ) : (
+            <div
+              style={{ cursor: "pointer" }}
+              onClick={() => {
+                if (mode === "USD") {
+                  setMode("ETH");
+                  displayMax ? setDisplay(getBalance("ETH")) : setDisplay(currentValue);
+                } else if (mode === "ETH") {
+                  setMode("USD");
+                  if (currentValue) {
+                    const usdValue = "" + (parseFloat(currentValue) * props.price).toFixed(2);
+                    displayMax ? setDisplay(getBalance("USD")) : setDisplay(usdValue);
+                  } else {
+                    setDisplay(currentValue);
+                  }
                 }
+              }}
+            >
+              {mode === "USD" ? "USD 🔀" : "ETH 🔀"}
+            </div>
+          )
+        }
+        onChange={async e => {
+          const newValue = e.target.value;
+          setDisplayMax(false);
+          if (mode === "USD") {
+            const possibleNewValue = parseFloat(newValue);
+            if (possibleNewValue) {
+              const ethValue = possibleNewValue / props.price;
+              setValue(ethValue);
+              if (typeof props.onChange === "function") {
+                props.onChange(ethValue);
               }
-            }}
-          >
-            {mode === "USD" ? "USD 🔀" : "ETH 🔀"}
-          </div>
-
-        )
-      }
-      onChange={async e => {
-        const newValue = e.target.value;
-        setDisplayMax(false);
-        if (mode === "USD") {
-          const possibleNewValue = parseFloat(newValue);
-          if (possibleNewValue) {
-            const ethValue = possibleNewValue / props.price;
-            setValue(ethValue);
+              setDisplay(newValue);
+            } else {
+              setDisplay(newValue);
+            }
+          } else {
+            setValue(newValue);
             if (typeof props.onChange === "function") {
-              props.onChange(ethValue);
+              props.onChange(newValue);
             }
             setDisplay(newValue);
-          } else {
-            setDisplay(newValue);
           }
-        } else {
-          setValue(newValue);
-          if (typeof props.onChange === "function") {
-            props.onChange(newValue);
-          }
-          setDisplay(newValue);
-        }
-      }}
-    />
-        </div>
+        }}
+      />
+    </div>
   );
 }

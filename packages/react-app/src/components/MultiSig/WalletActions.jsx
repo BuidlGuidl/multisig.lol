@@ -20,7 +20,7 @@ const WalletActions = () => {
     );
   }
 
-  const [state, dispatch] = useStore();
+  const [state] = useStore();
   const {
     address,
     reDeployWallet,
@@ -47,17 +47,16 @@ const WalletActions = () => {
     walletParams,
   } = state;
 
-  const loadWallet = async () => {
-    if (walletParams && walletParams.networkName in NETWORKS) {
-      onChangeNetwork(walletParams.networkName);
-      await Sleep(1000);
-      handleMultiSigChange(walletParams.walletAddress);
-    }
-  };
-
   useEffect(() => {
+    const loadWallet = async () => {
+      if (walletParams && walletParams.networkName in NETWORKS) {
+        onChangeNetwork(walletParams.networkName);
+        await Sleep(1000);
+        handleMultiSigChange(walletParams.walletAddress);
+      }
+    };
     loadWallet();
-  }, [walletParams]);
+  }, [handleMultiSigChange, onChangeNetwork, walletParams]);
 
   return (
     <>

@@ -51,7 +51,7 @@ export default function Balance(props) {
       }
     }
     getBalance();
-  }, [address, provider]);
+  }, [address, balance, provider]);
 
   let floatBalance = parseFloat("0.00");
   let usingBalance = balance;

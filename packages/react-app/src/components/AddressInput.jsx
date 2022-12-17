@@ -61,6 +61,7 @@ export default function AddressInput(props) {
           onChange(address);
         }
       }
+      return () => {};
     },
     [ensProvider, onChange],
   );

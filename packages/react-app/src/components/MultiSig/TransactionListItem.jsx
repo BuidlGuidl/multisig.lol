@@ -8,8 +8,6 @@ import { ethers } from "ethers";
 import { parseEther } from "@ethersproject/units";
 import { parseExternalContractTransaction } from "../../helpers";
 
-const axios = require("axios");
-
 export default function TransactionListItem({
   item,
   mainnetProvider,
@@ -34,11 +32,13 @@ export default function TransactionListItem({
   useEffect(() => {
     if (!txnData[item.hash]) {
       try {
-        const parsedData = item.data != "0x" ? readContracts[contractName].interface.parseTransaction(item) : null;
+        const parsedData = item.data !== "0x" ? readContracts[contractName].interface.parseTransaction(item) : null;
         //console.log("SET",JSON.stringify(item),JSON.stringify(parsedData))
-        const newData = {};
-        newData[item.hash] = parsedData;
-        setTxnData({ ...txnData, ...newData });
+        if (parsedData) {
+          const newData = {};
+          newData[item.hash] = parsedData;
+          setTxnData({ ...txnData, ...newData });
+        }
       } catch (argumentError) {
         const getParsedTransaction = async () => {
           const parsedTransaction = await parseExternalContractTransaction(item.to, item.data);
@@ -49,12 +49,12 @@ export default function TransactionListItem({
         getParsedTransaction();
       }
     }
-  }, [item]);
+  }, [contractName, item, readContracts, txnData]);
 
   const txDisplay = () => {
-    const toSelf = item?.to == readContracts[contractName].address;
+    const toSelf = item?.to === readContracts[contractName].address;
 
-    if (toSelf && txnData[item.hash]?.functionFragment?.name == "addSigner") {
+    if (toSelf && txnData[item.hash]?.functionFragment?.name === "addSigner") {
       return (
         <>
           <span style={{ fontSize: 16, fontWeight: "bold" }}>Add Signer</span>
@@ -70,7 +70,7 @@ export default function TransactionListItem({
           <>{children}</>
         </>
       );
-    } else if (toSelf && txnData[item.hash]?.functionFragment?.name == "removeSigner") {
+    } else if (toSelf && txnData[item.hash]?.functionFragment?.name === "removeSigner") {
       return (
         <>
           <span style={{ fontSize: 16, fontWeight: "bold" }}>Remove Signer</span>
@@ -99,7 +99,7 @@ export default function TransactionListItem({
           <>{children}</>
         </>
       );
-    } else if (txnData[item.hash]?.signature != "") {
+    } else if (txnData[item.hash]?.signature !== "") {
       //console.log("CALL",txnData)
 
       return (

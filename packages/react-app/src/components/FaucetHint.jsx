@@ -17,7 +17,7 @@ function FaucetHint({ localProvider, targetNetwork, address }) {
   // Faucet Tx can be used to send funds from the faucet
   const faucetTx = Transactor(localProvider, gasPrice);
 
-  let faucetHint = "";
+  let faucetHint = <></>;
 
   if (
     !faucetClicked &&

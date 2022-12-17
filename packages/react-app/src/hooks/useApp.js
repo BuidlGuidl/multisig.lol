@@ -1,21 +1,11 @@
-import { useCallback, useEffect, useState } from "react";
-import { ethers } from "ethers";
-
-import { useLocalStorage, useStaticJsonRPC } from ".";
+import { useStaticJsonRPC } from ".";
 import { useExchangeEthPrice } from "eth-hooks/dapps/dex";
 
 // import { useEventListener } from "eth-hooks/events/";
 
-import {
-  useBalance,
-  useContractLoader,
-  useContractReader,
-  useGasPrice,
-  useOnBlock,
-  useUserProviderAndSigner,
-} from "eth-hooks";
+import { useBalance, useContractLoader, useContractReader, useGasPrice, useUserProviderAndSigner } from "eth-hooks";
 
-import { Transactor, Web3ModalSetup } from "../helpers";
+import { Transactor } from "../helpers";
 import useEventListener from "./useEventListener";
 
 export default function useApp({

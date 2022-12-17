@@ -56,7 +56,7 @@ export default function Account({
   blockExplorer,
   isContract,
   isFactoryDeployed,
-  gasPrice
+  gasPrice,
 }) {
   const { currentTheme } = useThemeSwitcher();
 

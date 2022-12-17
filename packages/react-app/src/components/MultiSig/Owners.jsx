@@ -1,6 +1,5 @@
-import React, { useCallback, useEffect } from "react";
-import { Select, List, Spin, Collapse } from "antd";
-import axios from "axios";
+import React, { useEffect } from "react";
+import { List, Spin, Collapse } from "antd";
 
 // import { useEventListener } from "eth-hooks/events/";
 
@@ -68,15 +67,14 @@ function Owners({
   //   }
   // }, [owners.size, signaturesRequired]);
 
-  const loadOwnersEvents = async () => {
-    setOwnerEvents(allOwnerEvents.filter(contractEvent => contractEvent.address === currentMultiSigAddress));
-  };
-
   useEffect(() => {
+    const loadOwnersEvents = async () => {
+      setOwnerEvents(allOwnerEvents.filter(contractEvent => contractEvent.address === currentMultiSigAddress));
+    };
     if (allOwnerEvents.length > 0) {
       loadOwnersEvents();
     }
-  }, [allOwnerEvents.length]);
+  }, [allOwnerEvents, allOwnerEvents.length, currentMultiSigAddress]);
 
   return (
     <div>
@@ -106,7 +104,7 @@ function Owners({
       />
 
       <Collapse
-        collapsible={prevOwners.size == 0 ? "disabled" : ""}
+        collapsible={prevOwners.size === 0 ? "disabled" : ""}
         style={{ maxWidth: 400, margin: "auto", marginTop: 10 }}
       >
         <Panel header="Previous Owners" key="1">

@@ -3,11 +3,11 @@ import { useState, useEffect, useCallback } from "react";
 const useEventListener = (contract, contractName, eventName, provider) => {
   const [eventData, setEventData] = useState([]);
 
-  const loadEvents = async () => {
+  const loadEvents = useCallback(async () => {
     const filter = contract[contractName].filters[eventName]();
     const queryEvents = await contract[contractName].queryFilter(filter);
     setEventData(queryEvents);
-  };
+  }, [contract, contractName, eventName]);
 
   // watch events and load recursively (we can use in future to update tx list)
   //   const loadEvents = () => {
@@ -24,7 +24,7 @@ const useEventListener = (contract, contractName, eventName, provider) => {
     if (contract && contract[contractName] !== undefined) {
       loadEvents();
     }
-  }, [contractName, contract, eventName]);
+  }, [contractName, contract, eventName, loadEvents]);
   return eventData;
 };
 

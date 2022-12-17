@@ -14,6 +14,7 @@ const StoreProvider = ({ children, store }) => {
     if (store) {
       dispatch({ payload: { ...store } });
     }
+    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [...Object.values(store)]);
 
   return <StoreContext.Provider value={[state, dispatch]}>{children}</StoreContext.Provider>;

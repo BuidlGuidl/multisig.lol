@@ -1,4 +1,4 @@
-import { useState } from "react";
+import { useState, useCallback } from "react";
 // Hook from useHooks! (https://usehooks.com/useLocalStorage/)
 export default function useLocalStorage(key, initialValue, ttl) {
   // State to store our value
@@ -30,31 +30,34 @@ export default function useLocalStorage(key, initialValue, ttl) {
 
   // Return a wrapped version of useState's setter function that ...
   // ... persists the new value to localStorage.
-  const setValue = value => {
-    try {
-      // Allow value to be a function so we have same API as useState
-      const valueToStore = value instanceof Function ? value(storedValue) : value;
-      // Save state
-      setStoredValue(valueToStore);
-      // Save to local storage
-      if (ttl) {
-        const now = new Date();
+  const setValue = useCallback(
+    value => {
+      try {
+        // Allow value to be a function so we have same API as useState
+        const valueToStore = value instanceof Function ? value(storedValue) : value;
+        // Save state
+        setStoredValue(valueToStore);
+        // Save to local storage
+        if (ttl) {
+          const now = new Date();
 
-        // `item` is an object which contains the original value
-        // as well as the time when it's supposed to expire
-        const item = {
-          value: valueToStore,
-          expiry: now.getTime() + ttl,
-        };
-        window.localStorage.setItem(key, JSON.stringify(item));
-      } else {
-        window.localStorage.setItem(key, JSON.stringify(valueToStore));
+          // `item` is an object which contains the original value
+          // as well as the time when it's supposed to expire
+          const item = {
+            value: valueToStore,
+            expiry: now.getTime() + ttl,
+          };
+          window.localStorage.setItem(key, JSON.stringify(item));
+        } else {
+          window.localStorage.setItem(key, JSON.stringify(valueToStore));
+        }
+      } catch (error) {
+        // A more advanced implementation would handle the error case
+        console.log(error);
       }
-    } catch (error) {
-      // A more advanced implementation would handle the error case
-      console.log(error);
-    }
-  };
+    },
+    [key, storedValue, ttl],
+  );
 
   return [storedValue, setValue];
 }

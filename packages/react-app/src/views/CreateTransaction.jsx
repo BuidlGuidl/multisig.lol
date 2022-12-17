@@ -1,4 +1,4 @@
-import React, { useEffect, useLayoutEffect, useState, useRef } from "react";
+import React, { useEffect, useLayoutEffect, useState, useCallback } from "react";
 import { useHistory } from "react-router-dom";
 import { Button, Input, Select, InputNumber, Space, Tooltip, Alert } from "antd";
 import { CodeOutlined } from "@ant-design/icons";
@@ -45,7 +45,7 @@ export default function CreateTransaction({
     if (!hasEdited) {
       setNewSignaturesRequired(signaturesRequired);
     }
-  }, [signaturesRequired]);
+  }, [hasEdited, signaturesRequired]);
 
   useLayoutEffect(() => {
     setCustomNonce(nonce);
@@ -65,8 +65,8 @@ export default function CreateTransaction({
       setParsedCustomCallData(parsedTransaction);
     };
 
-    getParsedTransaction();
-  }, [customCallData]);
+    if (isModalVisible) getParsedTransaction();
+  }, [customCallData, to, isModalVisible]);
 
   const loadTransactionData = ({ to, value, data, isIframe = false }) => {
     setTo(to);
@@ -78,12 +78,7 @@ export default function CreateTransaction({
     }
   };
 
-  useEffect(() => {
-    shouldCreateTransaction && createTransaction();
-    setShouldCreateTransaction(false);
-  }, [shouldCreateTransaction]);
-
-  const createTransaction = async () => {
+  const createTransaction = useCallback(async () => {
     try {
       //a little security in the frontend just because
       if (newSignaturesRequired < 1) {
@@ -99,7 +94,7 @@ export default function CreateTransaction({
           methodName === "wcCallData" ||
           methodName === "iframeCallData"
         ) {
-          callData = methodName == "transferFunds" ? "0x" : customCallData;
+          callData = methodName === "transferFunds" ? "0x" : customCallData;
           executeToAddress = to;
         } else {
           callData = readContracts[contractName]?.interface?.encodeFunctionData(methodName, [
@@ -123,7 +118,7 @@ export default function CreateTransaction({
         setIsOwner(isOwner);
 
         if (isOwner) {
-          const res = await axios.post(poolServerUrl, {
+          await axios.post(poolServerUrl, {
             chainId: localProvider._network.chainId,
             address: readContracts[contractName]?.address,
             nonce: customNonce,
@@ -140,7 +135,7 @@ export default function CreateTransaction({
             setIsTxLoaded(prev => true);
             setTimeout(() => {
               let hostURL = window.location.origin;
-              window.open(`${ hostURL }/pool`, "_blank");
+              window.open(`${hostURL}/pool`, "_blank");
 
               setIsTxLoaded(prev => false);
               return;
@@ -162,7 +157,27 @@ export default function CreateTransaction({
       console.log("n-Error: ", error);
       setLoading(false);
     }
-  };
+  }, [
+    amount,
+    contractAddress,
+    contractName,
+    customCallData,
+    customNonce,
+    history,
+    isIframe,
+    localProvider._network.chainId,
+    methodName,
+    newSignaturesRequired,
+    poolServerUrl,
+    readContracts,
+    to,
+    userSigner,
+  ]);
+
+  useEffect(() => {
+    shouldCreateTransaction && createTransaction();
+    setShouldCreateTransaction(false);
+  }, [shouldCreateTransaction, createTransaction]);
 
   return (
     <div className="flex justify-center flex-col items-center">
@@ -213,13 +228,13 @@ export default function CreateTransaction({
                 <AddressInput
                   autoFocus
                   ensProvider={mainnetProvider}
-                  placeholder={methodName == "transferFunds" ? "Recepient address" : "Owner address"}
+                  placeholder={methodName === "transferFunds" ? "Recepient address" : "Owner address"}
                   value={to}
                   onChange={setTo}
                 />
               </div>
               <div style={inputStyle}>
-                {(methodName == "addSigner" || methodName == "removeSigner") && (
+                {(methodName === "addSigner" || methodName === "removeSigner") && (
                   <InputNumber
                     style={{ width: "100%" }}
                     placeholder="New # of signatures required"
@@ -230,7 +245,7 @@ export default function CreateTransaction({
                     }}
                   />
                 )}
-                {methodName == "customCallData" && (
+                {methodName === "customCallData" && (
                   <>
                     <Input.Group compact>
                       <Input
@@ -255,7 +270,7 @@ export default function CreateTransaction({
                     />
                   </>
                 )}
-                {(methodName == "transferFunds" || methodName == "customCallData") && (
+                {(methodName === "transferFunds" || methodName === "customCallData") && (
                   <EtherInput
                     price={price}
                     mode="USD"

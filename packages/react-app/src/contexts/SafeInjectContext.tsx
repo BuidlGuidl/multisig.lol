@@ -1,17 +1,7 @@
-import React, { createContext, useContext, useState, useEffect, useRef, useCallback } from "react";
+import React, { createContext, useContext, useState, useEffect, useRef } from "react";
 import { providers, utils } from "ethers";
 import { useAppCommunicator } from "../helpers/communicator";
-import {
-  InterfaceMessageIds,
-  InterfaceMessageProps,
-  Methods,
-  MethodToResponse,
-  RequestId,
-  RPCPayload,
-  SignMessageParams,
-  SignTypedMessageParams,
-  Transaction,
-} from "../helpers/types";
+import { Methods, MethodToResponse, RPCPayload, Transaction } from "../helpers/types";
 
 interface TransactionWithId extends Transaction {
   id: number;
@@ -50,21 +40,6 @@ export const SafeInjectProvider: React.FunctionComponent<{ children: React.React
 
   const iframeRef = useRef<HTMLIFrameElement>(null);
   const communicator = useAppCommunicator(iframeRef);
-
-  const sendMessageToIframe = useCallback(
-    function <T extends InterfaceMessageIds>(message: InterfaceMessageProps<T>, requestId?: RequestId) {
-      const requestWithMessage = {
-        ...message,
-        requestId: requestId || Math.trunc(window.performance.now()),
-        version: "0.4.2",
-      };
-
-      if (iframeRef) {
-        iframeRef.current?.contentWindow?.postMessage(requestWithMessage, appUrl!);
-      }
-    },
-    [iframeRef, appUrl],
-  );
 
   useEffect(() => {
     if (!rpcUrl) return;
@@ -112,14 +87,10 @@ export const SafeInjectProvider: React.FunctionComponent<{ children: React.React
     });
 
     communicator?.on(Methods.signMessage, async msg => {
-      const { message } = msg.data.params as SignMessageParams;
-
       // openSignMessageModal(message, msg.data.id, Methods.signMessage)
     });
 
     communicator?.on(Methods.signTypedMessage, async msg => {
-      const { typedData } = msg.data.params as SignTypedMessageParams;
-
       // openSignMessageModal(typedData, msg.data.id, Methods.signTypedMessage)
     });
   }, [communicator, address, provider]);

@@ -12,7 +12,7 @@ export default function Header(props) {
         <Title level={4} style={{ margin: "0 0.5rem 0 0" }}>
           👛 multisig.lol
         </Title>
-        <a href="https://github.com/buidlguidl/multisig.lol" target="_blank">
+        <a href="https://github.com/buidlguidl/multisig.lol" target="_blank" rel="noreferrer">
           warning: prototype for testnet use (plz fork)
         </a>
       </div>

@@ -1,4 +1,4 @@
-import React, { useState, useEffect, useMemo } from "react";
+import React, { useState, useEffect } from "react";
 import { Button, Modal, InputNumber, Alert } from "antd";
 import { PlusOutlined, DeleteOutlined } from "@ant-design/icons";
 import { ethers } from "ethers";
@@ -46,7 +46,7 @@ function CreateMultiSigModal({
     if (isCreateModalVisible === false) {
       return;
     }
-    if (isCreateModalVisible && address && owners && owners.length > 0) {
+    if (isCreateModalVisible && address && owners && owners.length > 0 && owners[0] !== address) {
       owners[0] = address;
       setOwners([...new Set([...owners])]);
       return;
@@ -56,7 +56,7 @@ function CreateMultiSigModal({
       setOwners([...new Set([address])]);
       return;
     }
-  }, [address, isCreateModalVisible]);
+  }, [address, isCreateModalVisible, owners, setOwners]);
 
   const showCreateModal = async deployType => {
     if (deployType === "CREATE") {
@@ -177,7 +177,7 @@ function CreateMultiSigModal({
 
       if (!validateFields()) {
         setPendingCreate(false);
-        throw "Field validation failed.";
+        throw new Error("Field validation failed.");
       }
       let currentWalletName = deployType === "CREATE" ? walletName : reDeployWallet["walletName"];
 

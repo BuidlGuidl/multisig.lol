@@ -5,7 +5,7 @@ import { Route, Switch } from "react-router-dom";
 
 import "./App.css";
 import { Contract } from "./components";
-import { CreateTransaction, Hints, Home, Subgraph, Transactions } from "./views";
+import { CreateTransaction, Hints, Home, Transactions } from "./views";
 
 /**----------------------
  * TODO:we can create a global context state and fetch all this props on individual components
@@ -200,14 +200,6 @@ const Routes = ({
               blockExplorer="https://etherscan.io/"
             />
             */}
-        </Route>
-        <Route path="/subgraph">
-          <Subgraph
-            subgraphUri={subgraphUri}
-            tx={tx}
-            writeContracts={writeContracts}
-            mainnetProvider={mainnetProvider}
-          />
         </Route>
       </Switch>
     </>

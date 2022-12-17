@@ -6,7 +6,6 @@ import { useLocalStorage } from "../../hooks";
 
 import { AddressInput } from "..";
 import useDebounce from "../../hooks/useDebounce";
-import useStore from "../../store/useStore";
 
 export default function ImportMultiSigModal({
   mainnetProvider,
@@ -110,63 +109,63 @@ export default function ImportMultiSigModal({
     }
   };
 
-  const checkDuplicateWallet = address => {
-    let isExists = userWallets.find(data => data.walletAddress === address);
-    if (isExists) {
-      setDuplicateError(true);
-    }
-  };
-
-  const onEnterWalletAddress = async address => {
-    try {
-      if (ethers.utils.isAddress(address)) {
-        setError(false);
-        setLoadingWalletName(true);
-        const contract = new ethers.Contract(address, multiSigWalletABI, localProvider);
-
-        let factoryVersion = await getFactoryVersion(contract);
-        setFactoryVersion(factoryVersion);
-
-        if (factoryVersion === 1) {
-          const walletName = await contract.name();
-          setWalletName(walletName);
-        }
-
-        setLoadingWalletName(false);
-        checkDuplicateWallet(address);
-      } else {
-        setWalletName("");
-        setError(true);
-      }
-    } catch (error) {
-      setWalletName("");
-      setLoadingWalletName(false);
-      setError(true);
-    }
-  };
-
   const onEnterWalletName = async event => {
     setWalletName(event.target.value);
   };
 
-  const importURLWallet = async () => {
-    if (walletParams && userWallets) {
-      let isExists = userWallets.find(data => data.walletAddress === address);
-
-      setIsModalVisible(isExists === undefined);
-      setAddress(walletParams.walletAddress);
-    }
-  };
-
   useEffect(() => {
+    const checkDuplicateWallet = address => {
+      let isExists = userWallets.find(data => data.walletAddress === address);
+      if (isExists) {
+        setDuplicateError(true);
+      }
+    };
+
+    const onEnterWalletAddress = async address => {
+      try {
+        if (ethers.utils.isAddress(address)) {
+          setError(false);
+          setLoadingWalletName(true);
+          const contract = new ethers.Contract(address, multiSigWalletABI, localProvider);
+
+          let factoryVersion = await getFactoryVersion(contract);
+          setFactoryVersion(factoryVersion);
+
+          if (factoryVersion === 1) {
+            const walletName = await contract.name();
+            setWalletName(walletName);
+          }
+
+          setLoadingWalletName(false);
+          checkDuplicateWallet(address);
+        } else {
+          setWalletName("");
+          setError(true);
+        }
+      } catch (error) {
+        setWalletName("");
+        setLoadingWalletName(false);
+        setError(true);
+      }
+    };
+
     if (walletAddressDebounce) {
       onEnterWalletAddress(walletAddressDebounce);
     }
-  }, [walletAddressDebounce]);
+  }, [localProvider, multiSigWalletABI, userWallets, walletAddressDebounce]);
 
   useEffect(() => {
+    const importURLWallet = async () => {
+      if (walletParams && userWallets) {
+        let isExists = userWallets.find(data => data.walletAddress === address);
+
+        setIsModalVisible(isExists === undefined);
+        setAddress(walletParams.walletAddress);
+      }
+    };
+
     importURLWallet();
-  }, [walletParams, userWallets]);
+  }, [walletParams, userWallets, address]);
 
   return (
     <>

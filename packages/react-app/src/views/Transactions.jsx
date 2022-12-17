@@ -8,8 +8,6 @@ import { useThemeSwitcher } from "react-css-theme-switcher";
 
 const axios = require("axios");
 
-const DEBUG = false;
-
 export default function Transactions({
   poolServerUrl,
   contractName,
@@ -163,7 +161,7 @@ export default function Transactions({
                             selectedTx.set(index, obj);
                             setSelectedTx(selectedTx);
 
-                            const res = await axios.post(poolServerUrl, {
+                            await axios.post(poolServerUrl, {
                               ...item,
                               signatures: finalSigList,
                               signers: finalSigners,
@@ -186,7 +184,7 @@ export default function Transactions({
                             item.data,
                           );
 
-                          const [finalSigList, finalSigners] = await getSortedSigList(item.signatures, newHash);
+                          const [finalSigList] = await getSortedSigList(item.signatures, newHash);
 
                           let finalGaslimit = 250000;
 
@@ -265,7 +263,7 @@ export default function Transactions({
                               item.data,
                             );
 
-                            const [finalSigList, finalSigners] = await getSortedSigList(item.signatures, newHash);
+                            const [finalSigList] = await getSortedSigList(item.signatures, newHash);
                             selectedTx.set(index, {
                               to: item.to,
                               value: parseEther("" + parseFloat(item.amount).toFixed(12)),
