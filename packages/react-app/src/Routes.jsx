@@ -5,7 +5,7 @@ import { Route, Switch } from "react-router-dom";
 
 import "./App.css";
 import { Contract } from "./components";
-import { CreateTransaction, Hints, Home, Transactions } from "./views";
+import { CreateTransaction, Home, Transactions } from "./views";
 
 /**----------------------
  * TODO:we can create a global context state and fetch all this props on individual components
@@ -170,36 +170,6 @@ const Routes = ({
             blockExplorer={blockExplorer}
             contractConfig={contractConfig}
           />
-        </Route>
-        <Route path="/hints">
-          <Hints
-            address={address}
-            yourLocalBalance={yourLocalBalance}
-            mainnetProvider={mainnetProvider}
-            price={price}
-          />
-        </Route>
-        <Route path="/mainnetdai">
-          <Contract
-            name="DAI"
-            customContract={mainnetContracts && mainnetContracts.contracts && mainnetContracts.contracts.DAI}
-            signer={userSigner}
-            provider={mainnetProvider}
-            address={address}
-            blockExplorer="https://etherscan.io/"
-            contractConfig={contractConfig}
-            chainId={1}
-          />
-          {/*
-            <Contract
-              name="UNI"
-              customContract={mainnetContracts && mainnetContracts.contracts && mainnetContracts.contracts.UNI}
-              signer={userSigner}
-              provider={mainnetProvider}
-              address={address}
-              blockExplorer="https://etherscan.io/"
-            />
-            */}
         </Route>
       </Switch>
     </>
