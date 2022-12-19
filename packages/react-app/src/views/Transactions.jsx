@@ -114,7 +114,7 @@ export default function Transactions({
             const hasEnoughSignatures = item.signatures.length <= signaturesRequired.toNumber();
 
             return (
-              <div className="border-2 rounded-2xl shadow-md mt-4">
+              <div className="border-2 rounded-2xl shadow-md mt-4" id={index}>
                 <TransactionListItem
                   item={item}
                   mainnetProvider={mainnetProvider}

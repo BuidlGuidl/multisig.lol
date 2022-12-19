@@ -386,6 +386,7 @@ function CreateMultiSigModal({
               style={{ width: "100%" }}
               placeholder="Number of signatures required"
               value={signaturesRequired}
+              max={owners.length}
               // value={
               //   deployType === "RE_DEPLOY"
               //     ? reDeployWallet
