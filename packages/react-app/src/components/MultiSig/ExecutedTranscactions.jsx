@@ -7,7 +7,7 @@ import { TransactionListItem } from "../index";
 
 import { useEventListener } from "eth-hooks/events/useEventListener";
 
-// import useEventListener from "../hooks/useEventListener";
+// import useEventListener from "../../hooks/useEventListener";
 
 // const { Text } = Typography;
 const { Panel } = Collapse;
