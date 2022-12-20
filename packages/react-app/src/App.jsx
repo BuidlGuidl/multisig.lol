@@ -69,8 +69,8 @@ const web3Modal = Web3ModalSetup();
 
 // 🛰 providers
 const providers = [
-  // "https://eth-mainnet.gateway.pokt.network/v1/lb/611156b4a585a20035148406",
-  // `https://eth-mainnet.alchemyapi.io/v2/${ALCHEMY_KEY}`,
+  "https://eth-mainnet.gateway.pokt.network/v1/lb/611156b4a585a20035148406",
+  `https://eth-mainnet.alchemyapi.io/v2/${ALCHEMY_KEY}`,
   "https://rpc.scaffoldeth.io:48544",
 ];
 
@@ -81,8 +81,8 @@ let deployedContracts = {
 
 console.log("deployedContracts", deployedContracts);
 
-const WALLET_CONTRACT_ADDRESS = "0x924E029aa245AbADC5Ebd379457eAa48Cf0E4422";
-// const WALLET_CONTRACT_ADDRESS = "0xb3E2A650c9032A40168148e5b1bdb69E68A461D8";
+const WALLET_CONTRACT_ADDRESS = "0x924E029aa245AbADC5Ebd379457eAa48Cf0E4422"; // buidlguidl scholarship wallet
+// const WALLET_CONTRACT_ADDRESS = "0x924E029aa245AbADC5Ebd379457eAa48Cf0E4422";
 
 const multiSigWalletABI = MultiSigWalletAbi["abi"];
 const contractName = "MultiSigWallet";
