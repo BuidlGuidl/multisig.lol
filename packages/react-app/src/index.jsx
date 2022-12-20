@@ -5,7 +5,6 @@ import { BrowserRouter } from "react-router-dom";
 import ReactDOM from "react-dom";
 import App from "./App";
 import "./index.css";
-import { SafeInjectProvider } from "./contexts/SafeInjectContext";
 
 const themes = {
   dark: `${process.env.PUBLIC_URL}/dark-theme.css`,
@@ -25,9 +24,7 @@ ReactDOM.render(
   <ApolloProvider client={client}>
     <ThemeSwitcherProvider themeMap={themes} defaultTheme={prevTheme || "light"}>
       <BrowserRouter>
-        <SafeInjectProvider>
-          <App subgraphUri={subgraphUri} />
-        </SafeInjectProvider>
+        <App subgraphUri={subgraphUri} />
       </BrowserRouter>
     </ThemeSwitcherProvider>
   </ApolloProvider>,

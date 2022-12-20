@@ -12,6 +12,8 @@ const getFunctionInputKey = (functionInfo, input, inputIndex) => {
   return functionInfo.name + "_" + name + "_" + input.type;
 };
 
+const isReadable = fn => fn.stateMutability === "view" || fn.stateMutability === "pure";
+
 export default function FunctionForm({ contractFunction, functionInfo, provider, gasPrice, triggerRefresh }) {
   const [form, setForm] = useState({});
   const [txValue, setTxValue] = useState();
@@ -166,12 +168,11 @@ export default function FunctionForm({ contractFunction, functionInfo, provider,
     }
   };
 
-  const buttonIcon =
-    functionInfo.type === "call" ? (
-      <Button style={{ marginLeft: -32 }}>Read📡</Button>
-    ) : (
-      <Button style={{ marginLeft: -32 }}>Send💸</Button>
-    );
+  const buttonIcon = isReadable(functionInfo) ? (
+    <Button style={{ marginLeft: -32 }}>Read📡</Button>
+  ) : (
+    <Button style={{ marginLeft: -32 }}>Send💸</Button>
+  );
   inputs.push(
     <div style={{ cursor: "pointer", margin: 2 }} key="goButton">
       <Input
@@ -188,7 +189,7 @@ export default function FunctionForm({ contractFunction, functionInfo, provider,
               const args = functionInfo.inputs.map((input, inputIndex) => {
                 const key = getFunctionInputKey(functionInfo, input, inputIndex);
                 let value = form[key];
-                if (input.baseType === "array") {
+                if (["array", "tuple"].includes(input.baseType)) {
                   value = JSON.parse(value);
                 } else if (input.type === "bool") {
                   if (value === "true" || value === "1" || value === "0x1" || value === "0x01" || value === "0x0001") {

@@ -1,10 +1,10 @@
-import Fortmatic from "fortmatic";
-import WalletLink from "walletlink";
-import Web3Modal from "web3modal";
 import Portis from "@portis/web3";
 import WalletConnectProvider from "@walletconnect/web3-provider";
 import Authereum from "authereum";
-import { INFURA_ID, ALCHEMY_KEY } from "../constants";
+import Fortmatic from "fortmatic";
+import WalletLink from "walletlink";
+import { ALCHEMY_KEY, INFURA_ID } from "../constants";
+import { SafeAppWeb3Modal } from "@gnosis.pm/safe-apps-web3modal";
 
 // Coinbase walletLink init
 const walletLink = new WalletLink({
@@ -19,7 +19,7 @@ const walletLinkProvider = walletLink.makeWeb3Provider(`https://eth-mainnet.alch
   Web3 modal helps us "connect" external wallets:
 **/
 const web3ModalSetup = () =>
-  new Web3Modal({
+  new SafeAppWeb3Modal({
     network: "mainnet", // Optional. If using WalletConnect on xDai, change network to "xdai" and add RPC info below for xDai chain.
     cacheProvider: true, // optional
     theme: "light", // optional. Change to "dark" for a dark theme.
@@ -36,7 +36,7 @@ const web3ModalSetup = () =>
             31337: "http://localhost:8545",
             42161: "https://arb1.arbitrum.io/rpc",
             80001: "https://rpc-mumbai.maticvigil.com",
-            11155111: "https://rpc.sepolia.org"
+            71401: "https://godwoken-testnet-v1.ckbapp.dev",
           },
         },
       },

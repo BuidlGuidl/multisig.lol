@@ -123,6 +123,7 @@ export default function AddressInput(props) {
             <Badge count={<CameraOutlined style={{ fontSize: 9 }} />}>
               <QrcodeOutlined style={{ fontSize: 18 }} />
             </Badge>{" "}
+            Scan
           </div>
         }
         onChange={e => {
