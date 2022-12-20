@@ -57,7 +57,7 @@ import _deployedContracts from "./contracts/deployed_contracts.json";
 */
 
 /// 📡 What chain are your contracts deployed to?
-const initialNetwork = NETWORKS.goerli; // <------- select your target frontend network (localhost, goerli, xdai, mainnet)
+const initialNetwork = NETWORKS.mainnet; // <------- select your target frontend network (localhost, goerli, xdai, mainnet)
 
 // 😬 Sorry for all the console logging
 const DEBUG = true;
@@ -81,7 +81,7 @@ let deployedContracts = {
 
 console.log("deployedContracts", deployedContracts);
 
-const WALLET_CONTRACT_ADDRESS = "0x25de874Ad86d0EA205EC503888a4ff6361042c2D";
+const WALLET_CONTRACT_ADDRESS = "0x924E029aa245AbADC5Ebd379457eAa48Cf0E4422";
 // const WALLET_CONTRACT_ADDRESS = "0xb3E2A650c9032A40168148e5b1bdb69E68A461D8";
 
 const multiSigWalletABI = MultiSigWalletAbi["abi"];
