@@ -6,8 +6,4 @@ cd scholarship-buidlguidl
 
 yarn install
 
-yarn chain
-
 yarn start
-
-yarn backend 
