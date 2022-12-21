@@ -102,9 +102,9 @@ function Home({
           />
         </div>
         {/* main contract info */}
-        <div className="flex  justify-around  flex-wrap  w-full border-2 p-4 md:w-auto md:rounded-3xl md:shadow-md">
+        <div className="flex justify-center items-center flex-wrap-  w-full border-2 p-4 md:w-auto md:rounded-3xl md:shadow-md">
           {/* contract balanace qr */}
-          <div className="flex flex-col  items-center w-full p-5 border-2  rounded-3xl shadow-md  md:flex-1 md:p-0 md:shadow-none md:rounded-none md:w-auto md:border-none">
+          <div className="flex flex-col items-center w-full p-5 border-2  rounded-3xl shadow-md  md:flex-1 md:p-0 md:shadow-none md:rounded-none md:w-auto md:border-none">
             <div>
               <Balance
                 address={contractAddress ? contractAddress : ""}
