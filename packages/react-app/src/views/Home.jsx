@@ -173,7 +173,7 @@ function Home({
         </div>
 
         {/* executed tx's */}
-        <div className="flex justify-center w-7/12 p-2 mt-2">
+        <div className="flex justify-center w-full w--7/12 p-2 mt-2">
           <ExecutedTranscactions
             localProvide={localProvider}
             price={price}
