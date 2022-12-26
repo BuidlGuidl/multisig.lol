@@ -130,19 +130,14 @@ const WalletActions = () => {
               })}
           </Select>
         </div>
-        <div className="m-2  w-28 ">
-          {/* {networkSelect} */}
-
-          <Select
-            className="w-full text-left"
-            // defaultValue={targetNetwork.name}
-            value={targetNetwork.name}
-            // style={{ textAlign: "left", width: 170 }}
-            onChange={onChangeNetwork}
-          >
+        {/* old network select */}
+        {/* <div className="m-2  w-28 ">
+          <Select className="w-full text-left" value={targetNetwork.name} onChange={onChangeNetwork}>
             {selectNetworkOptions}
           </Select>
-        </div>
+        </div> */}
+        {/* <div className="flex-1"></div> */}
+        {/* <div className="flex-2">Manage</div> */}
       </div>
     </>
   );

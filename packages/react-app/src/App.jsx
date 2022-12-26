@@ -1,4 +1,4 @@
-import { Button, Col, Menu, Row, Select } from "antd";
+import { Button, Col, Menu, Row, Select, Dropdown } from "antd";
 import { MinusCircleOutlined } from "@ant-design/icons";
 
 import Routes from "./Routes";
@@ -56,7 +56,7 @@ const initialNetwork = NETWORKS.mainnet; // <------- select your target frontend
 const DEBUG = true;
 const NETWORKCHECK = true;
 const USE_BURNER_WALLET = true; // toggle burner wallet feature
-const USE_NETWORK_SELECTOR = false;
+const USE_NETWORK_SELECTOR = true;
 
 const web3Modal = Web3ModalSetup();
 
@@ -546,16 +546,11 @@ function App(props) {
   const HeaderBar = (
     <>
       <Header>
-        <div className="relative " key={address}>
+        <div className="relative" key={address}>
           <div className="flex flex-1 items-center p-1">
             {USE_NETWORK_SELECTOR && (
-              // <div style={{ marginRight: 20 }}>
-              <div className="mr-20">
-                <NetworkSwitch
-                  networkOptions={networkOptions}
-                  selectedNetwork={selectedNetwork}
-                  setSelectedNetwork={setSelectedNetwork}
-                />
+              <div className="mr-2">
+                <NetworkSwitch selectedNetwork={targetNetwork.name} onChangeNetwork={onChangeNetwork} />
               </div>
             )}
             <Account

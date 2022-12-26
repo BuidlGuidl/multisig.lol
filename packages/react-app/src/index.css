@@ -8,6 +8,7 @@
 
 body {
   margin: 0;
+  overflow-x: hidden; /* Hide horizontal scrollbar */
 }
 
 code {
