@@ -94,10 +94,10 @@
     }
   },
   "scripts": {
-    "build": "craco  build",
+    "build": "craco --openssl-legacy-provider build",
     "eject": "react-scripts eject",
     "prestart": "node ./scripts/create_contracts.js",
-    "start": "craco  start",
+    "start": "craco --openssl-legacy-provider start",
     "test": "craco  test",
     "lint": "eslint --config ./.eslintrc.js --ignore-path ./.eslintignore ./src/**/*",
     "ipfs": "node ./scripts/ipfs.js",
