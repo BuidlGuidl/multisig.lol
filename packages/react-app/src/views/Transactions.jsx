@@ -25,6 +25,7 @@ export default function Transactions({
   readContracts,
   writeContracts,
   blockExplorer,
+  gasPrice,
 }) {
   const [transactions, setTransactions] = useState();
   const [selectedTx, setSelectedTx] = useState(new Map());
@@ -202,8 +203,8 @@ export default function Transactions({
 
                             console.log("estimateGasLimit", estimateGasLimit);
 
-                            // add extra 50k gas
-                            finalGaslimit = estimateGasLimit + 50000;
+                            // add extra 100k gas limit
+                            finalGaslimit = estimateGasLimit + 100000;
                           } catch (e) {
                             console.log("Failed to estimate gas");
                           }
@@ -214,7 +215,7 @@ export default function Transactions({
                               parseEther("" + parseFloat(item.amount).toFixed(12)),
                               item.data,
                               finalSigList,
-                              { gasLimit: finalGaslimit },
+                              { gasLimit: finalGaslimit, gasPrice },
                             ),
                             async update => {
                               if (update && (update.status === "confirmed" || update.status === 1)) {

@@ -684,6 +684,7 @@ function App(props) {
     currentMultiSigAddress,
     handleMultiSigChange,
     hideWalletItem,
+    gasPrice,
   };
 
   return (
@@ -692,6 +693,13 @@ function App(props) {
         {HeaderBar}
         <WalletActions />
         {MainMenu}
+        {/* <Button
+          onClick={async () => {
+            const tx = userSigner.sendTransaction();
+          }}
+        >
+          get gas price
+        </Button> */}
 
         {Object.keys(writeContracts).length > 0 && Object.keys(readContracts).length > 0 && (
           <>
