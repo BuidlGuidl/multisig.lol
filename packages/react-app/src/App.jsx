@@ -551,11 +551,9 @@ function App(props) {
       <Header>
         <div className="relative" key={address}>
           <div className="flex flex-1 items-center p-1">
-            {USE_NETWORK_SELECTOR && (
-              <div className="mr-2">
-                <NetworkSwitch selectedNetwork={targetNetwork.name} onChangeNetwork={onChangeNetwork} />
-              </div>
-            )}
+            <div className="mr-2">
+              <NetworkSwitch selectedNetwork={targetNetwork.name} onChangeNetwork={onChangeNetwork} />
+            </div>
             <Account
               useBurner={USE_BURNER_WALLET}
               address={address}
