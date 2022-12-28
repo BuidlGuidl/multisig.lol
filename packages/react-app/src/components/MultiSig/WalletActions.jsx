@@ -1,5 +1,7 @@
 import { MinusCircleOutlined } from "@ant-design/icons";
-import { Select } from "antd";
+import { Select, Button } from "antd";
+import { SettingOutlined } from "@ant-design/icons";
+import { Link } from "react-router-dom";
 
 import { NETWORKS, Sleep } from "../../constants";
 
@@ -101,7 +103,7 @@ const WalletActions = () => {
             walletParams={walletParams}
           />
         </div>
-        <div className="m-2  w-32">
+        {/* <div className="m-2  w-32">
           <Select
             className="w-full"
             value={currentMultiSigAddress}
@@ -129,15 +131,19 @@ const WalletActions = () => {
                 );
               })}
           </Select>
-        </div>
+        </div> */}
+
         {/* old network select */}
         {/* <div className="m-2  w-28 ">
           <Select className="w-full text-left" value={targetNetwork.name} onChange={onChangeNetwork}>
             {selectNetworkOptions}
           </Select>
         </div> */}
-        {/* <div className="flex-1"></div> */}
-        {/* <div className="flex-2">Manage</div> */}
+        <div className="flex items-center">
+          <Link to={"/manage"}>
+            <Button icon={<SettingOutlined />}>Manage</Button>
+          </Link>
+        </div>
       </div>
     </>
   );
