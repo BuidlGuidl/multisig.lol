@@ -696,6 +696,7 @@ function App(props) {
     hiddenWallets,
     hideWalletItem,
     onUnhideWallet,
+    gasPrice,
   };
 
   return (
@@ -704,7 +705,6 @@ function App(props) {
         {HeaderBar}
         <WalletActions />
         {MainMenu}
-
         {Object.keys(writeContracts).length > 0 && Object.keys(readContracts).length > 0 && (
           <>
             <Routes

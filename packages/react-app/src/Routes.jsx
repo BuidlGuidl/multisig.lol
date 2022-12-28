@@ -41,6 +41,7 @@ const Routes = ({
   isFactoryDeployed,
   // allOwnerEvents,
   contractNameForEvent,
+  gasPrice,
 }) => {
   return (
     <>
@@ -158,6 +159,7 @@ const Routes = ({
             blockExplorer={blockExplorer}
             nonce={nonce}
             signaturesRequired={signaturesRequired}
+            gasPrice={gasPrice}
           />
         </Route>
         <Route exact path="/debug">
