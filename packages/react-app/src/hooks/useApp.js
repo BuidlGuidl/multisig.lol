@@ -10,13 +10,14 @@ import {
   useBalance,
   useContractLoader,
   useContractReader,
-  useGasPrice,
+  // useGasPrice,
   useOnBlock,
   useUserProviderAndSigner,
 } from "eth-hooks";
 
 import { Transactor, Web3ModalSetup } from "../helpers";
 import useEventListener from "./useEventListener";
+import { useGasPrice } from "./index";
 
 export default function useApp({
   targetNetwork,
@@ -42,7 +43,7 @@ export default function useApp({
   const price = useExchangeEthPrice(targetNetwork, mainnetProvider);
 
   /* 🔥 This hook will get the price of Gas from ⛽️ EtherGasStation */
-  const gasPrice = useGasPrice(targetNetwork, "fast");
+  const gasPrice = useGasPrice(targetNetwork, "FastGasPrice");
   // Use your injected provider from 🦊 Metamask or if you don't have it then instantly generate a 🔥 burner wallet.
   const userProviderAndSigner = useUserProviderAndSigner(injectedProvider, localProvider, USE_BURNER_WALLET);
 
