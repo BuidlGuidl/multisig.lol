@@ -25,15 +25,11 @@ const useTransactor = () => {
 
       try {
         const transaction = await tx
-        const network = await signer.provider?.getNetwork()
-        const notify = Notify({
-          dappId: process.env.NEXT_PUBLIC_BLOCKNATIVE_API_KEY, // [String] The API key created by step one above
-          networkId: network?.chainId, // [Integer] The Ethereum network ID your Dapp uses.
-        })
-
-        notify.hash(transaction.hash)
+        toast({ title: 'Transaction submitted', status: 'loading', isClosable: true, position: 'top-right' })
 
         await transaction.wait(confirmations)
+
+        toast({ title: 'Transaction confirmed', status: 'success', isClosable: true, position: 'top-right' })
 
         if (cb) cb(transaction.hash)
         setLoading(false)
