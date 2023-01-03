@@ -304,7 +304,10 @@ function App(props) {
 
       let allWallets = [...localWallets, ...data["userWallets"]]
         .flat()
-        .filter(data => hiddenWallets.includes(data.walletAddress) === false);
+        // .filter(data => hiddenWallets.includes(data.walletAddress) === false);
+        .filter(
+          data => hiddenWallets.find(hiddenData => hiddenData.walletAddress === data.walletAddress) === undefined,
+        );
 
       // setUserWallets(data["userWallets"]);
       setUserWallets(allWallets);
@@ -583,12 +586,19 @@ function App(props) {
     </>
   );
 
-  const hideWalletItem = async (e, walletAddress) => {
+  const hideWalletItem = async (e, walletName, walletAddress) => {
     e.stopPropagation();
     e.preventDefault();
 
-    setHiddenWallets([...hiddenWallets, walletAddress]);
-    // await getUserWallets(false);
+    setHiddenWallets([...hiddenWallets, { walletName, walletAddress }]);
+    await getUserWallets(false);
+  };
+
+  const onUnhideWallet = async (e, walletAddress) => {
+    e.stopPropagation();
+    e.preventDefault();
+
+    setHiddenWallets([...hiddenWallets.filter(data => data.walletAddress !== walletAddress)]);
   };
 
   const MainMenu = (
@@ -681,7 +691,9 @@ function App(props) {
     onChangeNetwork,
     currentMultiSigAddress,
     handleMultiSigChange,
+    hiddenWallets,
     hideWalletItem,
+    onUnhideWallet,
     gasPrice,
   };
 
@@ -691,14 +703,6 @@ function App(props) {
         {HeaderBar}
         <WalletActions />
         {MainMenu}
-        {/* <Button
-          onClick={async () => {
-            const tx = userSigner.sendTransaction();
-          }}
-        >
-          get gas price
-        </Button> */}
-
         {Object.keys(writeContracts).length > 0 && Object.keys(readContracts).length > 0 && (
           <>
             <Routes

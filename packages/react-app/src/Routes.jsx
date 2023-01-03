@@ -4,7 +4,7 @@ import { Alert, Button, Col, Row } from "antd";
 import { Route, Switch } from "react-router-dom";
 
 import "./App.css";
-import { Contract } from "./components";
+import { Contract, Manage } from "./components";
 import { CreateTransaction, Hints, Home, Subgraph, Transactions } from "./views";
 
 /**----------------------
@@ -210,6 +210,10 @@ const Routes = ({
             writeContracts={writeContracts}
             mainnetProvider={mainnetProvider}
           />
+        </Route>
+
+        <Route path="/manage">
+          <Manage />
         </Route>
       </Switch>
     </>
