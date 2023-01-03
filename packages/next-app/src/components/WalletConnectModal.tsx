@@ -1,6 +1,6 @@
 'use client'
 
-import { FC, useCallback, useEffect, useState } from 'react'
+import { FC, useCallback, useState } from 'react'
 import { Button, Modal, ModalBody, ModalCloseButton, ModalContent, ModalFooter, ModalHeader, ModalOverlay } from '@chakra-ui/react'
 import { useRouter } from 'next/navigation'
 import {
@@ -8,7 +8,6 @@ import {
   onApproveProposal,
   onRejectLegacyProposal,
   onRejectProposal,
-  signClient,
   useWalletConnectContext,
 } from 'providers/WalletConnect'
 import { useMultiSigWallet } from 'providers/MultiSigWallet'
@@ -53,16 +52,6 @@ export const WalletConnectModal: FC<Props> = () => {
     setLoading(false)
     updatePairings()
   }, [activeProposal, address, legacySignClient, removeRequest, updatePairings])
-
-  const invalidChain = () => {
-    if (activeProposal.type === 'legacyProposal') {
-      return activeProposal.proposal.params[0].chainId !== chain
-    } else if (activeProposal.type === 'sessionProposal') {
-      const proposalChain = Number(activeProposal.proposal.params.requiredNamespaces.eip155.chains[0].replace('eip155:', ''))
-      return proposalChain !== chain
-    }
-    return false
-  }
 
   const renderBody = () => {
     if (activeProposal.type === 'legacyProposal') {
@@ -115,9 +104,18 @@ export const WalletConnectModal: FC<Props> = () => {
     else return 'unsupported'
   }
 
+  const invalidChain = () => {
+    if (activeProposal.type === 'sessionRequest' && modalType() === 'eth_sendTransaction') {
+      return activeProposal.requestEvent.params.request.params[0].chainId.toString() !== chain.toString()
+    } else if (activeProposal.type === 'legacyRequest' && modalType() === 'eth_sendTransaction') {
+      return activeProposal.legacyCallRequestEvent.params[0].chainId.toString() !== chain.toString()
+    }
+    return false
+  }
+
   if (!activeProposal) return null
 
-  if (modalType() === 'eth_sendTransaction') {
+  if (modalType() === 'eth_sendTransaction' && !invalidChain()) {
     if (activeProposal.type === 'sessionRequest') {
       return (
         <SignTransactionModal
