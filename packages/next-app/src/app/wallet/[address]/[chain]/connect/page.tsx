@@ -14,6 +14,14 @@ export default function Page(props: any) {
       <Button>
         <Link href={`${pathName}/walletconnect`}>Walletconnect</Link>
       </Button>
+
+      <Button>
+        <Link href={`${pathName}/safe-app?url=${encodeURIComponent('https://multisig-safe-apps.surge.sh/sendEth')}`}>Send ETH</Link>
+      </Button>
+
+      <Button>
+        <Link href={`${pathName}/safe-app?url=${encodeURIComponent('https://multisig-safe-apps.surge.sh/customCall')}`}>Custom call</Link>
+      </Button>
     </Flex>
   )
 }

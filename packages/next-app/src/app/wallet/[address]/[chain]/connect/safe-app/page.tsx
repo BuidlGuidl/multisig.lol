@@ -2,6 +2,7 @@
 import { Button, Input } from '@chakra-ui/react'
 
 import { SignTransactionModal } from 'components/SignTransactionModal'
+import { useSearchParams } from 'next/navigation'
 import { useMultiSigWallet } from 'providers/MultiSigWallet'
 import { useSafeInject } from 'providers/Safe'
 import { useState } from 'react'
@@ -11,7 +12,10 @@ export default function Page(props: any) {
   const [refresh, setRefresh] = useState(1)
   const [isIFrameLoading, setIsIFrameLoading] = useState(true)
   const { nonce } = useMultiSigWallet()
-  const [url, setUrl] = useState<string>()
+
+  const searchParams = useSearchParams()
+  const fixedUrl = searchParams.get('url')
+  const [url, setUrl] = useState<string | undefined>(fixedUrl || undefined)
 
   return (
     <>
@@ -21,6 +25,7 @@ export default function Page(props: any) {
           setUrl(e.target.value)
         }}
         value={url}
+        disabled={!!fixedUrl}
       />
       <Button
         onClick={() => {
