@@ -8,7 +8,6 @@ import "./index.css";
 import { SafeInjectProvider } from "./contexts/SafeInjectContext";
 import { createRoot } from "react-dom/client";
 
-
 const themes = {
   dark: `${process.env.PUBLIC_URL}/dark-theme.css`,
   light: `${process.env.PUBLIC_URL}/light-theme.css`,
