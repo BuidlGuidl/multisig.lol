@@ -2,10 +2,12 @@ import { ApolloClient, ApolloProvider, InMemoryCache } from "@apollo/client";
 import React from "react";
 import { ThemeSwitcherProvider } from "react-css-theme-switcher";
 import { BrowserRouter } from "react-router-dom";
-import ReactDOM from "react-dom";
+// import ReactDOM from "react-dom";
 import App from "./App";
 import "./index.css";
 import { SafeInjectProvider } from "./contexts/SafeInjectContext";
+import { createRoot } from "react-dom/client";
+
 
 const themes = {
   dark: `${process.env.PUBLIC_URL}/dark-theme.css`,
@@ -21,7 +23,10 @@ const client = new ApolloClient({
   cache: new InMemoryCache(),
 });
 
-ReactDOM.render(
+// react 18 adjustments
+const container = document.getElementById("root");
+const root = createRoot(container);
+root.render(
   <ApolloProvider client={client}>
     <ThemeSwitcherProvider themeMap={themes} defaultTheme={prevTheme || "light"}>
       <BrowserRouter>
@@ -31,5 +36,4 @@ ReactDOM.render(
       </BrowserRouter>
     </ThemeSwitcherProvider>
   </ApolloProvider>,
-  document.getElementById("root"),
 );
