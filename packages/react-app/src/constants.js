@@ -231,3 +231,14 @@ export const Sleep = time =>
       resolve(true);
     }, time),
   );
+
+export const getPriceModePrefix = modeString => {
+  switch (modeString) {
+    case "USD":
+      return "$";
+    case "ETH":
+      return "Ξ";
+    default:
+      return "Ξ";
+  }
+};

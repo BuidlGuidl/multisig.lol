@@ -1,6 +1,6 @@
 import { useContractReader } from "eth-hooks";
 import { ethers } from "ethers";
-import React, { useState } from "react";
+import React, { useState, useEffect } from "react";
 import { Link } from "react-router-dom";
 import { Button, Typography, Card, Tooltip } from "antd";
 import { SendOutlined, SearchOutlined } from "@ant-design/icons";
@@ -21,9 +21,25 @@ function SendEth({
   readContracts,
   contractName,
 }) {
-  //   const [to, setTo] = useLocalStorage("to", undefined);
+  const [cachedToAddress, setCachedToAddress] = useLocalStorage("cachedToAddress", undefined, 60000);
+  const [cachedAmount, setCachedAmount] = useLocalStorage("cachedAmount", 0, 60000);
   const [toAddress, setToAddress] = useState(undefined);
-  const [amount, setAmount] = useState(0);
+  const [amount, setAmount] = useState();
+
+  useEffect(() => {
+    cachedToAddress && setToAddress(cachedToAddress);
+    cachedAmount && setAmount(cachedAmount);
+  }, []);
+
+  const handleAddressChange = newAddress => {
+    setToAddress(newAddress);
+    setCachedToAddress(newAddress);
+  };
+
+  const handleAmountChange = newAmount => {
+    setAmount(newAmount);
+    setCachedAmount(newAmount);
+  };
 
   const onSendEth = async () => {
     try {
@@ -73,11 +89,11 @@ function SendEth({
             ensProvider={mainnetProvider}
             placeholder={"Recepient address"}
             value={toAddress}
-            onChange={setToAddress}
+            onChange={handleAddressChange}
           />
         </div>
         <div className="p-2">
-          <EtherInput price={price} mode="USD" value={amount} onChange={setAmount} provider={localProvider} />
+          <EtherInput price={price} mode="USD" value={amount} onChange={handleAmountChange} provider={localProvider} />
         </div>
 
         <Tooltip title="Send eth">
