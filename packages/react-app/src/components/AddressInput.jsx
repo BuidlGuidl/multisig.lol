@@ -1,5 +1,5 @@
 import { Badge, Input } from "antd";
-import React, { useCallback, useState } from "react";
+import React, { useCallback, useState, useEffect } from "react";
 import { ethers } from "ethers";
 import { CameraOutlined, QrcodeOutlined } from "@ant-design/icons";
 import { useLookupAddress } from "eth-hooks/dapps/ens";
@@ -36,12 +36,16 @@ const isENS = (address = "") => address.endsWith(".eth") || address.endsWith(".x
                           or onChange={address => { setToAddress(address);}}
 **/
 export default function AddressInput(props) {
-  const { ensProvider, onChange } = props;
-  const [value, setValue] = useState(props.value);
+  const { ensProvider, onChange, value: defaultValue } = props;
+  const [value, setValue] = useState();
   const [scan, setScan] = useState(false);
 
-  const currentValue = typeof props.value !== "undefined" ? props.value : value;
+  const currentValue = typeof defaultValue !== "undefined" ? defaultValue : value;
   const ens = useLookupAddress(props.ensProvider, currentValue);
+
+  useEffect(() => {
+    defaultValue && setValue(defaultValue);
+  }, [defaultValue]);
 
   const updateAddress = useCallback(
     async newValue => {
