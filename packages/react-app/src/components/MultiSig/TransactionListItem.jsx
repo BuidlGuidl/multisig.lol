@@ -86,6 +86,22 @@ export default function TransactionListItem({
           <>{children}</>
         </>
       );
+    } else if (toSelf && !txnData[item.hash]?.functionFragment?.name) {
+      return (
+        <>
+          <span style={{ fontSize: 16, fontWeight: "bold" }}>Cancel Pending Tx</span>
+          {ethers.utils.isAddress(txnData[item.hash]?.args[0]) && (
+            <Address
+              address={txnData[item.hash]?.args[0]}
+              ensProvider={mainnetProvider}
+              blockExplorer={blockExplorer}
+              fontSize={16}
+            />
+          )}
+          <span style={{ fontSize: 16 }}>with Nonce #{item.nonce.toNumber()}</span>
+          <>{children}</>
+        </>
+      );
     } else if (!txnData[item.hash]?.functionFragment?.name) {
       return (
         <>
