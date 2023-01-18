@@ -135,30 +135,17 @@ export default function CreateTransaction({
         setIsOwner(isOwner);
 
         if (isOwner) {
-          const res =
-            methodName == "cancelPendingTx"
-              ? await axios.post(poolServerUrl, {
-                  chainId: localProvider._network.chainId,
-                  address: readContracts[contractName]?.address,
-                  nonce: cancelTxNonce,
-                  to: executeToAddress,
-                  amount: "0",
-                  data: callData,
-                  hash: newHash,
-                  signatures: [signature],
-                  signers: [recover],
-                })
-              : await axios.post(poolServerUrl, {
-                  chainId: localProvider._network.chainId,
-                  address: readContracts[contractName]?.address,
-                  nonce: customNonce,
-                  to: executeToAddress,
-                  amount,
-                  data: callData,
-                  hash: newHash,
-                  signatures: [signature],
-                  signers: [recover],
-                });
+          const res = await axios.post(poolServerUrl, {
+            chainId: localProvider._network.chainId,
+            address: readContracts[contractName]?.address,
+            nonce: methodName == "cancelPendingTx" ? cancelTxNonce : customNonce,
+            to: executeToAddress,
+            amount: methodName == "cancelPendingTx" ? "0" : amount,
+            data: callData,
+            hash: newHash,
+            signatures: [signature],
+            signers: [recover],
+          });
 
           if (isIframe) {
             setLoading(prev => false);
