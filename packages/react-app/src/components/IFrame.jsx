@@ -38,7 +38,7 @@ export default function IFrame({
 
   useEffect(() => {
     const fetchSafeDapps = async chainId => {
-      const response = await axios.get(`https://safe-client.gnosis.io/v1/chains/${chainId}/safe-apps`);
+      const response = await axios.get(`https://safe-client.gnosis.io/v1/chains/${ chainId }/safe-apps`);
       setSafeDapps(dapps => ({
         ...dapps,
         [chainId]: response.data.filter(d => ![29, 11].includes(d.id)), // Filter out Transaction Builder and WalletConnect
