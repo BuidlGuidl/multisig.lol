@@ -1,22 +1,30 @@
+import { Layout, Typography } from "antd";
 import React from "react";
-import { Typography } from "antd";
+
+const { Header } = Layout;
 
 const { Title } = Typography;
 
 // displays a page header
 
-export default function Header(props) {
+export default function MainHeader(props) {
   return (
-    <div className="flex justify-between items-center p-2  shadow-sm">
-      <div className=" flex flex-1 items-center">
+    <Header
+      className="site-layout-background flex justify-between items-center"
+      style={{
+        padding: 0,
+        lineHeight: 2,
+      }}
+    >
+      <div className="flex flex-1 items-center">
         <Title level={4} style={{ margin: "0 0.5rem 0 0" }}>
-          👛 multisig.lol
+          👛 Multisig
         </Title>
-        <a href="https://github.com/buidlguidl/multisig.lol" target="_blank">
+        {/* <a href="https://github.com/buidlguidl/multisig.lol" target="_blank" rel="noreferrer">
           warning: prototype for testnet use (plz fork)
-        </a>
+        </a> */}
       </div>
-      {props.children}
-    </div>
+      <div className="">{props.children}</div>
+    </Header>
   );
 }

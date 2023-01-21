@@ -132,4 +132,21 @@ contract MultiSigFactory {
 
         return computed_address;
     }
+
+    /**----------------------
+     * return wallets for an address
+     * ---------------------*/
+
+    // function getWallets(address userAddress) public view returns (address[] memory) {
+    //     address[] memory wallets = new address[](multiSigs.length);
+
+    //     for (uint256 i = 0; i < multiSigs.length; i++) {
+    //         MultiSigWallet multiSig = multiSigs[i];
+    //         if (multiSig.isOwner(userAddress)) {
+    //             wallets[i] = address(multiSig);
+    //         }
+    //     }
+
+    //     return (wallets);
+    // }
 }

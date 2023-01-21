@@ -1,7 +1,9 @@
+export { default as Home } from "./Home";
 export { default as ExampleUI } from "./ExampleUI";
 export { default as Hints } from "./Hints";
 export { default as Subgraph } from "./Subgraph";
-
-export { default as Home } from "./Home";
-export { default as CreateTransaction } from "./CreateTransaction";
-export { default as Transactions } from "./Transactions";
+export { default as NewTranscaction } from "./NewTranscaction";
+export { default as Transcations } from "./Transcations";
+export { default as CreateWallet } from "./CreateWallet";
+export { default as SafeApps } from "./SafeApps";
+export { default as Manage } from "./Manage";

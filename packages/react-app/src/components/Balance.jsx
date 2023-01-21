@@ -78,7 +78,6 @@ export default function Balance(props) {
       style={{
         verticalAlign: "middle",
         fontSize: props.size ? props.size : 24,
-        padding: "0 0.5rem",
         cursor: "pointer",
       }}
       onClick={() => {

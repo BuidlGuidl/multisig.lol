@@ -140,11 +140,7 @@ export type _ChainInfo = {
 };
 export declare type ChainInfo = Pick<
   _ChainInfo,
-  | "chainName"
-  | "chainId"
-  | "shortName"
-  | "nativeCurrency"
-  | "blockExplorerUriTemplate"
+  "chainName" | "chainId" | "shortName" | "nativeCurrency" | "blockExplorerUriTemplate"
 >;
 export enum TransactionStatus {
   AWAITING_CONFIRMATIONS = "AWAITING_CONFIRMATIONS",
@@ -320,13 +316,7 @@ export type Creation = {
   implementation?: AddressEx;
   factory?: AddressEx;
 };
-export type TransactionInfo =
-  | Transfer
-  | SettingsChange
-  | Custom
-  | MultiSend
-  | Cancellation
-  | Creation;
+export type TransactionInfo = Transfer | SettingsChange | Custom | MultiSend | Cancellation | Creation;
 export type TransactionData = {
   hexData?: string;
   dataDecoded?: DataDecoded;
@@ -375,9 +365,7 @@ export type MultisigExecutionDetails = {
   rejectors?: AddressEx[];
   gasTokenInfo?: TokenInfo;
 };
-export type DetailedExecutionInfo =
-  | ModuleExecutionDetails
-  | MultisigExecutionDetails;
+export type DetailedExecutionInfo = ModuleExecutionDetails | MultisigExecutionDetails;
 export type SafeAppInfo = {
   name: string;
   url: string;

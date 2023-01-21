@@ -3,12 +3,18 @@
 export const INFURA_ID = "5ce0898319eb4f5c9d4c982c8f78392a";
 
 // MY ETHERSCAN_ID, SWAP IN YOURS FROM https://etherscan.io/myapikey
-export const ETHERSCAN_KEY = process.env.REACT_APP_ETHERSCAN_API_KEY ?? "DNXJA8RX2Q3VZ4URQIWP7Z68CJXQZSC6AW";
+export const ETHERSCAN_KEY = "DNXJA8RX2Q3VZ4URQIWP7Z68CJXQZSC6AW";
 
 // BLOCKNATIVE ID FOR Notify.js:
 export const BLOCKNATIVE_DAPPID = "0b58206a-f3c0-4701-a62f-73c7243e8c77";
 
 export const ALCHEMY_KEY = "oKxs-03sij-U_N0iOlrSsZFr29-IqbuF";
+
+export const RPC_POLL_TIME = 30000;
+
+const localRpcUrl = process.env.REACT_APP_CODESPACES
+  ? `https://${window.location.hostname.replace("3000", "8545")}`
+  : "http://" + (global.window ? window.location.hostname : "localhost") + ":8545";
 
 export const NETWORKS = {
   localhost: {
@@ -16,7 +22,7 @@ export const NETWORKS = {
     color: "#666666",
     chainId: 31337,
     blockExplorer: "",
-    rpcUrl: "http://" + (global.window ? window.location.hostname : "localhost") + ":8545",
+    rpcUrl: localRpcUrl,
   },
   mainnet: {
     name: "mainnet",
@@ -213,7 +219,7 @@ export const getFactoryVersion = async contract => {
     const factoryVersion = await contract.factoryVersion();
     return Number(factoryVersion.toString());
   } catch (error) {
-    // console.log("n-error: ", error);
+    console.log("n-error: ", error);
     // if no factory version variable that mean its version zero
     console.log("its older factory version !!");
     return 0;
@@ -225,3 +231,11 @@ export const Sleep = time =>
       resolve(true);
     }, time),
   );
+
+export const TX_TYPES = {
+  SEND_ETH: "send",
+  CUSTOM_CALL: "custom call",
+  ADD_SIGNER: "addSigner",
+  REMOVE_SIGNER: "removeSigner",
+  SAFE_APP: "SAFE APP",
+};

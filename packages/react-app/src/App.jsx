@@ -1,56 +1,65 @@
-import { Button, Col, Menu, Row, Select, Dropdown } from "antd";
-import { MinusCircleOutlined } from "@ant-design/icons";
+import { Button, Col, Row } from "antd";
 
-import Routes from "./Routes";
+import { useHistory } from "react-router-dom";
+
+import { useContractReader } from "eth-hooks";
+
+import { Faucet, GasGauge, Ramp } from "./components";
+import AppLayout from "./components/AppLayout";
+import NetworkDisplay from "./components/NetworkDisplay";
+import useLocalStorage from "./hooks/useLocalStorage";
 import StoreProvider from "./store/StoreProvider";
-import WalletActions from "./components/MultiSig/WalletActions";
-
-// import CreateMultiSigModal from "./components/MultiSig/CreateMultiSigModal";
+import { CreateWallet, Home, NewTranscaction, Transcations, SafeApps, Manage } from "./views";
+import { SafeInjectProvider } from "./store/SafeInjectProvider";
 
 import "antd/dist/antd.css";
-import { useOnBlock } from "eth-hooks";
-import { useCallback, useEffect, useState } from "react";
-import { Link, useLocation } from "react-router-dom";
-import "./App.css";
+
 import {
-  Account,
-  CreateMultiSigModal,
-  Faucet,
-  FaucetHint,
-  GasGauge,
-  Header,
-  ImportMultiSigModal,
-  NetworkDisplay,
-  NetworkSwitch,
-  Ramp,
-  ThemeSwitch,
-} from "./components";
-import { ALCHEMY_KEY, NETWORKS, Sleep } from "./constants";
-//import multiSigWalletABI from "./contracts/multi_sig_wallet";
+  useBalance,
+  useContractLoader,
+  useGasPrice,
+  // useOnBlock,
+  useUserProviderAndSigner,
+} from "eth-hooks";
+import { useExchangeEthPrice } from "eth-hooks/dapps/dex";
+import { ethers } from "ethers";
+import React, { useCallback, useEffect, useState } from "react";
+import { Route, Switch } from "react-router-dom";
+
+import "./App.css";
+import { Account, MainHeader, NetworkSwitch, SafeApp, ThemeSwitch } from "./components";
+import { ALCHEMY_KEY, NETWORKS } from "./constants";
+import externalContracts from "./contracts/external_contracts";
 // contracts
-import axios from "axios";
 import MultiSigWalletAbi from "./configs/MultiSigWallet_ABI.json";
-import hardhatContracts from "./contracts/hardhat_contracts.json";
 import _deployedContracts from "./contracts/deployed_contracts.json";
+import hardhatContracts from "./contracts/hardhat_contracts.json";
+import { Transactor, Web3ModalSetup, getRPCPollTime } from "./helpers";
+import { useStaticJsonRPC } from "./hooks";
+// import SafeApps from "./views/SafeApps";
+// import Manage from "./views/Manage";
 
-import { Web3ModalSetup } from "./helpers";
-import { useLocalStorage } from "./hooks";
-import useApp from "./hooks/useApp";
-// import { useStore } from "./store/useStore";
+/*
+    Welcome to 🏗 scaffold-eth !
 
-let deployedContracts = {
-  ..._deployedContracts,
-  ...hardhatContracts,
-};
+    Code:
+    https://github.com/scaffold-eth/scaffold-eth
 
-console.log("deployedContracts", deployedContracts);
+    Support:
+    https://t.me/joinchat/KByvmRe5wkR-8F_zz6AjpA
+    or DM @austingriffith on twitter or telegram
 
-const { Option } = Select;
-const { ethers } = require("ethers");
+    You should get your own Alchemy.com & Infura.io ID and put it in `constants.js`
+    (this is your connection to the main Ethereum network for ENS etc.)
+
+
+    🌏 EXTERNAL CONTRACTS:
+    You can also bring in contract artifacts in `constants.js`
+    (and then use the `useExternalContractLoader()` hook!)
+*/
 
 /// 📡 What chain are your contracts deployed to?
-const initialNetwork = NETWORKS.mainnet; // <------- select your target frontend network (localhost, rinkeby, xdai, mainnet)
-// const initialNetwork = NETWORKS.localhost; // <------- select your target frontend network (localhost, rinkeby, xdai, mainnet)
+const initialNetwork = NETWORKS.localhost; // <------- select your target frontend network (localhost, goerli, xdai, mainnet)
 
 // 😬 Sorry for all the console logging
 const DEBUG = true;
@@ -60,220 +69,150 @@ const USE_NETWORK_SELECTOR = true;
 
 const web3Modal = Web3ModalSetup();
 
-/**----------------------
- * taking hardcoded multi sig wallet abi from MultiSigWallet_ABI.json file
- * note: if you update MultiSigWallet.sol file then you need to update this file from hardhat artifacts wallet
- * ---------------------*/
-const multiSigWalletABI = MultiSigWalletAbi["abi"];
-
 // 🛰 providers
 const providers = [
   "https://eth-mainnet.gateway.pokt.network/v1/lb/611156b4a585a20035148406",
   `https://eth-mainnet.alchemyapi.io/v2/${ALCHEMY_KEY}`,
   "https://rpc.scaffoldeth.io:48544",
 ];
+
+let deployedContracts = {
+  ..._deployedContracts,
+  ...hardhatContracts,
+};
+
+console.log("deployedContracts", deployedContracts);
+
+const WALLET_CONTRACT_ADDRESS = "0x924E029aa245AbADC5Ebd379457eAa48Cf0E4422";
+// const WALLET_CONTRACT_ADDRESS = "0xb3E2A650c9032A40168148e5b1bdb69E68A461D8";
+
+const multiSigWalletABI = MultiSigWalletAbi["abi"];
+const walletContractName = "MultiSigWallet";
+const factoryContractName = "MultiSigFactory";
+
 function App(props) {
-  // specify all the chains your app is available on. Eg: ['localhost', 'mainnet', ...otherNetworks ]
-  // reference './constants.js' for other networks
-  const networkOptions = [initialNetwork.name, "mainnet", "rinkeby"];
+  const history = useHistory();
+  const networkOptions = [initialNetwork.name, "mainnet", "goerli"];
+
+  // const targetNetwork = NETWORKS[selectedNetwork];
 
   const cachedNetwork = window.localStorage.getItem("network");
   let targetNetwork = NETWORKS[cachedNetwork || "mainnet"];
 
-  /**----------------------
-   * local states
-   * ---------------------*/
   const [injectedProvider, setInjectedProvider] = useState();
   const [address, setAddress] = useState();
   const [selectedNetwork, setSelectedNetwork] = useState(networkOptions[0]);
-  const [userWallets, setUserWallets] = useState(undefined);
-  const [reDeployWallet, setReDeployWallet] = useState(undefined);
-  const [updateServerWallets, setUpdateServerWallets] = useState(false);
-  const location = useLocation();
-  const [isCreateModalVisible, setIsCreateModalVisible] = useState(false);
-  const [multiSigs, setMultiSigs] = useState([]);
-  const [currentMultiSigAddress, setCurrentMultiSigAddress] = useState();
-  const [signaturesRequired, setSignaturesRequired] = useState();
-  const [nonce, setNonce] = useState(0);
-  const [contractNameForEvent, setContractNameForEvent] = useState();
-  // const [ownerEvents, setOwnerEvents] = useState();
-  // const [executeTransactionEvents, setExecuteTransactionEvents] = useState();
-
-  const [importedMultiSigs] = useLocalStorage("importedMultiSigs");
-  const [hiddenWallets, setHiddenWallets] = useLocalStorage("hiddenWallets", []);
-  const [multiSigFactoryData, setMultiSigFactoryData] = useLocalStorage("multiSigFactoryData");
+  const [selectedWalletAddress, setSelectedWalletAddress] = useState(undefined);
+  const [refreshToggle, setRefreshToggle] = useState(false);
+  const [isWalletLoaded, setIsWalletLoaded] = useState(false);
+  const [signaturesRequired, setSignaturesRequired] = useState(false);
+  const [userWallets, setUserWallets] = useState([]);
 
   const [mainWalletConnectSession, setMainWalletConnectSession] = useLocalStorage("walletConnectSession_main");
-  const [selectedWalletAddress, setSelectedWalletAddress] = useLocalStorage("selectedWalletAddress");
+  const [importedWalletList, setImportedWalletList] = useLocalStorage("importedWalletList", []);
+  const [hiddenWalletList, setHiddenWalletList] = useLocalStorage("hiddenWalletList", []);
 
-  /**----------------------
-   * initial configs
-   * ---------------------*/
+  // a local storage to persist selected wallet data
+  const [walletData, setWalletData] = useLocalStorage("_walletData", {
+    [targetNetwork.chainId]: {
+      selectedWalletAddress: undefined,
+      selectedWalletName: undefined,
+    },
+  });
 
   // backend transaction handler:
-  let BACKEND_URL = "http://localhost:49899/";
-  if (targetNetwork && targetNetwork.name && targetNetwork.name != "localhost") {
-    BACKEND_URL = "https://backend.multisig.lol:49899/";
+  let BACKEND_URL = "http://localhost:49899";
+  if (targetNetwork && targetNetwork.name && targetNetwork.name !== "localhost") {
+    // BACKEND_URL = "https://backend.multisig.lol:49899";
+    BACKEND_URL = "https://gorgeous-leather-jacket-crow.cyclic.app"; // cyclic.sh backend
   }
-
-  if (!targetNetwork) targetNetwork = NETWORKS["mainnet"];
 
   // 🔭 block explorer URL
   const blockExplorer = targetNetwork.blockExplorer;
 
-  let isFactoryDeployed = deployedContracts[targetNetwork.chainId];
-  const contractName = "MultiSigWallet";
+  // load all your providers
+  const localProvider = useStaticJsonRPC([
+    process.env.REACT_APP_PROVIDER ? process.env.REACT_APP_PROVIDER : targetNetwork.rpcUrl,
+  ]);
 
-  /**----------------------
-   * apps root providers and setup configs
-   * ---------------------*/
-  const {
-    localProvider,
-    mainnetProvider,
-    price,
-    gasPrice,
-    userProviderAndSigner,
-    userSigner,
-    localChainId,
-    selectedChainId,
-    tx,
-    yourLocalBalance,
-    contractConfig,
-    readContracts,
-    writeContracts,
-    mainnetContracts,
-    contractAddress,
-    // ownersMultiSigEvents,
-    walletCreate2Events,
-    // allExecuteTransactionEvents,
-    // allOwnerEvents,
-    signaturesRequiredContract,
-    nonceContract,
-  } = useApp({
-    targetNetwork,
-    providers,
-    injectedProvider,
-    USE_BURNER_WALLET,
-    address,
-    deployedContracts,
-    DEBUG,
-    currentMultiSigAddress,
-    contractNameForEvent,
-    reDeployWallet,
-    contractName,
-  });
+  const mainnetProvider = useStaticJsonRPC(providers, localProvider);
 
-  // If you want to call a function on a new block
-  useOnBlock(mainnetProvider, () => {
-    console.log(`⛓ A new mainnet block is here: ${mainnetProvider._lastBlockNumber}`);
-  });
+  // Sensible pollTimes depending on the provider you are using
+  const localProviderPollingTime = getRPCPollTime(localProvider);
+  const mainnetProviderPollingTime = getRPCPollTime(mainnetProvider);
 
-  /**----------------------
-   * methods
-   * ---------------------*/
+  if (DEBUG) console.log(`Using ${selectedNetwork} network`);
+
+  // 🛰 providers
+  if (DEBUG) console.log("📡 Connecting to Mainnet Ethereum");
 
   const logoutOfWeb3Modal = async () => {
     await web3Modal.clearCachedProvider();
     if (injectedProvider && injectedProvider.provider && typeof injectedProvider.provider.disconnect == "function") {
       await injectedProvider.provider.disconnect();
     }
-
-    // ON LOGOUT REMOVING ALL WALLET CONNECT SESSIONS
-    localStorage.removeItem("walletconnect");
-    localStorage.removeItem("walletConnectSession_wallet");
-    localStorage.removeItem("walletConnectSession_main");
-    localStorage.removeItem("walletConnectUri_wallet");
-    localStorage.removeItem("isConnected_wallet");
     setTimeout(() => {
       window.location.reload();
     }, 1);
   };
 
-  const handleMultiSigChange = async value => {
-    setContractNameForEvent(null);
-    setCurrentMultiSigAddress(value);
-    setSelectedWalletAddress(value);
-  };
+  /* 💵 This hook will get the price of ETH from 🦄 Uniswap: */
+  const price = useExchangeEthPrice(targetNetwork, mainnetProvider, mainnetProviderPollingTime);
 
-  async function getAddress() {
-    if (userSigner) {
-      const newAddress = await userSigner.getAddress();
-      setAddress(newAddress);
-    }
-  }
+  /* 🔥 This hook will get the price of Gas from ⛽️ EtherGasStation */
+  const gasPrice = useGasPrice(targetNetwork, "fast", localProviderPollingTime);
+  // Use your injected provider from 🦊 Metamask or if you don't have it then instantly generate a 🔥 burner wallet.
+  const userProviderAndSigner = useUserProviderAndSigner(injectedProvider, localProvider, USE_BURNER_WALLET);
+  const userSigner = userProviderAndSigner.signer;
 
-  const updateUserWallets = () => {
-    let multiSigsForUser = userWallets && [...userWallets.map(data => data.walletAddress)];
-
-    const recentMultiSigAddress = multiSigsForUser && multiSigsForUser[multiSigsForUser.length - 1];
-    setCurrentMultiSigAddress(recentMultiSigAddress);
-    // setMultiSigs(multiSigsForUser);
-  };
-
-  const createEthersContractWallet = () => {
-    async function getContractValues() {
-      const latestSignaturesRequired = await readContracts.MultiSigWallet.signaturesRequired();
-      setSignaturesRequired(latestSignaturesRequired);
-
-      const nonce = await readContracts.MultiSigWallet.nonce();
-      setNonce(nonce);
-    }
-
-    let currentMultiSig = userWallets && userWallets.find(data => data.walletAddress === currentMultiSigAddress);
-    let currentMultiSigChainIds = currentMultiSig?.chainIds;
-
-    // on load contracts if current sig on  same chain id
-    if (
-      currentMultiSigAddress &&
-      currentMultiSigChainIds &&
-      currentMultiSigChainIds.map(id => Number(id))?.includes(Number(selectedChainId))
-    ) {
-      readContracts.MultiSigWallet = new ethers.Contract(currentMultiSigAddress, multiSigWalletABI, localProvider);
-      writeContracts.MultiSigWallet = new ethers.Contract(currentMultiSigAddress, multiSigWalletABI, userSigner);
-      setContractNameForEvent("MultiSigWallet");
-      getContractValues();
-      setReDeployWallet(undefined);
-    } else {
-      setReDeployWallet(currentMultiSig);
-    }
-  };
-
-  const syncWalletsWithServer = async () => {
-    // let factoryVersion = await getFactoryVersion();
-    let totalWalletCount = await readContracts["MultiSigFactory"]?.numberOfMultiSigs();
-    totalWalletCount = totalWalletCount ? totalWalletCount.toNumber() : 0;
-
-    if (totalWalletCount !== 0 && totalWalletCount === walletCreate2Events.length && updateServerWallets === false) {
-      // if (userWallets !== undefined && totalWalletCount !== userWallets.length) {
-      let walletsData = walletCreate2Events.map(data => data.args);
-      /**----------------------
-       * iterating over create even data and send it to backend api to update
-       * ---------------------*/
-      for (let index = 0; index < walletsData.length; index++) {
-        let wallet = walletsData[index];
-        let walletName = wallet.name;
-        let walletAddress = wallet.contractAddress;
-        let creator = wallet.creator;
-        let owners = wallet.owners;
-        let signaturesRequired = wallet.signaturesRequired.toNumber();
-        let reqData = {
-          owners,
-          signaturesRequired,
-        };
-        const res = await axios.post(
-          BACKEND_URL + `createWallet/${creator}/${walletName}/${walletAddress}/${selectedChainId}`,
-          reqData,
-        );
-        let data = res.data;
-        // console.log("update wallets on api res data: ", data);
+  useEffect(() => {
+    async function getAddress() {
+      if (userSigner) {
+        const newAddress = await userSigner.getAddress();
+        setAddress(newAddress);
       }
-      setUpdateServerWallets(true);
-      // }
     }
-  };
+    getAddress();
+  }, [userSigner]);
+
+  // You can warn the user if you would like them to be on a specific network
+  const localChainId = localProvider && localProvider._network && localProvider._network.chainId;
+  const selectedChainId =
+    userSigner && userSigner.provider && userSigner.provider._network && userSigner.provider._network.chainId;
+
+  // For more hooks, check out 🔗eth-hooks at: https://www.npmjs.com/package/eth-hooks
+
+  // The transactor wraps transactions and provides notificiations
+  const tx = Transactor(userSigner, gasPrice);
+
+  // 🏗 scaffold-eth is full of handy hooks like this one to get your balance:
+  const yourLocalBalance = useBalance(localProvider, address, localProviderPollingTime);
+
+  // Just plug in different 🛰 providers to get your balance on different chains:
+  const yourMainnetBalance = useBalance(mainnetProvider, address, mainnetProviderPollingTime);
+
+  // const contractConfig = useContractConfig();
+
+  const contractConfig = { deployedContracts: deployedContracts || {}, externalContracts: externalContracts || {} };
+
+  // Load in your local 📝 contract and read a value from it:
+  const readContracts = useContractLoader(localProvider, contractConfig);
+
+  // If you want to make 🔐 write transactions to your contracts, use the userSigner:
+  const writeContracts = useContractLoader(userSigner, contractConfig, localChainId);
+
+  // EXTERNAL CONTRACT EXAMPLE:
+  //
+  // If you want to bring in the mainnet DAI contract it would look like:
+  const mainnetContracts = useContractLoader(mainnetProvider, contractConfig);
+
+  const nonce = useContractReader(readContracts, walletContractName, "nonce");
+  // console.log(`n-🔴 => App => nonce`, nonce?.toString());
+  // const signaturesRequired = useContractReader(readContracts, walletContractName, "signaturesRequired");
 
   const loadWeb3Modal = useCallback(async () => {
-    const provider = await web3Modal.connect();
+    //const provider = await web3Modal.connect();
+    const provider = await web3Modal.requestProvider();
     setInjectedProvider(new ethers.providers.Web3Provider(provider));
 
     provider.on("chainChanged", chainId => {
@@ -294,44 +233,27 @@ function App(props) {
     // eslint-disable-next-line
   }, [setInjectedProvider]);
 
-  const getUserWallets = async isUpdate => {
-    if (isFactoryDeployed !== undefined) {
-      let res = await axios.get(BACKEND_URL + `getWallets/${address}`);
-      let data = res.data;
-
-      let localWallets =
-        importedMultiSigs && targetNetwork.name in importedMultiSigs ? [...importedMultiSigs[targetNetwork.name]] : [];
-
-      let allWallets = [...localWallets, ...data["userWallets"]]
-        .flat()
-        // .filter(data => hiddenWallets.includes(data.walletAddress) === false);
-        .filter(
-          data => hiddenWallets.find(hiddenData => hiddenData.walletAddress === data.walletAddress) === undefined,
-        );
-
-      // setUserWallets(data["userWallets"]);
-      setUserWallets(allWallets);
-
-      // set and reset  ContractNameForEvent to load the ownerevents
-      setContractNameForEvent(null);
-      setTimeout(() => {
-        setContractNameForEvent("MultiSigWallet");
-      }, 100);
-
-      if (isUpdate) {
-        // const lastMultiSigAddress = data["userWallets"][data["userWallets"].length - 1]?.walletAddress;
-        const lastMultiSigAddress = allWallets[allWallets.length - 1]?.walletAddress;
-        setCurrentMultiSigAddress(lastMultiSigAddress);
-        setContractNameForEvent(null);
-        setIsCreateModalVisible(false);
-
-        setTimeout(() => {
-          setContractNameForEvent("MultiSigWallet");
-        }, 100);
-      }
-    }
+  const loadWalletContract = async () => {
+    readContracts.MultiSigWallet = new ethers.Contract(selectedWalletAddress, multiSigWalletABI, localProvider);
+    writeContracts.MultiSigWallet = new ethers.Contract(selectedWalletAddress, multiSigWalletABI, userSigner);
+    setIsWalletLoaded(true);
+    let sigRequired = await readContracts.MultiSigWallet.signaturesRequired();
+    // console.log(`n-🔴 => loadWalletContract => sigRequired`, sigRequired);
+    setSignaturesRequired(sigRequired);
   };
 
+  const onChangeWallet = (walletAddress, walletName) => {
+    setSelectedWalletAddress(walletAddress);
+
+    setWalletData({
+      ...walletData,
+      [targetNetwork.chainId]: {
+        selectedWalletAddress: walletAddress,
+        selectedWalletName: walletName,
+      },
+    });
+    history.push("/");
+  };
   const onChangeNetwork = async value => {
     if (targetNetwork.chainId !== NETWORKS[value].chainId) {
       // window.localStorage.setItem("network", value);
@@ -381,26 +303,64 @@ function App(props) {
     }
   };
 
-  /**----------------------
-   * useEffect hooks
-   * ---------------------*/
-
-  /**----------------------
-   * load the main wallet connect configs if they are available
-   * ---------------------*/
+  /**
+   useEffects
+  */
+  // 🧫 DEBUG 👨🏻‍🔬
+  //
+  useEffect(() => {
+    if (
+      DEBUG &&
+      mainnetProvider &&
+      address &&
+      selectedChainId &&
+      yourLocalBalance &&
+      yourMainnetBalance &&
+      readContracts &&
+      writeContracts &&
+      mainnetContracts
+    ) {
+      console.log("_____________________________________ 🏗 scaffold-eth _____________________________________");
+      console.log("🌎 mainnetProvider", mainnetProvider);
+      console.log("🏠 localChainId", localChainId);
+      console.log("👩‍💼 selected address:", address);
+      console.log("🕵🏻‍♂️ selectedChainId:", selectedChainId);
+      console.log("💵 yourLocalBalance", yourLocalBalance ? ethers.utils.formatEther(yourLocalBalance) : "...");
+      console.log("💵 yourMainnetBalance", yourMainnetBalance ? ethers.utils.formatEther(yourMainnetBalance) : "...");
+      console.log("📝 readContracts", readContracts);
+      console.log("🌍 DAI contract on mainnet:", mainnetContracts);
+      console.log("🔐 writeContracts", writeContracts);
+    }
+  }, [
+    mainnetProvider,
+    address,
+    selectedChainId,
+    yourLocalBalance,
+    yourMainnetBalance,
+    readContracts,
+    writeContracts,
+    mainnetContracts,
+    localChainId,
+  ]);
 
   useEffect(() => {
-    /**----------------------
-     * load default main WC session if it exists
-     * ---------------------*/
-    // let oldWalletConnect = localStorage.getItem("walletconnect");
-
-    if (mainWalletConnectSession !== undefined) {
-      localStorage.setItem("walletconnect", JSON.stringify(mainWalletConnectSession));
+    if (web3Modal.cachedProvider) {
+      loadWeb3Modal();
     }
-    // return () => {
-    // };
-  }, []);
+    //automatically connect if it is a safe app
+    const checkSafeApp = async () => {
+      if (await web3Modal.isSafeApp()) {
+        loadWeb3Modal();
+      }
+    };
+    checkSafeApp();
+  }, [loadWeb3Modal]);
+
+  useEffect(() => {
+    if ("MultiSigFactory" in readContracts && "MultiSigFactory" in writeContracts && selectedWalletAddress) {
+      loadWalletContract();
+    }
+  }, [readContracts, writeContracts, selectedWalletAddress]);
 
   // -----------------
   //   page reload on metamask account and network change
@@ -418,142 +378,32 @@ function App(props) {
         window.location.reload();
       }
     });
+
+    if (mainWalletConnectSession !== undefined) {
+      localStorage.setItem("walletconnect", JSON.stringify(mainWalletConnectSession));
+    }
   }, []);
 
-  /**----------------------
-   * on factory address change remove imported wallets from localstorage
-   * ---------------------*/
-
-  useEffect(() => {
-    if (deployedContracts[targetNetwork.chainId] && deployedContracts[targetNetwork.chainId][targetNetwork.name]) {
-      let currentFactoryContractAddres =
-        deployedContracts[targetNetwork.chainId][targetNetwork.name]["contracts"]["MultiSigFactory"].address;
-
-      if (multiSigFactoryData === undefined) {
-        localStorage.removeItem("importedMultiSigs");
-        setMultiSigFactoryData({ ...multiSigFactoryData, [`${targetNetwork.name}`]: currentFactoryContractAddres });
-
-        return;
-      }
-
-      if (multiSigFactoryData !== undefined) {
-        let oldFactoryAddress = multiSigFactoryData[`${targetNetwork.name}`];
-        let isNewFactoryDeployed = currentFactoryContractAddres !== oldFactoryAddress;
-        if (isNewFactoryDeployed) {
-          localStorage.removeItem("importedMultiSigs");
-          setMultiSigFactoryData({ ...multiSigFactoryData, [`${targetNetwork.name}`]: currentFactoryContractAddres });
-        }
-      }
-    }
-  }, [userSigner]);
-
-  /**----------------------
-   * set main account address once provider and signer loads
-   * ---------------------*/
-  useEffect(() => {
-    getAddress();
-  }, [userSigner]);
-
-  /**----------------------
-   * load user sig wallets data from api
-   * ---------------------*/
-
-  useEffect(() => {
-    if (address && userWallets) {
-      updateUserWallets();
-    }
-  }, [userWallets && userWallets.length, address]);
-
-  /**----------------------
-   * set nounce and signatures required
-   * ---------------------*/
-  useEffect(() => {
-    setSignaturesRequired(signaturesRequiredContract);
-    setNonce(nonceContract);
-  }, [signaturesRequiredContract, nonceContract]);
-
-  /**----------------------
-   * load selected wallet contract to read and write
-   * ---------------------*/
-
-  useEffect(() => {
-    if (currentMultiSigAddress) {
-      createEthersContractWallet();
-    }
-  }, [currentMultiSigAddress, readContracts, writeContracts, selectedChainId]);
-
-  /**----------------------
-   * sync wallets with server on load
-   * ---------------------*/
-  useEffect(() => {
-    void syncWalletsWithServer();
-  }, [walletCreate2Events.length, userWallets && userWallets.length]);
-
-  /**----------------------
-   * load web3 modal
-   * ---------------------*/
-  useEffect(() => {
-    if (web3Modal.cachedProvider) {
-      loadWeb3Modal();
-    }
-  }, [loadWeb3Modal]);
-
-  /**----------------------
-   * LOAD THE USER WALLETS DATA
-   * ---------------------*/
-
-  useEffect(() => {
-    if (address !== undefined) {
-      getUserWallets(false);
-    }
-  }, [address, updateServerWallets, hiddenWallets.length]);
-
-  /**----------------------
-   * set current selected sig address from localstorage
-   * ---------------------*/
-
-  useEffect(() => {
-    if (selectedWalletAddress && userWallets && userWallets.length > 0 && address) {
-      setCurrentMultiSigAddress(selectedWalletAddress);
-    }
-  }, [selectedWalletAddress, userWallets, address]);
-
-  /**----------------------
-   * --------- DYANAMIC VALUES
-   * ---------------------*/
   const faucetAvailable = localProvider && localProvider.connection && targetNetwork.name.indexOf("local") !== -1;
 
-  const userHasMultiSigs = currentMultiSigAddress ? true : false;
-
-  const selectNetworkOptions = [];
-  for (const id in NETWORKS) {
-    selectNetworkOptions.push(
-      <Select.Option key={id} value={NETWORKS[id].name}>
-        <span style={{ color: NETWORKS[id].color }}>{NETWORKS[id].name}</span>
-      </Select.Option>,
-    );
-  }
-
-  const networkSelect = (
-    <Select
-      className="w-full text-left"
-      defaultValue={targetNetwork.name}
-      // style={{ textAlign: "left", width: 170 }}
-      onChange={onChangeNetwork}
-    >
-      {selectNetworkOptions}
-    </Select>
-  );
-
+  // TODO: REFACTORE IN ANOTHER FILE
   // top header bar
   const HeaderBar = (
     <>
-      <Header>
-        <div className="relative" key={address}>
-          <div className="flex flex-1 items-center p-1">
-            <div className="mr-2">
+      <MainHeader>
+        <div className="relative flex items-center justify-center" key={address}>
+          {USE_NETWORK_SELECTOR && (
+            <div className="">
+              {/* <NetworkSwitch
+                networkOptions={networkOptions}
+                selectedNetwork={selectedNetwork}
+                setSelectedNetwork={setSelectedNetwork}
+              /> */}
               <NetworkSwitch selectedNetwork={targetNetwork.name} onChangeNetwork={onChangeNetwork} />
             </div>
+          )}
+
+          <div>
             <Account
               useBurner={USE_BURNER_WALLET}
               address={address}
@@ -565,15 +415,11 @@ function App(props) {
               loadWeb3Modal={loadWeb3Modal}
               logoutOfWeb3Modal={logoutOfWeb3Modal}
               blockExplorer={blockExplorer}
-              isFactoryDeployed={isFactoryDeployed}
               gasPrice={gasPrice}
             />
           </div>
-          {yourLocalBalance.lte(ethers.BigNumber.from("0")) && (
-            <FaucetHint localProvider={localProvider} targetNetwork={targetNetwork} address={address} />
-          )}
         </div>
-      </Header>
+      </MainHeader>
 
       <NetworkDisplay
         NETWORKCHECK={NETWORKCHECK}
@@ -586,168 +432,117 @@ function App(props) {
     </>
   );
 
-  const hideWalletItem = async (e, walletName, walletAddress) => {
-    e.stopPropagation();
-    e.preventDefault();
-
-    setHiddenWallets([...hiddenWallets, { walletName, walletAddress }]);
-    await getUserWallets(false);
-  };
-
-  const onUnhideWallet = async (e, walletAddress) => {
-    e.stopPropagation();
-    e.preventDefault();
-
-    setHiddenWallets([...hiddenWallets.filter(data => data.walletAddress !== walletAddress)]);
-  };
-
-  const MainMenu = (
-    <div className="flex justify-center mt-5" key={address}>
-      <Menu disabled={!userHasMultiSigs} selectedKeys={[location.pathname]} mode="horizontal">
-        <Menu.Item
-          key="/"
-          onClick={() => {
-            // to reload wallet contract on homepage
-            createEthersContractWallet();
-          }}
-        >
-          <Link to="/">MultiSig</Link>
-        </Menu.Item>
-        <Menu.Item key="/create" disabled={reDeployWallet !== undefined}>
-          <Link to="/create">Propose Transaction</Link>
-        </Menu.Item>
-        <Menu.Item key="/pool" disabled={reDeployWallet !== undefined}>
-          <Link to="/pool">Pool</Link>
-        </Menu.Item>
-      </Menu>
-    </div>
-  );
-
-  const BurnerWallet = (
-    <>
-      {/* 🗺 Extra UI like gas price, eth price, faucet, and support: */}
-      <div style={{ position: "fixed", textAlign: "left", left: 0, bottom: 20, padding: 10 }}>
-        <Row align="middle" gutter={[4, 4]}>
-          <Col span={8}>
-            <Ramp price={price} address={address} networks={NETWORKS} />
-          </Col>
-
-          <Col span={8} style={{ textAlign: "center", opacity: 0.8 }}>
-            <GasGauge gasPrice={gasPrice} />
-          </Col>
-          <Col span={8} style={{ textAlign: "center", opacity: 1 }}>
-            <Button
-              onClick={() => {
-                window.open("https://t.me/joinchat/KByvmRe5wkR-8F_zz6AjpA");
-              }}
-              size="large"
-              shape="round"
-            >
-              <span style={{ marginRight: 8 }} role="img" aria-label="support">
-                💬
-              </span>
-              Support
-            </Button>
-          </Col>
-        </Row>
-
-        <Row align="middle" gutter={[4, 4]}>
-          <Col span={24}>
-            {
-              /*  if the local provider has a signer, let's show the faucet:  */
-              faucetAvailable ? (
-                <Faucet localProvider={localProvider} price={price} ensProvider={mainnetProvider} />
-              ) : (
-                ""
-              )
-            }
-          </Col>
-        </Row>
-      </div>
-    </>
-  );
-
+  // GLOBAL STATES
   const store = {
+    nonce,
+    signaturesRequired,
+    selectedWalletAddress,
     address,
-    reDeployWallet,
-    price,
-    selectedChainId,
-    mainnetProvider,
-    setReDeployWallet,
     BACKEND_URL,
-    tx,
+    readContracts,
     writeContracts,
-    isCreateModalVisible,
-    setIsCreateModalVisible,
-    getUserWallets,
-    targetNetwork,
-    isFactoryDeployed,
-    contractName,
-    networkOptions,
-    multiSigWalletABI,
     localProvider,
+    userSigner,
+    price,
+    mainnetProvider,
+    blockExplorer,
+    walletContractName,
+    factoryContractName,
+    tx,
+    onChangeWallet,
+    refreshToggle,
+    setRefreshToggle,
+    walletData,
+    setWalletData,
+    targetNetwork,
+    multiSigWalletABI,
+    importedWalletList,
+    setImportedWalletList,
     userWallets,
-    setSelectedWalletAddress,
-    onChangeNetwork,
-    currentMultiSigAddress,
-    handleMultiSigChange,
-    hiddenWallets,
-    hideWalletItem,
-    onUnhideWallet,
-    gasPrice,
+    setUserWallets,
+    hiddenWalletList,
+    setHiddenWalletList,
   };
 
   return (
-    <div className="App">
-      <StoreProvider store={{ ...store }}>
-        {HeaderBar}
-        <WalletActions />
-        {MainMenu}
-        {Object.keys(writeContracts).length > 0 && Object.keys(readContracts).length > 0 && (
-          <>
-            <Routes
-              // key={currentMultiSigAddress}
-              // allOwnerEvents={allOwnerEvents}
-              BACKEND_URL={BACKEND_URL}
-              DEBUG={DEBUG}
-              targetNetwork={targetNetwork}
-              account={address}
-              address={address}
-              blockExplorer={blockExplorer}
-              contractAddress={contractAddress}
-              contractConfig={contractConfig}
-              contractName={contractName}
-              currentMultiSigAddress={currentMultiSigAddress}
-              customContract={mainnetContracts && mainnetContracts.contracts && mainnetContracts.contracts.DAI}
-              // executeTransactionEvents={executeTransactionEvents}
-              gasPrice={gasPrice}
-              localProvider={localProvider}
-              mainnetContracts={mainnetContracts}
-              mainnetProvider={mainnetProvider}
-              nonce={nonce}
-              // ownerEvents={ownerEvents}
-              poolServerUrl={BACKEND_URL}
-              price={price}
-              readContracts={readContracts}
-              setIsCreateModalVisible={setIsCreateModalVisible}
-              signaturesRequired={signaturesRequired}
-              subgraphUri={props.subgraphUri}
-              tx={tx}
-              userHasMultiSigs={userHasMultiSigs}
-              userSigner={userSigner}
-              writeContracts={writeContracts}
-              yourLocalBalance={yourLocalBalance}
-              reDeployWallet={reDeployWallet}
-              isFactoryDeployed={isFactoryDeployed}
-              contractNameForEvent={contractNameForEvent}
-            />
-          </>
-        )}
+    <StoreProvider store={{ ...store }}>
+      <AppLayout className="" header={HeaderBar}>
+        <Switch>
+          <Route exact path="/">
+            {isWalletLoaded && walletContractName in readContracts && <Home key={selectedWalletAddress} />}
+          </Route>
+
+          <Route exact path="/createWallet">
+            <CreateWallet />
+          </Route>
+
+          <Route exact path="/newTranscaction">
+            <NewTranscaction />
+          </Route>
+
+          <Route exact path="/transcactions">
+            <Transcations />
+          </Route>
+
+          <Route exact path="/apps">
+            <SafeApps />
+          </Route>
+
+          <Route exact path="/safeApp">
+            <SafeInjectProvider>
+              <SafeApp />
+            </SafeInjectProvider>
+          </Route>
+
+          <Route exact path="/manage">
+            <Manage />
+          </Route>
+
+          <Route exact path="/help">
+            <div>Work in progress...</div>
+          </Route>
+        </Switch>
+
         <ThemeSwitch />
 
-        {BurnerWallet}
-      </StoreProvider>
-    </div>
+        {/* 🗺 Extra UI like gas price, eth price, faucet, and support: */}
+        <div style={{ position: "fixed", textAlign: "left", left: 0, bottom: 20, padding: 10 }}>
+          <Row align="middle" gutter={[4, 4]}>
+            <Col span={8}>
+              <Ramp price={price} address={address} networks={NETWORKS} />
+            </Col>
+
+            <Col span={8} style={{ textAlign: "center", opacity: 0.8 }}>
+              <GasGauge gasPrice={gasPrice} />
+            </Col>
+            <Col span={8} style={{ textAlign: "center", opacity: 1 }}>
+              <Button
+                onClick={() => {
+                  window.open("https://t.me/joinchat/KByvmRe5wkR-8F_zz6AjpA");
+                }}
+                size="large"
+                shape="round"
+              >
+                <span style={{ marginRight: 8 }} role="img" aria-label="support">
+                  💬
+                </span>
+                Support
+              </Button>
+            </Col>
+          </Row>
+
+          <Row align="middle" gutter={[4, 4]}>
+            <Col span={24}>
+              {faucetAvailable ? (
+                <Faucet localProvider={localProvider} price={price} ensProvider={mainnetProvider} />
+              ) : (
+                ""
+              )}
+            </Col>
+          </Row>
+        </div>
+      </AppLayout>
+    </StoreProvider>
   );
 }
 

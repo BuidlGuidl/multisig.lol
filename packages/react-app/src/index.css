@@ -2,13 +2,11 @@
 @tailwind components;
 @tailwind utilities;
 
-.App {
-  text-align: center;
-}
+
+
 
 body {
   margin: 0;
-  overflow-x: hidden; /* Hide horizontal scrollbar */
 }
 
 code {
@@ -21,24 +19,4 @@ code {
 
 .b-blue {
   border: 1px solid blue;
-}
-
-@layer utilities {
-  @screen lg {
-    .txListWidth {
-      width: 70% !important;
-    }
-  }
-
-  @screen md {
-    .txListWidth {
-      width: 70%;
-    }
-  }
-
-  @screen sm {
-    .txListWidth {
-      width: 100%;
-    }
-  }
 }
