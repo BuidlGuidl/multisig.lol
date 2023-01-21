@@ -65,9 +65,9 @@ export default function Account({
   }
 
   return (
-    <div className="flex  items-center">
-      <div className="border border-gray-300  flex items-center rounded-3xl ">
-        <Balance address={address} provider={localProvider} price={price} size={"1.125rem"} />
+    <div className="flex  items-center justify-center">
+      <div className="border- border-gray-300- m-1 p-1   flex  items-center justify-center  rounded-sm">
+        <Balance address={address} provider={localProvider} price={price} size={15} />
         <Wallet
           address={address}
           provider={localProvider}
@@ -75,12 +75,12 @@ export default function Account({
           ensProvider={mainnetProvider}
           price={price}
           color={currentTheme === "light" ? "#1890ff" : "#2caad9"}
-          size={"1.4rem"}
-          padding={"0px"}
+          size={"1.2rem"}
+          padding={"5px"}
           gasPrice={gasPrice}
         />
         <div
-          className={`border-2  rounded-3xl  ml-2 p-2 ${
+          className={`border-2  rounded-sm ml-2 ${
             currentTheme === "light" ? "border-gray-200 bg-gray-100" : "border-gray-500 bg-gray-800"
           }`}
         >
@@ -89,14 +89,14 @@ export default function Account({
               address={address}
               ensProvider={mainnetProvider}
               blockExplorer={blockExplorer}
-              // fontSize={"1.125rem"}
               blockieSize={8}
-              fontSize={16}
+              fontSize={15}
             />
           )}
         </div>
       </div>
-      <Button className="ml-2" shape="round" size="large" onClick={accountButton.action}>
+
+      <Button className="m-2" onClick={accountButton.action}>
         {accountButton.name}
       </Button>
     </div>

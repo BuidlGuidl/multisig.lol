@@ -1,41 +1,43 @@
-import { Button, Col, Menu, Row } from "antd";
+import { Button, Col, Row } from "antd";
+
+import { useHistory } from "react-router-dom";
+
+import { useContractReader } from "eth-hooks";
+
+import { Faucet, GasGauge, Ramp } from "./components";
+import AppLayout from "./components/AppLayout";
+import NetworkDisplay from "./components/NetworkDisplay";
+import useLocalStorage from "./hooks/useLocalStorage";
+import StoreProvider from "./store/StoreProvider";
+import { CreateWallet, Home, NewTranscaction, Transcations, SafeApps, Manage } from "./views";
+import { SafeInjectProvider } from "./store/SafeInjectProvider";
+
 import "antd/dist/antd.css";
 
 import {
   useBalance,
   useContractLoader,
-  useContractReader,
   useGasPrice,
   // useOnBlock,
   useUserProviderAndSigner,
 } from "eth-hooks";
 import { useExchangeEthPrice } from "eth-hooks/dapps/dex";
-import React, { useCallback, useEffect, useState } from "react";
-import { Link, Route, Switch, useLocation } from "react-router-dom";
 import { ethers } from "ethers";
+import React, { useCallback, useEffect, useState } from "react";
+import { Route, Switch } from "react-router-dom";
 
 import "./App.css";
-import {
-  Account,
-  Contract,
-  Faucet,
-  GasGauge,
-  Header,
-  Ramp,
-  ThemeSwitch,
-  NetworkDisplay,
-  FaucetHint,
-  NetworkSwitch,
-} from "./components";
-import { NETWORKS, ALCHEMY_KEY, Sleep } from "./constants";
+import { Account, MainHeader, NetworkSwitch, SafeApp, ThemeSwitch } from "./components";
+import { ALCHEMY_KEY, NETWORKS } from "./constants";
 import externalContracts from "./contracts/external_contracts";
 // contracts
-import { getRPCPollTime, Transactor, Web3ModalSetup } from "./helpers";
-import { Home, ExampleUI, Hints, Subgraph } from "./views";
-import { useStaticJsonRPC } from "./hooks";
 import MultiSigWalletAbi from "./configs/MultiSigWallet_ABI.json";
-import hardhatContracts from "./contracts/hardhat_contracts.json";
 import _deployedContracts from "./contracts/deployed_contracts.json";
+import hardhatContracts from "./contracts/hardhat_contracts.json";
+import { Transactor, Web3ModalSetup, getRPCPollTime } from "./helpers";
+import { useStaticJsonRPC } from "./hooks";
+// import SafeApps from "./views/SafeApps";
+// import Manage from "./views/Manage";
 
 /*
     Welcome to 🏗 scaffold-eth !
@@ -57,13 +59,13 @@ import _deployedContracts from "./contracts/deployed_contracts.json";
 */
 
 /// 📡 What chain are your contracts deployed to?
-const initialNetwork = NETWORKS.mainnet; // <------- select your target frontend network (localhost, goerli, xdai, mainnet)
+const initialNetwork = NETWORKS.localhost; // <------- select your target frontend network (localhost, goerli, xdai, mainnet)
 
 // 😬 Sorry for all the console logging
 const DEBUG = true;
 const NETWORKCHECK = true;
 const USE_BURNER_WALLET = true; // toggle burner wallet feature
-const USE_NETWORK_SELECTOR = false;
+const USE_NETWORK_SELECTOR = true;
 
 const web3Modal = Web3ModalSetup();
 
@@ -81,28 +83,48 @@ let deployedContracts = {
 
 console.log("deployedContracts", deployedContracts);
 
-const WALLET_CONTRACT_ADDRESS = "0x924E029aa245AbADC5Ebd379457eAa48Cf0E4422"; // buidlguidl scholarship wallet
-// const WALLET_CONTRACT_ADDRESS = "0x924E029aa245AbADC5Ebd379457eAa48Cf0E4422";
+const WALLET_CONTRACT_ADDRESS = "0x924E029aa245AbADC5Ebd379457eAa48Cf0E4422";
+// const WALLET_CONTRACT_ADDRESS = "0xb3E2A650c9032A40168148e5b1bdb69E68A461D8";
 
 const multiSigWalletABI = MultiSigWalletAbi["abi"];
-const contractName = "MultiSigWallet";
+const walletContractName = "MultiSigWallet";
+const factoryContractName = "MultiSigFactory";
 
 function App(props) {
-  // specify all the chains your app is available on. Eg: ['localhost', 'mainnet', ...otherNetworks ]
-  // reference './constants.js' for other networks
+  const history = useHistory();
   const networkOptions = [initialNetwork.name, "mainnet", "goerli"];
+
+  // const targetNetwork = NETWORKS[selectedNetwork];
+
+  const cachedNetwork = window.localStorage.getItem("network");
+  let targetNetwork = NETWORKS[cachedNetwork || "mainnet"];
 
   const [injectedProvider, setInjectedProvider] = useState();
   const [address, setAddress] = useState();
   const [selectedNetwork, setSelectedNetwork] = useState(networkOptions[0]);
-  const location = useLocation();
+  const [selectedWalletAddress, setSelectedWalletAddress] = useState(undefined);
+  const [refreshToggle, setRefreshToggle] = useState(false);
+  const [isWalletLoaded, setIsWalletLoaded] = useState(false);
+  const [signaturesRequired, setSignaturesRequired] = useState(false);
+  const [userWallets, setUserWallets] = useState([]);
 
-  const targetNetwork = NETWORKS[selectedNetwork];
+  const [mainWalletConnectSession, setMainWalletConnectSession] = useLocalStorage("walletConnectSession_main");
+  const [importedWalletList, setImportedWalletList] = useLocalStorage("importedWalletList", []);
+  const [hiddenWalletList, setHiddenWalletList] = useLocalStorage("hiddenWalletList", []);
+
+  // a local storage to persist selected wallet data
+  const [walletData, setWalletData] = useLocalStorage("_walletData", {
+    [targetNetwork.chainId]: {
+      selectedWalletAddress: undefined,
+      selectedWalletName: undefined,
+    },
+  });
 
   // backend transaction handler:
-  let BACKEND_URL = "http://localhost:49899/";
+  let BACKEND_URL = "http://localhost:49899";
   if (targetNetwork && targetNetwork.name && targetNetwork.name !== "localhost") {
-    BACKEND_URL = "https://backend.multisig.lol:49899/";
+    // BACKEND_URL = "https://backend.multisig.lol:49899";
+    BACKEND_URL = "https://gorgeous-leather-jacket-crow.cyclic.app"; // cyclic.sh backend
   }
 
   // 🔭 block explorer URL
@@ -184,6 +206,10 @@ function App(props) {
   // If you want to bring in the mainnet DAI contract it would look like:
   const mainnetContracts = useContractLoader(mainnetProvider, contractConfig);
 
+  const nonce = useContractReader(readContracts, walletContractName, "nonce");
+  // console.log(`n-🔴 => App => nonce`, nonce?.toString());
+  // const signaturesRequired = useContractReader(readContracts, walletContractName, "signaturesRequired");
+
   const loadWeb3Modal = useCallback(async () => {
     //const provider = await web3Modal.connect();
     const provider = await web3Modal.requestProvider();
@@ -208,8 +234,73 @@ function App(props) {
   }, [setInjectedProvider]);
 
   const loadWalletContract = async () => {
-    readContracts.MultiSigWallet = new ethers.Contract(WALLET_CONTRACT_ADDRESS, multiSigWalletABI, localProvider);
-    writeContracts.MultiSigWallet = new ethers.Contract(WALLET_CONTRACT_ADDRESS, multiSigWalletABI, userSigner);
+    readContracts.MultiSigWallet = new ethers.Contract(selectedWalletAddress, multiSigWalletABI, localProvider);
+    writeContracts.MultiSigWallet = new ethers.Contract(selectedWalletAddress, multiSigWalletABI, userSigner);
+    setIsWalletLoaded(true);
+    let sigRequired = await readContracts.MultiSigWallet.signaturesRequired();
+    // console.log(`n-🔴 => loadWalletContract => sigRequired`, sigRequired);
+    setSignaturesRequired(sigRequired);
+  };
+
+  const onChangeWallet = (walletAddress, walletName) => {
+    setSelectedWalletAddress(walletAddress);
+
+    setWalletData({
+      ...walletData,
+      [targetNetwork.chainId]: {
+        selectedWalletAddress: walletAddress,
+        selectedWalletName: walletName,
+      },
+    });
+    history.push("/");
+  };
+  const onChangeNetwork = async value => {
+    if (targetNetwork.chainId !== NETWORKS[value].chainId) {
+      // window.localStorage.setItem("network", value);
+      // setTimeout(() => {
+      //   window.location.reload();
+      // }, 1);
+      let targetNetwork = NETWORKS[value];
+
+      const ethereum = window.ethereum;
+      const data = [
+        {
+          chainId: "0x" + targetNetwork.chainId.toString(16),
+          chainName: targetNetwork.name,
+          nativeCurrency: targetNetwork.nativeCurrency,
+          rpcUrls: [targetNetwork.rpcUrl],
+          blockExplorerUrls: [targetNetwork.blockExplorer],
+        },
+      ];
+      console.log("data", data);
+
+      let switchTx;
+      // https://docs.metamask.io/guide/rpc-api.html#other-rpc-methods
+      try {
+        switchTx = await ethereum.request({
+          method: "wallet_switchEthereumChain",
+          params: [{ chainId: data[0].chainId }],
+        });
+      } catch (switchError) {
+        // not checking specific error code, because maybe we're not using MetaMask
+        try {
+          switchTx = await ethereum.request({
+            method: "wallet_addEthereumChain",
+            params: data,
+          });
+        } catch (addError) {
+          // handle "add" error
+        }
+      }
+
+      window.localStorage.setItem("network", value);
+      // setTimeout(() => {
+      // window.location.reload();
+      // }, 1);
+
+      if (switchTx) {
+      }
+    }
   };
 
   /**
@@ -266,29 +357,53 @@ function App(props) {
   }, [loadWeb3Modal]);
 
   useEffect(() => {
-    if ("MultiSigFactory" in readContracts && "MultiSigFactory" in writeContracts) {
+    if ("MultiSigFactory" in readContracts && "MultiSigFactory" in writeContracts && selectedWalletAddress) {
       loadWalletContract();
     }
-  }, [readContracts, writeContracts]);
+  }, [readContracts, writeContracts, selectedWalletAddress]);
+
+  // -----------------
+  //   page reload on metamask account and network change
+  // -----------------
+  useEffect(() => {
+    window.ethereum?.on("accountsChanged", function () {
+      window.location.reload();
+    });
+    // detect Network account change
+    window.ethereum?.on("networkChanged", function () {
+      if (deployedContracts[targetNetwork.chainId] === undefined) {
+        console.log("NO FACTORY FOUND LOGING OUT !!!");
+        logoutOfWeb3Modal();
+      } else {
+        window.location.reload();
+      }
+    });
+
+    if (mainWalletConnectSession !== undefined) {
+      localStorage.setItem("walletconnect", JSON.stringify(mainWalletConnectSession));
+    }
+  }, []);
 
   const faucetAvailable = localProvider && localProvider.connection && targetNetwork.name.indexOf("local") !== -1;
 
+  // TODO: REFACTORE IN ANOTHER FILE
   // top header bar
   const HeaderBar = (
     <>
-      <Header>
-        <div className="relative " key={address}>
-          <div className="flex flex-1 items-center p-1">
-            {USE_NETWORK_SELECTOR && (
-              // <div style={{ marginRight: 20 }}>
-              <div className="mr-20">
-                <NetworkSwitch
-                  networkOptions={networkOptions}
-                  selectedNetwork={selectedNetwork}
-                  setSelectedNetwork={setSelectedNetwork}
-                />
-              </div>
-            )}
+      <MainHeader>
+        <div className="relative flex items-center justify-center" key={address}>
+          {USE_NETWORK_SELECTOR && (
+            <div className="">
+              {/* <NetworkSwitch
+                networkOptions={networkOptions}
+                selectedNetwork={selectedNetwork}
+                setSelectedNetwork={setSelectedNetwork}
+              /> */}
+              <NetworkSwitch selectedNetwork={targetNetwork.name} onChangeNetwork={onChangeNetwork} />
+            </div>
+          )}
+
+          <div>
             <Account
               useBurner={USE_BURNER_WALLET}
               address={address}
@@ -303,11 +418,8 @@ function App(props) {
               gasPrice={gasPrice}
             />
           </div>
-          {yourLocalBalance.lte(ethers.BigNumber.from("0")) && (
-            <FaucetHint localProvider={localProvider} targetNetwork={targetNetwork} address={address} />
-          )}
         </div>
-      </Header>
+      </MainHeader>
 
       <NetworkDisplay
         NETWORKCHECK={NETWORKCHECK}
@@ -320,147 +432,117 @@ function App(props) {
     </>
   );
 
+  // GLOBAL STATES
+  const store = {
+    nonce,
+    signaturesRequired,
+    selectedWalletAddress,
+    address,
+    BACKEND_URL,
+    readContracts,
+    writeContracts,
+    localProvider,
+    userSigner,
+    price,
+    mainnetProvider,
+    blockExplorer,
+    walletContractName,
+    factoryContractName,
+    tx,
+    onChangeWallet,
+    refreshToggle,
+    setRefreshToggle,
+    walletData,
+    setWalletData,
+    targetNetwork,
+    multiSigWalletABI,
+    importedWalletList,
+    setImportedWalletList,
+    userWallets,
+    setUserWallets,
+    hiddenWalletList,
+    setHiddenWalletList,
+  };
+
   return (
-    <div className="App">
-      {HeaderBar}
-      {/* <Menu style={{ textAlign: "center", marginTop: 20 }} selectedKeys={[location.pathname]} mode="horizontal">
-        <Menu.Item key="/">
-          <Link to="/">App Home</Link>
-        </Menu.Item>
-        <Menu.Item key="/debug">
-          <Link to="/debug">Debug Contracts</Link>
-        </Menu.Item>
-        <Menu.Item key="/hints">
-          <Link to="/hints">Hints</Link>
-        </Menu.Item>
-        <Menu.Item key="/exampleui">
-          <Link to="/exampleui">ExampleUI</Link>
-        </Menu.Item>
-        <Menu.Item key="/mainnetdai">
-          <Link to="/mainnetdai">Mainnet DAI</Link>
-        </Menu.Item>
-        <Menu.Item key="/subgraph">
-          <Link to="/subgraph">Subgraph</Link>
-        </Menu.Item>
-      </Menu> */}
+    <StoreProvider store={{ ...store }}>
+      <AppLayout className="" header={HeaderBar}>
+        <Switch>
+          <Route exact path="/">
+            {isWalletLoaded && walletContractName in readContracts && <Home key={selectedWalletAddress} />}
+          </Route>
 
-      <Switch>
-        <Route exact path="/">
-          <Home
-            contractAddress={WALLET_CONTRACT_ADDRESS}
-            address={address}
-            BACKEND_URL={BACKEND_URL}
-            readContracts={readContracts}
-            writeContracts={writeContracts}
-            localProvider={localProvider}
-            userSigner={userSigner}
-            price={price}
-            mainnetProvider={mainnetProvider}
-            blockExplorer={blockExplorer}
-            contractName={contractName}
-            // reDeployWallet={undefined}
-            currentMultiSigAddress={WALLET_CONTRACT_ADDRESS}
-            contractNameForEvent={contractName}
-            tx={tx}
-          />
-        </Route>
-        {/* <Route exact path="/debug">
-          <Contract
-            name="YourContract"
-            price={price}
-            signer={userSigner}
-            provider={localProvider}
-            address={address}
-            blockExplorer={blockExplorer}
-            contractConfig={contractConfig}
-          />
-        </Route> */}
-        {/* <Route path="/hints">
-          <Hints
-            address={address}
-            yourLocalBalance={yourLocalBalance}
-            mainnetProvider={mainnetProvider}
-            price={price}
-          />
-        </Route> */}
-        {/* <Route path="/exampleui">
-          <ExampleUI
-            address={address}
-            userSigner={userSigner}
-            mainnetProvider={mainnetProvider}
-            localProvider={localProvider}
-            yourLocalBalance={yourLocalBalance}
-            price={price}
-            tx={tx}
-            writeContracts={writeContracts}
-            readContracts={readContracts}
-            purpose={purpose}
-          />
-        </Route> */}
-        {/* <Route path="/mainnetdai">
-          <Contract
-            name="DAI"
-            customContract={mainnetContracts && mainnetContracts.contracts && mainnetContracts.contracts.DAI}
-            signer={userSigner}
-            provider={mainnetProvider}
-            address={address}
-            blockExplorer="https://etherscan.io/"
-            contractConfig={contractConfig}
-            chainId={1}
-          />
-        </Route> */}
-        {/* <Route path="/subgraph">
-          <Subgraph
-            subgraphUri={props.subgraphUri}
-            tx={tx}
-            writeContracts={writeContracts}
-            mainnetProvider={mainnetProvider}
-          />
-        </Route> */}
-      </Switch>
+          <Route exact path="/createWallet">
+            <CreateWallet />
+          </Route>
 
-      <ThemeSwitch />
+          <Route exact path="/newTranscaction">
+            <NewTranscaction />
+          </Route>
 
-      {/* 🗺 Extra UI like gas price, eth price, faucet, and support: */}
-      <div style={{ position: "fixed", textAlign: "left", left: 0, bottom: 20, padding: 10 }}>
-        <Row align="middle" gutter={[4, 4]}>
-          <Col span={8}>
-            <Ramp price={price} address={address} networks={NETWORKS} />
-          </Col>
+          <Route exact path="/transcactions">
+            <Transcations />
+          </Route>
 
-          <Col span={8} style={{ textAlign: "center", opacity: 0.8 }}>
-            <GasGauge gasPrice={gasPrice} />
-          </Col>
-          <Col span={8} style={{ textAlign: "center", opacity: 1 }}>
-            <Button
-              onClick={() => {
-                window.open("https://t.me/joinchat/KByvmRe5wkR-8F_zz6AjpA");
-              }}
-              size="large"
-              shape="round"
-            >
-              <span style={{ marginRight: 8 }} role="img" aria-label="support">
-                💬
-              </span>
-              Support
-            </Button>
-          </Col>
-        </Row>
+          <Route exact path="/apps">
+            <SafeApps />
+          </Route>
 
-        <Row align="middle" gutter={[4, 4]}>
-          <Col span={24}>
-            {
-              /*  if the local provider has a signer, let's show the faucet:  */
-              faucetAvailable ? (
+          <Route exact path="/safeApp">
+            <SafeInjectProvider>
+              <SafeApp />
+            </SafeInjectProvider>
+          </Route>
+
+          <Route exact path="/manage">
+            <Manage />
+          </Route>
+
+          <Route exact path="/help">
+            <div>Work in progress...</div>
+          </Route>
+        </Switch>
+
+        <ThemeSwitch />
+
+        {/* 🗺 Extra UI like gas price, eth price, faucet, and support: */}
+        <div style={{ position: "fixed", textAlign: "left", left: 0, bottom: 20, padding: 10 }}>
+          <Row align="middle" gutter={[4, 4]}>
+            <Col span={8}>
+              <Ramp price={price} address={address} networks={NETWORKS} />
+            </Col>
+
+            <Col span={8} style={{ textAlign: "center", opacity: 0.8 }}>
+              <GasGauge gasPrice={gasPrice} />
+            </Col>
+            <Col span={8} style={{ textAlign: "center", opacity: 1 }}>
+              <Button
+                onClick={() => {
+                  window.open("https://t.me/joinchat/KByvmRe5wkR-8F_zz6AjpA");
+                }}
+                size="large"
+                shape="round"
+              >
+                <span style={{ marginRight: 8 }} role="img" aria-label="support">
+                  💬
+                </span>
+                Support
+              </Button>
+            </Col>
+          </Row>
+
+          <Row align="middle" gutter={[4, 4]}>
+            <Col span={24}>
+              {faucetAvailable ? (
                 <Faucet localProvider={localProvider} price={price} ensProvider={mainnetProvider} />
               ) : (
                 ""
-              )
-            }
-          </Col>
-        </Row>
-      </div>
-    </div>
+              )}
+            </Col>
+          </Row>
+        </div>
+      </AppLayout>
+    </StoreProvider>
   );
 }
 

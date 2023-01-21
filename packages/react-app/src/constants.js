@@ -219,7 +219,7 @@ export const getFactoryVersion = async contract => {
     const factoryVersion = await contract.factoryVersion();
     return Number(factoryVersion.toString());
   } catch (error) {
-    // console.log("n-error: ", error);
+    console.log("n-error: ", error);
     // if no factory version variable that mean its version zero
     console.log("its older factory version !!");
     return 0;
@@ -232,13 +232,10 @@ export const Sleep = time =>
     }, time),
   );
 
-export const getPriceModePrefix = modeString => {
-  switch (modeString) {
-    case "USD":
-      return "$";
-    case "ETH":
-      return "Ξ";
-    default:
-      return "Ξ";
-  }
+export const TX_TYPES = {
+  SEND_ETH: "send",
+  CUSTOM_CALL: "custom call",
+  ADD_SIGNER: "addSigner",
+  REMOVE_SIGNER: "removeSigner",
+  SAFE_APP: "SAFE APP",
 };

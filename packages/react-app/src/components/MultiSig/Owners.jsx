@@ -8,11 +8,11 @@ import { Address } from "..";
 import { useState } from "react";
 // import useEventListener from "../../hooks/useEventListener";
 import { useEventListener } from "eth-hooks/events/useEventListener";
+import useEvent from "../../hooks/useEvent";
 
 const { Panel } = Collapse;
 
 function Owners({
-  // ownerEvents,
   signaturesRequired,
   mainnetProvider,
   blockExplorer,
@@ -32,6 +32,14 @@ function Owners({
     localProvider,
     0,
   );
+
+  // const allOwnerEvents2 = useEvent(
+  //   contractNameForEvent in readContracts && readContracts,
+  //   contractNameForEvent,
+  //   "Owner",
+  //   false,
+  // );
+  // console.log(`n-🔴 => allOwnerEvents2`, allOwnerEvents2);
 
   const owners = new Set();
   const prevOwners = new Set();
@@ -75,7 +83,7 @@ function Owners({
                 address={ownerAddress}
                 ensProvider={mainnetProvider}
                 blockExplorer={blockExplorer}
-                fontSize={20}
+                fontSize={14}
               />
             </List.Item>
           );

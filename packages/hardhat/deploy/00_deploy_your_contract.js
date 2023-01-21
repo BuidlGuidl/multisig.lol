@@ -17,26 +17,45 @@ module.exports = async ({ getNamedAccounts, deployments, getChainId }) => {
   const { deployer } = await getNamedAccounts();
   const chainId = await getChainId();
 
-  await deploy("YourContract", {
-    // Learn more about args here: https://www.npmjs.com/package/hardhat-deploy#deploymentsdeploy
+  console.log("chainId: ", chainId);
+
+  const MultiSigFactoryDeployed = await deploy("MultiSigFactory", {
     from: deployer,
-    // args: [ "Hello", ethers.utils.parseEther("1.5") ],
     log: true,
-    waitConfirmations: 5,
+    // waitConfirmations: 5,
   });
 
+  // const MultiSigWalletDeployed = await deploy("MultiSigWallet", {
+  //   from: deployer,
+  //   args: [
+  //     // chainId,
+  //     // ["0x813f45BD0B48a334A3cc06bCEf1c44AAd907b8c1"],
+  //     // 1,
+  //     "default_name",
+  //     MultiSigFactoryDeployed.address,
+  //   ],
+  //   log: true,
+  // });
+
+  // console.log(
+  //   "MultiSig wallet deployed at => ",
+  //   MultiSigWalletDeployed.address
+  // );
+
+  console.log(
+    "MultiSig factory deployed at =>",
+    MultiSigFactoryDeployed.address
+  );
+
   // Getting a previously deployed contract
-  const YourContract = await ethers.getContract("YourContract", deployer);
+  // const multiSigFactory = await ethers.getContract("MultiSigFactory", deployer);
   /*  await YourContract.setPurpose("Hello");
   
-    // To take ownership of yourContract using the ownable library uncomment next line and add the 
-    // address you want to be the owner. 
-    
-    await YourContract.transferOwnership(
-      "ADDRESS_HERE"
-    );
+    To take ownership of yourContract using the ownable library uncomment next line and add the 
+    address you want to be the owner. 
+    // await yourContract.transferOwnership(YOUR_ADDRESS_HERE);
 
-    //const YourContract = await ethers.getContractAt('YourContract', "0xaAC799eC2d00C013f1F11c37E654e59B0429DF6A") //<-- if you want to instantiate a version of a contract at a specific address!
+    //const yourContract = await ethers.getContractAt('YourContract', "0xaAC799eC2d00C013f1F11c37E654e59B0429DF6A") //<-- if you want to instantiate a version of a contract at a specific address!
   */
 
   /*
@@ -72,11 +91,11 @@ module.exports = async ({ getNamedAccounts, deployments, getChainId }) => {
   //     await run("verify:verify", {
   //       address: YourContract.address,
   //       contract: "contracts/YourContract.sol:YourContract",
-  //       constructorArguments: [],
+  //       contractArguments: [],
   //     });
   //   }
   // } catch (error) {
   //   console.error(error);
   // }
 };
-module.exports.tags = ["YourContract"];
+module.exports.tags = ["MultiSigFactory", "MultiSigWallet"];

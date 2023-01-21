@@ -1,5 +1,5 @@
 import { Badge, Input } from "antd";
-import React, { useCallback, useState, useEffect } from "react";
+import React, { useCallback, useState } from "react";
 import { ethers } from "ethers";
 import { CameraOutlined, QrcodeOutlined } from "@ant-design/icons";
 import { useLookupAddress } from "eth-hooks/dapps/ens";
@@ -36,16 +36,12 @@ const isENS = (address = "") => address.endsWith(".eth") || address.endsWith(".x
                           or onChange={address => { setToAddress(address);}}
 **/
 export default function AddressInput(props) {
-  const { ensProvider, onChange, value: defaultValue } = props;
-  const [value, setValue] = useState();
+  const { ensProvider, onChange } = props;
+  const [value, setValue] = useState(props.value);
   const [scan, setScan] = useState(false);
 
-  const currentValue = typeof defaultValue !== "undefined" ? defaultValue : value;
+  const currentValue = typeof props.value !== "undefined" ? props.value : value;
   const ens = useLookupAddress(props.ensProvider, currentValue);
-
-  useEffect(() => {
-    defaultValue && setValue(defaultValue);
-  }, [defaultValue]);
 
   const updateAddress = useCallback(
     async newValue => {
@@ -117,6 +113,7 @@ export default function AddressInput(props) {
         placeholder={props.placeholder ? props.placeholder : "address"}
         prefix={<Blockie address={currentValue} size={8} scale={3} />}
         value={ethers.utils.isAddress(currentValue) && !isENS(currentValue) && isENS(ens) ? ens : currentValue}
+        disabled={props.disabled}
         addonAfter={
           <div
             style={{ marginTop: 4, cursor: "pointer" }}

@@ -1,26 +1,22 @@
+import { Select } from "antd";
 import React from "react";
-import { Dropdown, Menu, Button } from "antd";
+import { NETWORKS } from "../constants";
 
-function NetworkSwitch({ networkOptions, selectedNetwork, setSelectedNetwork }) {
-  const menu = (
-    <Menu>
-      {networkOptions
-        .filter(i => i !== selectedNetwork)
-        .map(i => (
-          <Menu.Item key={i}>
-            <Button type="text" onClick={() => setSelectedNetwork(i)}>
-              <span style={{ textTransform: "capitalize" }}>{i}</span>
-            </Button>
-          </Menu.Item>
-        ))}
-    </Menu>
-  );
+function NetworkSwitch({ selectedNetwork, onChangeNetwork }) {
+  const selectNetworkOptions = [];
+  for (const id in NETWORKS) {
+    selectNetworkOptions.push(
+      <Select.Option key={id} value={NETWORKS[id].name}>
+        <span style={{ color: NETWORKS[id].color, fontSize: 15 }}>{NETWORKS[id].name}</span>
+      </Select.Option>,
+    );
+  }
 
   return (
-    <div>
-      <Dropdown.Button overlay={menu} placement="bottomRight" trigger={["click"]}>
-        <span style={{ textTransform: "capitalize" }}>{selectedNetwork}</span>
-      </Dropdown.Button>
+    <div className="">
+      <Select className="w-full text-left" value={selectedNetwork} onChange={onChangeNetwork}>
+        {selectNetworkOptions}
+      </Select>
     </div>
   );
 }

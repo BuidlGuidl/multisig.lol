@@ -1,7 +1,7 @@
 import { useState, useEffect, useCallback } from "react";
 import { Sleep } from "../constants";
 
-const useEventListener = (contract, contractName, eventName, provider) => {
+const useEvent = (contract, contractName, eventName, refreshToggle) => {
   const [eventData, setEventData] = useState([]);
 
   const loadEvents = async () => {
@@ -25,8 +25,8 @@ const useEventListener = (contract, contractName, eventName, provider) => {
     if (contract && contract[contractName] !== undefined) {
       loadEvents();
     }
-  }, [contractName, contract, eventName]);
+  }, [contractName, contract, eventName, refreshToggle]);
   return eventData;
 };
 
-export default useEventListener;
+export default useEvent;
