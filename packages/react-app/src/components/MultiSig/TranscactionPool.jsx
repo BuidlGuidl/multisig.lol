@@ -27,8 +27,8 @@ const poolData = [
       "0x1f19e9e2bd95ec771926c4eba4c91e0d0da01e91f1188858edee9dd10cc61d7c26dc656a3fc7375053f3f7544136b7db4ed5c391624bb263330e12b5c7f1ed151b",
     ],
     signers: ["0x0fAb64624733a7020D332203568754EB1a37DB89"],
-    cancle_signatures: [],
-    cancle_signers: [],
+    cancel_signatures: [],
+    cancel_signers: [],
     type: "transfer",
     status: "success",
     url: "https://example.com",
@@ -121,8 +121,8 @@ const TranscationPool = () => {
     return [finalSigList, finalSigners];
   };
 
-  const onSign = async (item, isCancle) => {
-    if (isCancle) {
+  const onSign = async (item, isCancel) => {
+    if (isCancel) {
       item.data = "0x";
       item.amount = 0;
     }
@@ -139,9 +139,9 @@ const TranscationPool = () => {
     const isOwner = await readContracts[walletContractName].isOwner(recover);
     // console.log(`n-🔴 => onSign => isOwner`, isOwner);
     if (isOwner) {
-      let { txId, walletAddress, signers, signatures, cancle_signatures, cancle_signers } = item;
+      let { txId, walletAddress, signers, signatures, cancel_signatures, cancel_signers } = item;
       let reqData;
-      if (!isCancle) {
+      if (!isCancel) {
         reqData = {
           txId,
           walletAddress,
@@ -153,18 +153,18 @@ const TranscationPool = () => {
         };
       }
 
-      if (isCancle) {
-        if (!cancle_signatures || !cancle_signers) {
-          cancle_signatures = [];
-          cancle_signers = [];
+      if (isCancel) {
+        if (!cancel_signatures || !cancel_signers) {
+          cancel_signatures = [];
+          cancel_signers = [];
         }
         reqData = {
           txId,
           walletAddress,
           chainId: targetNetwork.chainId,
           newData: {
-            cancle_signatures: [...new Set([...cancle_signatures, signature])],
-            cancle_signers: [...new Set([...cancle_signers, address])],
+            cancel_signatures: [...new Set([...cancel_signatures, signature])],
+            cancel_signers: [...new Set([...cancel_signers, address])],
           },
         };
         // console.log(`n-🔴 => onSign => reqData`, reqData);
@@ -173,12 +173,12 @@ const TranscationPool = () => {
       }
     }
   };
-  const onExecute = async (item, isCancle) => {
+  const onExecute = async (item, isCancel) => {
     console.log(`n-🔴 => onExecute => item`, item);
-    // override values for cancle tx
-    if (isCancle) {
+    // override values for cancel tx
+    if (isCancel) {
       item.data = "0x";
-      item.signatures = [...item.cancle_signatures];
+      item.signatures = [...item.cancel_signatures];
     }
 
     const newHash = await readContracts[walletContractName].getTransactionHash(
@@ -354,13 +354,13 @@ const TranscationPool = () => {
                           <Address address={data["createdBy"]} fontSize={15} />
                         </Descriptions.Item>
 
-                        <Descriptions.Item label="Cancle Transcaction">
+                        <Descriptions.Item label="Cancel Transcaction">
                           <Button danger onClick={() => onSign(data, true)}>
-                            {data["cancle_signatures"] ? data["cancle_signatures"].length : 0}/
-                            {signaturesRequired ? signaturesRequired.toString() : 0} Cancle sign
+                            {data["cancel_signatures"] ? data["cancel_signatures"].length : 0}/
+                            {signaturesRequired ? signaturesRequired.toString() : 0} Cancel sign
                           </Button>
                           <Button className="ml-2" type="primary" danger onClick={() => onExecute(data, true)}>
-                            Execute cancle
+                            Execute cancel
                           </Button>
                         </Descriptions.Item>
                       </Descriptions>
