@@ -46,11 +46,11 @@ app.get(
   "/getPool/:chainId/:walletAddress/:currentNonce/:type",
   function (request, response) {
     const { walletAddress, currentNonce, chainId, type } = request.params;
-    console.log(`n-🔴 => request.params`, request.params);
+    // console.log(`n-🔴 => request.params`, request.params);
 
     const key = walletAddress + "_" + chainId;
-    console.log(`n-🔴 => key`, key);
-    console.log(`n-🔴 => transactions`, transactions_new);
+    // console.log(`n-🔴 => key`, key);
+    // console.log(`n-🔴 => transactions`, transactions_new);
 
     if (!transactions_new[key]) {
       return response.json({ data: [] });
@@ -63,7 +63,7 @@ app.get(
         );
 
         // data.signers.includes(walletAddress)
-        console.log(`n-🔴 => filteredPool in queue`, filteredPool);
+        // console.log(`n-🔴 => filteredPool in queue`, filteredPool);
         return response.json({ data: filteredPool });
       }
 
@@ -76,7 +76,7 @@ app.get(
           )
           .sort((A, B) => B.nonce - A.nonce);
 
-        console.log(`n-🔴 => filteredPool success`, filteredPool);
+        // console.log(`n-🔴 => filteredPool success`, filteredPool);
         return response.json({ data: filteredPool });
       }
     }
@@ -90,7 +90,7 @@ app.get(
 app.post("/addPoolTx", function (request, response) {
   //   const { chainId } = request.params;
   //   const { ownerAddress } = request.body;
-  console.log(`n-🔴 => request.body`, request.body);
+  // console.log(`n-🔴 => request.body`, request.body);
   //   response.send(request.body); // echo the result back
   const key = request.body.walletAddress + "_" + request.body.chainId;
   if (!transactions_new[key]) {
@@ -98,13 +98,13 @@ app.post("/addPoolTx", function (request, response) {
       transactions_new[key] = [{ ...request.body }];
     }
 
-    console.log(`n-🔴 => transactions[key]`, transactions_new[key].length);
+    // console.log(`n-🔴 => transactions[key]`, transactions_new[key].length);
     return response.json({ transactions: transactions_new });
   }
 
   if (transactions_new[key]) {
     transactions_new[key].push({ ...request.body });
-    console.log(`n-🔴 => transactions[key]`, transactions_new[key].length);
+    // console.log(`n-🔴 => transactions[key]`, transactions_new[key].length);
     return response.json({ transactions: transactions_new });
   }
 });
@@ -115,7 +115,7 @@ app.post("/addPoolTx", function (request, response) {
 app.post("/updateTx", function (request, response) {
   //   const { chainId } = request.params;
   const { txId, walletAddress, chainId, newData } = request.body;
-  console.log(`n-🔴 => request.body`, request.body);
+  // console.log(`n-🔴 => request.body`, request.body);
   //   response.send(request.body); // echo the result back
   const key = request.body.walletAddress + "_" + request.body.chainId;
 
@@ -127,7 +127,7 @@ app.post("/updateTx", function (request, response) {
     transactions_new[key] = transactions_new[key].map((txData) => {
       if (txData.txId === txId) {
         txData = { ...txData, ...newData };
-        console.log(`n-🔴 => transactions[key].map => txData`, txData);
+        // console.log(`n-🔴 => transactions[key].map => txData`, txData);
       }
       return txData;
     });
@@ -171,9 +171,9 @@ app.post(
     chainId = Number(chainId);
 
     if (wallets[ownerAddress] === undefined) {
-      console.log(
-        `create wallet ${walletName} for ${ownerAddress} on ${chainId} `
-      );
+      // console.log(
+      //   `create wallet ${walletName} for ${ownerAddress} on ${chainId} `
+      // );
       wallets[ownerAddress] = [];
       wallets[ownerAddress].push({
         walletName,
@@ -189,9 +189,9 @@ app.post(
 
       // if no wallet exist then push else skip
       if (isWalletExists === undefined) {
-        console.log(
-          `create wallet ${walletName} for ${ownerAddress} on ${chainId} `
-        );
+        // console.log(
+        //   `create wallet ${walletName} for ${ownerAddress} on ${chainId} `
+        // );
         wallets[ownerAddress].push({
           walletName,
           walletAddress,
@@ -202,9 +202,9 @@ app.post(
       }
       // if data is exisist then only update the chainid
       if (isWalletExists !== undefined) {
-        console.log(
-          `update wallet ${walletName} for ${ownerAddress} on ${chainId} `
-        );
+        // console.log(
+        //   `update wallet ${walletName} for ${ownerAddress} on ${chainId} `
+        // );
 
         wallets[ownerAddress].map((data) => {
           if (data.walletAddress === walletAddress) {
