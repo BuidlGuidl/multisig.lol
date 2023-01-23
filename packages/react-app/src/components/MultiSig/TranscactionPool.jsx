@@ -27,6 +27,8 @@ const poolData = [
       "0x1f19e9e2bd95ec771926c4eba4c91e0d0da01e91f1188858edee9dd10cc61d7c26dc656a3fc7375053f3f7544136b7db4ed5c391624bb263330e12b5c7f1ed151b",
     ],
     signers: ["0x0fAb64624733a7020D332203568754EB1a37DB89"],
+    cancle_signatures: [],
+    cancle_signers: [],
     type: "transfer",
     status: "success",
     url: "https://example.com",
@@ -119,7 +121,7 @@ const TranscationPool = () => {
     return [finalSigList, finalSigners];
   };
 
-  const onSign = async item => {
+  const onSign = async (item, isCancle) => {
     const newHash = await readContracts[walletContractName].getTransactionHash(
       item.nonce,
       item.to,
@@ -133,24 +135,43 @@ const TranscationPool = () => {
     // console.log(`n-🔴 => onSign => isOwner`, isOwner);
     if (isOwner) {
       const { txId, walletAddress, signers, signatures } = item;
+      let reqData;
+      if (!isCancle) {
+        reqData = {
+          txId,
+          walletAddress,
+          chainId: targetNetwork.chainId,
+          newData: {
+            signatures: [...new Set([...signatures, signature])],
+            signers: [...new Set([...signers, address])],
+          },
+        };
+      }
 
-      const reqData = {
-        txId,
-        walletAddress,
-        chainId: targetNetwork.chainId,
-        newData: {
-          signatures: [...new Set([...signatures, signature])],
-          signers: [...new Set([...signers, address])],
-        },
-      };
+      if (isCancle) {
+        reqData = {
+          txId,
+          walletAddress,
+          chainId: targetNetwork.chainId,
+          newData: {
+            cancle_signatures: [...new Set([...signatures, signature])],
+            cancle_signers: [...new Set([...signers, address])],
+          },
+        };
+        // console.log(`n-🔴 => onSign => reqData`, reqData);
 
-      // console.log(`n-🔴 => onSign => reqData`, reqData);
-
-      const res = await axios.post(`${BACKEND_URL}/updateTx`, { ...reqData });
+        const res = await axios.post(`${BACKEND_URL}/updateTx`, { ...reqData });
+      }
     }
   };
-  const onExecute = async item => {
+  const onExecute = async (item, isCancle) => {
     console.log(`n-🔴 => onExecute => item`, item);
+    // override values for cancle tx
+    if (isCancle) {
+      item.data = "0x";
+      item.signatures = [...item.cancle_signatures];
+    }
+
     const newHash = await readContracts[walletContractName].getTransactionHash(
       item.nonce,
       item.to,
@@ -265,7 +286,7 @@ const TranscationPool = () => {
                         </Button>
                       </div>
                       <div>
-                        <Button type="primary" onClick={() => onExecute(data)}>
+                        <Button type="primary" onClick={() => onExecute(data, false)}>
                           Execute
                         </Button>
                       </div>
@@ -322,6 +343,16 @@ const TranscationPool = () => {
                         {/* <Descriptions.Item label="executed at">{data["executedAt"]}</Descriptions.Item> */}
                         <Descriptions.Item label="Created by">
                           <Address address={data["createdBy"]} fontSize={15} />
+                        </Descriptions.Item>
+
+                        <Descriptions.Item label="Cancle Transcaction">
+                          <Button danger onClick={() => onSign(data, true)}>
+                            {data["cancle_signatures"] ? data["cancle_signatures"].length : 0}/
+                            {signaturesRequired ? signaturesRequired.toString() : 0}
+                          </Button>
+                          <Button className="ml-2" type="primary" danger onClick={() => onExecute(data, true)}>
+                            execute cancle
+                          </Button>
                         </Descriptions.Item>
                       </Descriptions>
                     </div>
