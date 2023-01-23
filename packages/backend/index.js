@@ -10,6 +10,7 @@ const port = Number(process.env.PORT) || 49899;
 let transactions = {};
 let transactions_new = {};
 let wallets = {};
+console.log(`n-🔴 => wallets`, wallets);
 
 app.use(cors());
 
