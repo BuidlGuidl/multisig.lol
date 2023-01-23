@@ -122,6 +122,11 @@ const TranscationPool = () => {
   };
 
   const onSign = async (item, isCancle) => {
+    if (isCancle) {
+      item.data = "0x";
+      item.amount = 0;
+    }
+
     const newHash = await readContracts[walletContractName].getTransactionHash(
       item.nonce,
       item.to,
@@ -134,7 +139,7 @@ const TranscationPool = () => {
     const isOwner = await readContracts[walletContractName].isOwner(recover);
     // console.log(`n-🔴 => onSign => isOwner`, isOwner);
     if (isOwner) {
-      const { txId, walletAddress, signers, signatures } = item;
+      let { txId, walletAddress, signers, signatures, cancle_signatures, cancle_signers } = item;
       let reqData;
       if (!isCancle) {
         reqData = {
@@ -149,13 +154,17 @@ const TranscationPool = () => {
       }
 
       if (isCancle) {
+        if (!cancle_signatures || !cancle_signers) {
+          cancle_signatures = [];
+          cancle_signers = [];
+        }
         reqData = {
           txId,
           walletAddress,
           chainId: targetNetwork.chainId,
           newData: {
-            cancle_signatures: [...new Set([...signatures, signature])],
-            cancle_signers: [...new Set([...signers, address])],
+            cancle_signatures: [...new Set([...cancle_signatures, signature])],
+            cancle_signers: [...new Set([...cancle_signers, address])],
           },
         };
         // console.log(`n-🔴 => onSign => reqData`, reqData);
