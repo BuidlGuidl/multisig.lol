@@ -357,10 +357,10 @@ const TranscationPool = () => {
                         <Descriptions.Item label="Cancle Transcaction">
                           <Button danger onClick={() => onSign(data, true)}>
                             {data["cancle_signatures"] ? data["cancle_signatures"].length : 0}/
-                            {signaturesRequired ? signaturesRequired.toString() : 0}
+                            {signaturesRequired ? signaturesRequired.toString() : 0} Cancle sign
                           </Button>
                           <Button className="ml-2" type="primary" danger onClick={() => onExecute(data, true)}>
-                            execute cancle
+                            Execute cancle
                           </Button>
                         </Descriptions.Item>
                       </Descriptions>
