@@ -7,3 +7,4 @@ cd scholarship-buidlguidl
 yarn install
 
 yarn start
+
