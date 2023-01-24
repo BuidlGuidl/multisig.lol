@@ -130,7 +130,7 @@ const AppLayout = ({ header, children }) => {
             textAlign: "center",
           }}
         >
-          built with ❤️ by naimbijapure.eth
+          2023@buidlguidl.com
         </Footer>
       </Layout>
     </Layout>

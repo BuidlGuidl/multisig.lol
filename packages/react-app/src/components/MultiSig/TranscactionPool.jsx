@@ -39,11 +39,6 @@ const poolData = [
   },
 ];
 const { Panel } = Collapse;
-const text = `
-  A dog is a type of domesticated animal.
-  Known for its loyalty and faithfulness,
-  it can be found as a welcome guest in many households across the world.
-`;
 
 const TranscationPool = () => {
   const [queueList, setQueueList] = useState([]);
@@ -378,4 +373,3 @@ const TranscationPool = () => {
 };
 
 export default TranscationPool;
-
