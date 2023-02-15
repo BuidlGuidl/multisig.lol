@@ -23,7 +23,7 @@ app.get("/", function (req, res) {
 app.get("/:key", function (req, res) {
   let key = req.params.key;
   console.log("/", key);
-  res.status(200).send(transactions_new[key]);
+  res.status(200).send(transactions[key]);
 });
 
 app.post("/", function (request, response) {
@@ -36,104 +36,6 @@ app.post("/", function (request, response) {
   }
   transactions[key][request.body.hash] = request.body;
   console.log("transactions", transactions);
-});
-
-/**
- return tx data
-*/
-
-app.get(
-  "/getPool/:chainId/:walletAddress/:currentNonce/:type",
-  function (request, response) {
-    const { walletAddress, currentNonce, chainId, type } = request.params;
-    // console.log(`n-🔴 => request.params`, request.params);
-
-    const key = walletAddress + "_" + chainId;
-    // console.log(`n-🔴 => key`, key);
-    // console.log(`n-🔴 => transactions`, transactions_new);
-
-    if (!transactions_new[key]) {
-      return response.json({ data: [] });
-    }
-
-    if (transactions_new[key]) {
-      if (type === "QUEUE") {
-        let filteredPool = transactions_new[key].filter(
-          (data) => data.nonce >= currentNonce
-        );
-
-        // data.signers.includes(walletAddress)
-        // console.log(`n-🔴 => filteredPool in queue`, filteredPool);
-        return response.json({ data: filteredPool });
-      }
-
-      if (type === "ALL") {
-        let filteredPool = transactions_new[key]
-          .filter(
-            (item) =>
-              item.nonce < currentNonce &&
-              (item.status === "success" || item.status === "rejected")
-          )
-          .sort((A, B) => B.nonce - A.nonce);
-
-        // console.log(`n-🔴 => filteredPool success`, filteredPool);
-        return response.json({ data: filteredPool });
-      }
-    }
-  }
-);
-
-/**
- store tx data
-*/
-
-app.post("/addPoolTx", function (request, response) {
-  //   const { chainId } = request.params;
-  //   const { ownerAddress } = request.body;
-  // console.log(`n-🔴 => request.body`, request.body);
-  //   response.send(request.body); // echo the result back
-  const key = request.body.walletAddress + "_" + request.body.chainId;
-  if (!transactions_new[key]) {
-    if (request.body.hash) {
-      transactions_new[key] = [{ ...request.body }];
-    }
-
-    // console.log(`n-🔴 => transactions[key]`, transactions_new[key].length);
-    return response.json({ transactions: transactions_new });
-  }
-
-  if (transactions_new[key]) {
-    transactions_new[key].push({ ...request.body });
-    // console.log(`n-🔴 => transactions[key]`, transactions_new[key].length);
-    return response.json({ transactions: transactions_new });
-  }
-});
-
-/**
- update signature data
-*/
-app.post("/updateTx", function (request, response) {
-  //   const { chainId } = request.params;
-  const { txId, walletAddress, chainId, newData } = request.body;
-  // console.log(`n-🔴 => request.body`, request.body);
-  //   response.send(request.body); // echo the result back
-  const key = request.body.walletAddress + "_" + request.body.chainId;
-
-  if (!transactions_new[key]) {
-    return response.json({ data: [] });
-  }
-  if (transactions_new[key]) {
-    // transactions[key].push({ ...request.body });
-    transactions_new[key] = transactions_new[key].map((txData) => {
-      if (txData.txId === txId) {
-        txData = { ...txData, ...newData };
-        // console.log(`n-🔴 => transactions[key].map => txData`, txData);
-      }
-      return txData;
-    });
-    // transactions[key] = [...transactions[key], updatedData];
-    return response.json({ data: transactions_new[key] });
-  }
 });
 
 /**----------------------
@@ -262,6 +164,88 @@ app.post(
   }
 );
 
+// NEW SIDEBAR UI API'S
+
+/**
+ return tx data
+*/
+
+app.get(
+  "/getPool/:chainId/:walletAddress/:currentNonce/:type",
+  function (request, response) {
+    const { walletAddress, currentNonce, chainId, type } = request.params;
+
+    const key = walletAddress + "_" + chainId;
+
+    if (!transactions_new[key]) {
+      return response.json({ data: [] });
+    }
+
+    if (transactions_new[key]) {
+      if (type === "QUEUE") {
+        let filteredPool = transactions_new[key].filter(
+          (data) => data.nonce >= currentNonce
+        );
+
+        return response.json({ data: filteredPool });
+      }
+
+      if (type === "ALL") {
+        let filteredPool = transactions_new[key]
+          .filter(
+            (item) =>
+              item.nonce < currentNonce &&
+              (item.status === "success" || item.status === "rejected")
+          )
+          .sort((A, B) => B.nonce - A.nonce);
+
+        return response.json({ data: filteredPool });
+      }
+    }
+  }
+);
+
+/**
+ store tx data
+*/
+
+app.post("/addPoolTx", function (request, response) {
+  const key = request.body.walletAddress + "_" + request.body.chainId;
+  if (!transactions_new[key]) {
+    if (request.body.hash) {
+      transactions_new[key] = [{ ...request.body }];
+    }
+
+    return response.json({ transactions: transactions_new });
+  }
+
+  if (transactions_new[key]) {
+    transactions_new[key].push({ ...request.body });
+    return response.json({ transactions: transactions_new });
+  }
+});
+
+/**
+ update signature data
+*/
+app.post("/updateTx", function (request, response) {
+  const { txId, walletAddress, chainId, newData } = request.body;
+  const key = request.body.walletAddress + "_" + request.body.chainId;
+
+  if (!transactions_new[key]) {
+    return response.json({ data: [] });
+  }
+  if (transactions_new[key]) {
+    transactions_new[key] = transactions_new[key].map((txData) => {
+      if (txData.txId === txId) {
+        txData = { ...txData, ...newData };
+      }
+      return txData;
+    });
+    return response.json({ data: transactions_new[key] });
+  }
+});
+
 if (fs.existsSync("server.key") && fs.existsSync("server.cert")) {
   https
     .createServer(
@@ -279,4 +263,3 @@ if (fs.existsSync("server.key") && fs.existsSync("server.cert")) {
     console.log("HTTP Listening on port:", server.address().port);
   });
 }
-
