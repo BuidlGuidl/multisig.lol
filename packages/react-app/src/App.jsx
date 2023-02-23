@@ -69,7 +69,7 @@ const multiSigWalletABI = MultiSigWalletAbi["abi"];
 // 🛰 providers
 const providers = [
   "https://eth-mainnet.gateway.pokt.network/v1/lb/611156b4a585a20035148406",
-  `https://eth-mainnet.alchemyapi.io/v2/${ALCHEMY_KEY}`,
+  `https://eth-mainnet.alchemyapi.io/v2/${ ALCHEMY_KEY }`,
   "https://rpc.scaffoldeth.io:48544",
 ];
 function App(props) {
@@ -165,7 +165,7 @@ function App(props) {
 
   // If you want to call a function on a new block
   useOnBlock(mainnetProvider, () => {
-    console.log(`⛓ A new mainnet block is here: ${mainnetProvider._lastBlockNumber}`);
+    console.log(`⛓ A new mainnet block is here: ${ mainnetProvider._lastBlockNumber }`);
   });
 
   /**----------------------
@@ -261,7 +261,7 @@ function App(props) {
           signaturesRequired,
         };
         const res = await axios.post(
-          BACKEND_URL + `createWallet/${creator}/${walletName}/${walletAddress}/${selectedChainId}`,
+          BACKEND_URL + `createWallet/${ creator }/${ walletName }/${ walletAddress }/${ selectedChainId }`,
           reqData,
         );
         let data = res.data;
@@ -277,7 +277,7 @@ function App(props) {
     setInjectedProvider(new ethers.providers.Web3Provider(provider));
 
     provider.on("chainChanged", chainId => {
-      console.log(`chain changed to ${chainId}! updating providers`);
+      console.log(`chain changed to ${ chainId }! updating providers`);
       setInjectedProvider(new ethers.providers.Web3Provider(provider));
     });
 
@@ -296,7 +296,7 @@ function App(props) {
 
   const getUserWallets = async isUpdate => {
     if (isFactoryDeployed !== undefined) {
-      let res = await axios.get(BACKEND_URL + `getWallets/${address}`);
+      let res = await axios.get(BACKEND_URL + `getWallets/${ address }`);
       let data = res.data;
 
       let localWallets =
@@ -431,17 +431,17 @@ function App(props) {
 
       if (multiSigFactoryData === undefined) {
         localStorage.removeItem("importedMultiSigs");
-        setMultiSigFactoryData({ ...multiSigFactoryData, [`${targetNetwork.name}`]: currentFactoryContractAddres });
+        setMultiSigFactoryData({ ...multiSigFactoryData, [`${ targetNetwork.name }`]: currentFactoryContractAddres });
 
         return;
       }
 
       if (multiSigFactoryData !== undefined) {
-        let oldFactoryAddress = multiSigFactoryData[`${targetNetwork.name}`];
+        let oldFactoryAddress = multiSigFactoryData[`${ targetNetwork.name }`];
         let isNewFactoryDeployed = currentFactoryContractAddres !== oldFactoryAddress;
         if (isNewFactoryDeployed) {
           localStorage.removeItem("importedMultiSigs");
-          setMultiSigFactoryData({ ...multiSigFactoryData, [`${targetNetwork.name}`]: currentFactoryContractAddres });
+          setMultiSigFactoryData({ ...multiSigFactoryData, [`${ targetNetwork.name }`]: currentFactoryContractAddres });
         }
       }
     }
@@ -618,6 +618,10 @@ function App(props) {
         </Menu.Item>
         <Menu.Item key="/pool" disabled={reDeployWallet !== undefined}>
           <Link to="/pool">Pool</Link>
+        </Menu.Item>
+
+        <Menu.Item key="/manage">
+          <Link to="/manage">Manage account</Link>
         </Menu.Item>
       </Menu>
     </div>
