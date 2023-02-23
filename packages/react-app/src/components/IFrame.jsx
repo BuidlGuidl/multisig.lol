@@ -37,6 +37,12 @@ export default function IFrame({
   }, []);
 
   useEffect(() => {
+    setInputAppUrl("https://app.uniswap.org/#/swap");
+    setAppUrl("https://app.uniswap.org/#/swap");
+    setIsIFrameLoading(true);
+  }, []);
+
+  useEffect(() => {
     const fetchSafeDapps = async chainId => {
       const response = await axios.get(`https://safe-client.gnosis.io/v1/chains/${ chainId }/safe-apps`);
       setSafeDapps(dapps => ({
