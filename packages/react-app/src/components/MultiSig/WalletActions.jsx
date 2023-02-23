@@ -103,7 +103,7 @@ const WalletActions = () => {
             walletParams={walletParams}
           />
         </div>
-        {/* <div className="m-2  w-32">
+        <div className="m-2  w-32">
           <Select
             className="w-full"
             value={currentMultiSigAddress}
@@ -115,23 +115,23 @@ const WalletActions = () => {
               userWallets.length > 0 &&
               userWallets.map((data, index) => {
                 return (
-                  <Option key={index} value={data.walletAddress}>
+                  <Select.Option key={index} value={data.walletAddress}>
                     <div className="flex justify-between items-center">
                       <div>{data.walletName.slice(0, 14) + "..."}</div>
                       {walletParams === undefined && (
                         <>
                           <MinusCircleOutlined
-                            onClick={e => hideWalletItem(e, data.walletAddress)}
+                            onClick={e => hideWalletItem(e, data.walletName, data.walletAddress)}
                             style={{ color: "red" }}
                           />
                         </>
                       )}
                     </div>
-                  </Option>
+                  </Select.Option>
                 );
               })}
           </Select>
-        </div> */}
+        </div>
 
         {/* old network select */}
         {/* <div className="m-2  w-28 ">
@@ -139,11 +139,11 @@ const WalletActions = () => {
             {selectNetworkOptions}
           </Select>
         </div> */}
-        <div className="flex items-center">
+        {/* <div className="flex items-center">
           <Link to={"/manage"}>
             <Button icon={<SettingOutlined />}>Manage</Button>
           </Link>
-        </div>
+        </div> */}
       </div>
     </>
   );
