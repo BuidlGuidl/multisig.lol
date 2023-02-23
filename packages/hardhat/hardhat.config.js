@@ -109,6 +109,13 @@ module.exports = {
         mnemonic: mnemonic(),
       },
     },
+    zksyncalpha: {
+      url: "https://zksync2-testnet.zksync.dev",
+      gasPrice: 100000000,
+      accounts: {
+        mnemonic: mnemonic(),
+      },
+    },
     xdai: {
       url: "https://rpc.xdaichain.com/",
       gasPrice: 1000000000,
