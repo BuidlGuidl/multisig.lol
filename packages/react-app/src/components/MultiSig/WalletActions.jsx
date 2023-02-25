@@ -48,6 +48,7 @@ const WalletActions = () => {
     hideWalletItem,
     walletParams,
   } = state;
+  console.log(`n-🔴 => WalletActions => address:`, address);
 
   const loadWallet = async () => {
     if (walletParams && walletParams.networkName in NETWORKS) {
@@ -66,7 +67,7 @@ const WalletActions = () => {
       <div key={address} className="flex justify-start items-center p-2 my-2  flex-wrap ">
         <div>
           <CreateMultiSigModal
-            key={address}
+            // key={address}
             reDeployWallet={reDeployWallet}
             setReDeployWallet={setReDeployWallet}
             poolServerUrl={BACKEND_URL}
@@ -110,12 +111,21 @@ const WalletActions = () => {
             onChange={handleMultiSigChange}
             key={userWallets && userWallets.length}
             disabled={walletParams !== undefined}
+            options={
+              userWallets &&
+              userWallets.length > 0 && [
+                ...userWallets.map(item => ({
+                  value: item.walletAddress,
+                  label: item.walletName,
+                })),
+              ]
+            }
           >
-            {userWallets &&
+            {/* {userWallets &&
               userWallets.length > 0 &&
               userWallets.map((data, index) => {
                 return (
-                  <Select.Option key={index} value={data.walletAddress}>
+                  <Select.Option key={data.walletAddress} value={data.walletAddress}>
                     <div className="flex justify-between items-center">
                       <div>{data.walletName.slice(0, 14) + "..."}</div>
                       {walletParams === undefined && (
@@ -129,7 +139,7 @@ const WalletActions = () => {
                     </div>
                   </Select.Option>
                 );
-              })}
+              })} */}
           </Select>
         </div>
 
