@@ -8,6 +8,7 @@ import { parseExternalContractTransaction } from "../helpers";
 import { useLocalStorage } from "../hooks";
 import { ethers } from "ethers";
 import { parseEther } from "@ethersproject/units";
+import { BigNumber } from "@ethersproject/bignumber";
 const { Option } = Select;
 
 const axios = require("axios");
@@ -40,6 +41,7 @@ export default function CreateTransaction({
 
   const [hasEdited, setHasEdited] = useState(); //we want the signaturesRequired to update from the contract _until_ they edit it
   const [customNonce, setCustomNonce] = useState(nonce);
+  const [cancelTxNonce, setCancelTxNonce] = useState(nonce);
 
   useEffect(() => {
     if (!hasEdited) {
@@ -49,6 +51,7 @@ export default function CreateTransaction({
 
   useLayoutEffect(() => {
     setCustomNonce(nonce);
+    setCancelTxNonce(nonce);
   }, [nonce]);
 
   const showModal = () => {
@@ -97,10 +100,11 @@ export default function CreateTransaction({
           methodName === "transferFunds" ||
           methodName === "customCallData" ||
           methodName === "wcCallData" ||
-          methodName === "iframeCallData"
+          methodName === "iframeCallData" ||
+          methodName == "cancelPendingTx"
         ) {
-          callData = methodName == "transferFunds" ? "0x" : customCallData;
-          executeToAddress = to;
+          callData = methodName == "transferFunds" || methodName == "cancelPendingTx" ? "0x" : customCallData;
+          executeToAddress = methodName == "cancelPendingTx" ? contractAddress : to;
         } else {
           callData = readContracts[contractName]?.interface?.encodeFunctionData(methodName, [
             to,
@@ -108,12 +112,20 @@ export default function CreateTransaction({
           ]);
           executeToAddress = contractAddress;
         }
-        const newHash = await readContracts[contractName].getTransactionHash(
-          customNonce,
-          executeToAddress,
-          parseEther("" + parseFloat(amount).toFixed(12)),
-          callData,
-        );
+        const newHash =
+          methodName == "cancelPendingTx"
+            ? await readContracts[contractName].getTransactionHash(
+                cancelTxNonce,
+                executeToAddress,
+                parseEther("" + parseFloat(0).toFixed(12)),
+                callData,
+              )
+            : await readContracts[contractName].getTransactionHash(
+                customNonce,
+                executeToAddress,
+                parseEther("" + parseFloat(amount).toFixed(12)),
+                callData,
+              );
 
         const signature = await userSigner?.signMessage(ethers.utils.arrayify(newHash));
 
@@ -126,9 +138,9 @@ export default function CreateTransaction({
           const res = await axios.post(poolServerUrl, {
             chainId: localProvider._network.chainId,
             address: readContracts[contractName]?.address,
-            nonce: customNonce,
+            nonce: methodName == "cancelPendingTx" ? cancelTxNonce : customNonce,
             to: executeToAddress,
-            amount,
+            amount: methodName == "cancelPendingTx" ? "0" : amount,
             data: callData,
             hash: newHash,
             signatures: [signature],
@@ -140,7 +152,7 @@ export default function CreateTransaction({
             setIsTxLoaded(prev => true);
             setTimeout(() => {
               let hostURL = window.location.origin;
-              window.open(`${ hostURL }/pool`, "_blank");
+              window.open(`${hostURL}/pool`, "_blank");
 
               setIsTxLoaded(prev => false);
               return;
@@ -185,6 +197,7 @@ export default function CreateTransaction({
                 WalletConnect
               </Option>
               <Option key="iframeCallData">IFrame</Option>
+              <Option key="cancelPendingTx">Cancel Pending Tx</Option>
             </Select>
           </div>
           {methodName === "wcCallData" ? (
@@ -209,24 +222,39 @@ export default function CreateTransaction({
             />
           ) : (
             <>
-              <div style={inputStyle}>
-                <AddressInput
-                  autoFocus
-                  ensProvider={mainnetProvider}
-                  placeholder={methodName == "transferFunds" ? "Recepient address" : "Owner address"}
-                  value={to}
-                  onChange={setTo}
-                />
-              </div>
+              {methodName != "cancelPendingTx" && (
+                <div style={inputStyle}>
+                  <AddressInput
+                    autoFocus
+                    ensProvider={mainnetProvider}
+                    placeholder={methodName == "transferFunds" ? "Recepient address" : "Owner address"}
+                    value={to}
+                    onChange={setTo}
+                  />
+                </div>
+              )}
               <div style={inputStyle}>
                 {(methodName == "addSigner" || methodName == "removeSigner") && (
                   <InputNumber
                     style={{ width: "100%" }}
-                    placeholder="New # of signatures required"
+                    placeholder={"New # of signatures required"}
                     value={newSignaturesRequired}
                     onChange={value => {
                       setNewSignaturesRequired(value);
                       setHasEdited(true);
+                    }}
+                  />
+                )}
+                {methodName == "cancelPendingTx" && (
+                  <InputNumber
+                    style={{ width: "100%" }}
+                    placeholder={"Enter Tx Nonce"}
+                    onChange={value => {
+                      if (value) {
+                        setCancelTxNonce(BigNumber.from(value));
+                      } else {
+                        setCancelTxNonce(nonce);
+                      }
                     }}
                   />
                 )}
@@ -281,7 +309,12 @@ export default function CreateTransaction({
                 }}
               />*/}
               <Space style={{ marginTop: 32 }}>
-                <Button loading={loading} onClick={createTransaction} type="primary">
+                <Button
+                  loading={loading}
+                  disabled={cancelTxNonce > nonce && methodName === "cancelPendingTx"}
+                  onClick={createTransaction}
+                  type="primary"
+                >
                   Propose
                 </Button>
               </Space>
