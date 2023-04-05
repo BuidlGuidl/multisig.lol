@@ -10,7 +10,7 @@ import WalletActions from "./components/MultiSig/WalletActions";
 import "antd/dist/antd.css";
 import { useOnBlock } from "eth-hooks";
 import { useCallback, useEffect, useState } from "react";
-import { Link, useLocation } from "react-router-dom";
+import { Link, useLocation, useHistory } from "react-router-dom";
 import "./App.css";
 import {
   Account,
@@ -90,6 +90,8 @@ function App(props) {
   const [reDeployWallet, setReDeployWallet] = useState(undefined);
   const [updateServerWallets, setUpdateServerWallets] = useState(false);
   const location = useLocation();
+  const history = useHistory();
+
   const [isCreateModalVisible, setIsCreateModalVisible] = useState(false);
   const [multiSigs, setMultiSigs] = useState([]);
   const [currentMultiSigAddress, setCurrentMultiSigAddress] = useState();
@@ -210,7 +212,7 @@ function App(props) {
     // setMultiSigs(multiSigsForUser);
   };
 
-  const createEthersContractWallet = () => {
+  const createEthersContractWallet = async () => {
     async function getContractValues() {
       const latestSignaturesRequired = await readContracts.MultiSigWallet.signaturesRequired();
       setSignaturesRequired(latestSignaturesRequired);
@@ -603,7 +605,48 @@ function App(props) {
 
   const MainMenu = (
     <div className="flex justify-center mt-5" key={address}>
-      <Menu disabled={!userHasMultiSigs} selectedKeys={[location.pathname]} mode="horizontal">
+      <Menu
+        disabled={!userHasMultiSigs}
+        selectedKeys={[location.pathname]}
+        mode="horizontal"
+        // onClick={event => {
+        //   console.log(`n-🔴 => App => event:`, event.key);
+        // }}
+        // items={[
+        //   {
+        //     label: "Multisig",
+        //     key: "/",
+        //     onClick: () => {
+        //       createEthersContractWallet().then(() => {
+        //         history.push("/");
+        //       });
+        //     },
+        //   },
+        //   {
+        //     label: "Propose Transaction",
+        //     key: "/create",
+        //     onClick: () => {
+        //       history.push("/create");
+        //     },
+        //   },
+
+        //   {
+        //     label: "Pool",
+        //     key: "/pool",
+        //     onClick: () => {
+        //       history.push("/pool");
+        //     },
+        //   },
+
+        //   {
+        //     label: "Manage account",
+        //     key: "/manage",
+        //     onClick: () => {
+        //       history.push("/manage");
+        //     },
+        //   },
+        // ]}
+      >
         <Menu.Item
           key="/"
           onClick={() => {
@@ -618,6 +661,10 @@ function App(props) {
         </Menu.Item>
         <Menu.Item key="/pool" disabled={reDeployWallet !== undefined}>
           <Link to="/pool">Pool</Link>
+        </Menu.Item>
+
+        <Menu.Item key="/manage">
+          <Link to="/manage">Manage account</Link>
         </Menu.Item>
       </Menu>
     </div>
@@ -702,6 +749,7 @@ function App(props) {
       <StoreProvider store={{ ...store }}>
         {HeaderBar}
         <WalletActions />
+
         {MainMenu}
         {Object.keys(writeContracts).length > 0 && Object.keys(readContracts).length > 0 && (
           <>

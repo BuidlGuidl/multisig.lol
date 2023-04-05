@@ -76,6 +76,15 @@ export const NETWORKS = {
     faucet: "https://faucet.sepolia.dev/",
     blockExplorer: "https://sepolia.etherscan.io",
   },
+  zksyncalpha: {
+    name: "zksyncalpha",
+    color: "#45488f",
+    price: "uniswap",
+    chainId: 280,
+    rpcUrl: "https://zksync2-testnet.zksync.dev",
+    blockExplorer: "https://goerli.explorer.zksync.io/",
+    gasPrice: 1000000000,
+  },
   canto: {
     name: "canto",
     color: "#00ff9b",

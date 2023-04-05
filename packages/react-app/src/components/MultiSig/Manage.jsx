@@ -26,7 +26,7 @@ export default function Manage() {
     <div className="">
       <Typography.Title level={5}>Manage multisig</Typography.Title>
       <div className="flex justify-center items-center">
-        <div className="w-1/4 m-2">
+        {/* <div className="w-1/4 m-2">
           <div>Select wallet</div>
           <Select
             className="w-full"
@@ -55,7 +55,7 @@ export default function Manage() {
                 );
               })}
           </Select>
-        </div>
+        </div> */}
         <div className="w-1/4 m-2">
           <div>Hidden wallets</div>
           <Select className="w-full" key={hiddenWallets && hiddenWallets.length}>
