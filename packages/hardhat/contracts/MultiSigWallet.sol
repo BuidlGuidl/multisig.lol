@@ -187,7 +187,7 @@ contract MultiSigWallet {
     ) public onlyOwner returns (bytes[] memory) {
         uint256 toLength = to.length;
         bytes[] memory results = new bytes[](toLength);
-        for(uint256 i=0;i<toLength;i++){
+        for(uint256 i=0;i<toLength;++i){
             results[i] = executeTransaction(payable(to[i]), value[i], data[i], signatures[i]);
         }
         return results;
