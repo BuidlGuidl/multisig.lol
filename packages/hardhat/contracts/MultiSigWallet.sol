@@ -158,9 +158,7 @@ contract MultiSigWallet {
             // if not then iterate through the array and swap the owner to be removed with the last element in the array
             for (uint256 i = ownersLength - 2; i >= 0; ) {
                 if (owners[i] == _oldSigner) {
-                    address temp = owners[i];
                     owners[i] = lastElement;
-                    lastElement = temp;
                     owners.pop();
                     return;
                 }
